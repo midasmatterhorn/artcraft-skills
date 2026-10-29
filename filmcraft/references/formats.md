@@ -1,8 +1,11 @@
 # FilmCraft file formats — what the code actually reads and writes
 
-Version: repo tag **v0.13.0**, commit `30536bc5d0ddf690f2181b7b97182db8658a6038` (inspected 2026-10-26).
+Version: repo tag **v0.14.0**, commit `a2d8e9ce269aba9c399e36262522e11456df6fbf` (inspected 2026-10-29).
 Every list below is read out of the code, not the marketing docs. Where a doc contradicts the code, the
-contradiction is named and the code wins.
+contradiction is named and the code wins. New since v0.13.0: **uncompressed QuickTime video decodes**
+(raw 24-bit RGB, 2vuy, v210), PNG Sequence writes RGB files when alpha is off, OTIO export bounds
+nested-sequence copies, TTML/DFXP export no longer overflows near i64::MAX cue times, and MCC export
+is bounded to scheduled data. Everything else below is unchanged.
 
 **Container ownership changed in 0.13.0.** `crates/isobmff` (MP4/MOV), `crates/matroska` (MKV/WebM) and
 `crates/bitstream` are now re-export shims over `craft-media` from craft-libs, pinned at

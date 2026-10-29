@@ -2,8 +2,8 @@
 
 All paths are repo-relative to https://github.com/storytold/designcraft.
 
-Verified at tag v0.13.0, commit `dcce40fb8731213c1f8e31cdd23444995afc62ce`, 2026-10-26.
-Installed `/Applications/DesignCraft.app` reports `0.13.0` and the same build commit.
+Verified at tag v0.14.0, commit `7da69c16ce221f46e8f27cb41e0c88167c8be416`, 2026-10-29.
+Installed `/Applications/DesignCraft.app` reports `0.14.0` and the same build commit.
 
 ## 1. CLI (`designcraft-cli`)
 
@@ -273,7 +273,7 @@ left edge) and validated: finite, ascending, first 0, last margin width, ≤ 216
   import warning, a persistent `unsupportedGraphicLayers` preflight issue and a PDF export warning.
   Do not promise appearance fidelity from a retained IDML layer choice.
 
-## 8. New and changed engine/UI surfaces at v0.13.0
+## 8. New and changed engine/UI surfaces at v0.14.0 (v0.13 items below still apply)
 
 ### EPUB Split Document
 
@@ -379,16 +379,17 @@ automation boundaries validate keys against it (`crates/engine/src/cmd/params.rs
 
 ## 11. Live discovery and pitfalls
 
-- `designcraft-cli commands` lists the **537 engine commands** at this tag; it does not list the 172
+- `designcraft-cli commands` lists the **542 engine commands** at this tag; it does not list the 176
   UI commands. In a running app, `engine.commands` (control) / `list_commands` (MCP connected)
   returns both, with UI entries marked `"ui": true`. `describe` works for engine commands.
-- Counts are code-derived: 537 unique `cmd!` registrations across 61 `specs()` lists, plus 172
-  `UI_COMMANDS`. Versus v0.12.0 (527 + 166): added engine `document.epubSplit`, `list.bullets`,
-  `list.numbers`, `note.convertFromText`, `note.next`, `note.previous`, `selection.key`,
-  `story.options`, `variables.convertToText`, `variables.convertAllToText`; added UI
-  `app.grepStylesDialog`, `app.hyphenationDialog`, `app.keepOptionsDialog`,
-  `app.nestedStylesDialog`, `view.goBack`, `view.goForward`; nothing removed. MCP stays 26 and the
-  26 control methods are unchanged.
+- Counts are code-derived: 542 unique `cmd!` registrations across the `specs()` lists, plus 176
+  `UI_COMMANDS`. Versus v0.13.0 (537 + 172): added engine `file.info`, `ink.separations`,
+  `note.split`, `text.deleteSurrounding` (+1 const-built id); added UI `help.checkForUpdates`,
+  `ui.dock`, `view.storyEditorDepthRuler`, `window.shortcutSets`; nothing removed. MCP stays 26;
+  the control dispatch gained `ui.docking` (shared dock layout). New this release: PDF/X-1a:2003
+  export through the craft-prepress flattener, Separations Preview of the exported PDF's plates,
+  editable tool keys and shortcut sets in the shared Keyboard Shortcuts dialog, Story Editor depth
+  ruler, and gradient table-cell fills.
 - UI-only commands (`view.*`, `window.*`, `help.*`, `edit.dynamicSpelling`, `app.*` except
   `app.links`) work only in the desktop app; headless MCP errors. This includes
   `window.importShortcuts`, `view.lockGuides`, `view.goBack`/`view.goForward`,

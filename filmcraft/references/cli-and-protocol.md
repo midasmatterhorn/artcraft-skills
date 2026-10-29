@@ -1,8 +1,11 @@
 # FilmCraft CLI, control channel and MCP — reference
 
-Transcribed from the **v0.13.0** source, commit `30536bc5d0ddf690f2181b7b97182db8658a6038` (inspected 2026-10-26).
+Transcribed from the **v0.14.0** source, commit `a2d8e9ce269aba9c399e36262522e11456df6fbf` (inspected 2026-10-29).
 Every flag, tool and method below exists in the code; where a value comes from a doc rather than code, the
-path is given. Changes since v0.11.0 are marked **New in 0.13.0**.
+path is given. Changes since v0.13.0 are marked **New in 0.14.0** — this wave added no command, CLI
+subcommand, MCP tool or control method; it changed behaviours (`effects.apply` answers applied
+instances, `effects.setParam` names the parameter and accepted value, exports gained `maxThreads`,
+H.264 export got faster) and the shared-module refactor moved declarations without changing the surface.
 
 ## 1. `filmcraft-cli`
 

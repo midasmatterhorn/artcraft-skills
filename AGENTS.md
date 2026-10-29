@@ -7,29 +7,33 @@ install, update, or verify these skills, do it for the agent **you** are running
 
 ## Install (pick your target)
 
-From the packaged release in this folder — the 13 skill folders sit at the zip root:
+From the packaged release in this folder — the 13 skill folders sit at the zip root
+(pick the newest `artcraft-skills-v*.zip`):
 
 ```sh
+ZIP="$(ls -t releases/artcraft-skills-v*.zip | head -1)"
+
 # Default: OpenAI Codex, ChatGPT desktop, ZCode, Devin, CommandCode, Gemini CLI (~/.agents/skills)
-unzip -o "releases/artcraft-skills-v1.0.1.zip" -d ~/.agents/skills/
+unzip -o "$ZIP" -d ~/.agents/skills/
 
 # Claude Code
-unzip -o "releases/artcraft-skills-v1.0.1.zip" -d ~/.claude/skills/
+unzip -o "$ZIP" -d ~/.claude/skills/
 
 # OpenCode
-unzip -o "releases/artcraft-skills-v1.0.1.zip" -d ~/.config/opencode/skills/
+unzip -o "$ZIP" -d ~/.config/opencode/skills/
 
 # Gemini CLI
-unzip -o "releases/artcraft-skills-v1.0.1.zip" -d ~/.gemini/skills/
+unzip -o "$ZIP" -d ~/.gemini/skills/
 
 # Google Antigravity
-unzip -o "releases/artcraft-skills-v1.0.1.zip" -d ~/.gemini/config/skills/
+unzip -o "$ZIP" -d ~/.gemini/config/skills/
 ```
 
 Windows PowerShell:
 
 ```powershell
-Expand-Archive releases\artcraft-skills-v1.0.1.zip -DestinationPath $HOME\.agents\skills   # or .claude\skills / .config\opencode\skills / .gemini\skills / .gemini\config\skills
+$zip = Get-ChildItem releases\artcraft-skills-v*.zip | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+Expand-Archive $zip -DestinationPath $HOME\.agents\skills   # or .claude\skills / .config\opencode\skills / .gemini\skills / .gemini\config\skills
 ```
 
 Or from source (latest state):
@@ -59,10 +63,12 @@ so the GPU can look "disabled" until that memory is cleared.
 
 **Try the direct launch first.** `CREATE_NO_WINDOW` only hides a console; it does not move
 the process to another window station. An agent running in the user's logged-on session (a
-terminal, an IDE, a desktop app) can start the GUI itself:
+terminal, an IDE, a desktop app) can start the GUI itself. The launcher installs apps
+per-user by default (`%LOCALAPPDATA%\Programs\ArtCraft\<App>`); apps installed for all
+users live at `C:\Program Files\ArtCraft\<App>`:
 
 ```cmd
-cmd.exe /c start "" "C:\Program Files\<App>\<app>.exe" --control <port>
+cmd.exe /c start "" "%LOCALAPPDATA%\Programs\ArtCraft\<App>\<app>.exe" --control <port>
 ```
 
 If no window appears, the agent is in a non-interactive session — a Windows service /
@@ -72,7 +78,7 @@ can paint on the user's desktop: use the headless CLI/MCP surface instead, or as
 the logged-in user can have Task Scheduler launch the app interactively:
 
 ```cmd
-schtasks /create /tn "ArtCraft-<App>-<port>" /tr "\"C:\Program Files\<App>\<app>.exe\" --control <port>" /sc once /st <future-time> /it /f
+schtasks /create /tn "ArtCraft-<App>-<port>" /tr "\"%LOCALAPPDATA%\Programs\ArtCraft\<App>\<app>.exe\" --control <port>" /sc once /st <future-time> /it /f
 schtasks /run /tn "ArtCraft-<App>-<port>"
 schtasks /delete /tn "ArtCraft-<App>-<port>" /f
 ```
@@ -101,6 +107,7 @@ Authentication differs per app — check the app's SKILL.md before connecting:
 - **PdfCraft**: launch with `--control FILE` — the file holds the loopback port and per-launch token.
 - **CADCraft**: every request needs `"token": "<session token>"`, read from `cadcraft-control-<port>.token` (`%LOCALAPPDATA%` on Windows; `$XDG_RUNTIME_DIR`, else `~/.cache` elsewhere) — the app prints the path at startup.
 - **FilmCraft**: the listener only opens when `FILMCRAFT_CONTROL_TOKEN` holds 64 hex characters at launch; every request carries the same `"token"`.
+- **GridCraft**: the first line of a connection must authenticate with the app's token — pass `--control-token <token>` or `GRIDCRAFT_CONTROL_TOKEN` at launch, or read the auto-generated token file whose path the app prints to stderr (`gridcraft-cli` reads it automatically); a connection that does not authenticate, or later sends a bad line, is closed.
 - **All other apps**: loopback-only, unauthenticated — enable only while in use.
 
 Send UTF-8 **without a BOM**: the control servers treat a BOM-prefixed first line as

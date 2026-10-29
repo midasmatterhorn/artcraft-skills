@@ -1,11 +1,9 @@
 # PdfCraft automation tool table (names, titles, hints)
 
-Generated from `crates/automation/src/tools.rs` (`tools()`, line 120) at tag `v0.14.0`,
-commit `5a78b223871add8e3883856205cc653d741e0e94`, date 2026-10-26. **179 tools.**
-That is four more than the v0.12.0 skill's 175: `attachment_add`, `attachment_delete`,
-`bookmark_set_style`, `content_copy`. None was removed or renamed; the four new ones sit where the code
-registers them, so the order differs from the v0.12.0 list. The order below is the order `tools()`
-returns.
+Generated from `crates/automation/src/tools.rs` (`tools()`) at tag `v0.15.0`,
+commit `75360d1d7db06fed974f48c914d4c04132757187`, date 2026-10-29. **179 tools** — the same set as
+v0.14.0 (153 inline + 26 multi-line `t(` entries; none added, removed or renamed). The order below is
+the order `tools()` returns.
 
 The repo's own docs are stale on this number: `docs/architecture.md` (§4), `docs/ui-parity.md` and
 `docs/target-app-parity.md` still say "141 automation tools" and "184 registered commands";

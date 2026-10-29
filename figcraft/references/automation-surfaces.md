@@ -1,30 +1,34 @@
 # FigCraft automation surfaces — operational detail
 
-Load this when a job is bigger than a couple of command calls. Everything here is from the v0.11.2
-tree (commit `d4a303d4708602a9df1738960852d18b185a616b`, tag `v0.11.2`, 2026-10-25), re-measured at
+Load this when a job is bigger than a couple of command calls. Everything here is from the v0.12.1
+tree (commit `ef9721c5b9d0f1cc19a74449cbe175fc06bf8efa`, tag `v0.12.1`, 2026-10-28), re-measured at
 that tag. Repo-relative paths only; no machine paths are named.
 
 ## 1. Three ways in, one command registry
 
 Every user-visible behaviour is a command in `crates/engine/src/cmd/*` (plus the area modules) with
-an id, label, parameter docs and an undo flag (`spec!` macro in `crates/engine/src/cmd/mod.rs`). The
+an id, label, parameter docs and an undo flag (`spec!` macro in `crates/engine/src/cmd.rs`). The
 menus, shortcuts, Actions palette, CLI, control channel, MCP server and WASM plugins all dispatch the
-same ids (`docs/architecture.md` › Commands). This tag registers **597 commands across 60 id
-namespaces** (v0.10.0: 569 / 57); the generated parity checklist still carries the 2026-10-17
-measure of 561 and README says "400+", both stale. **212 / 212** catalogued menu items have a
+same ids (`docs/architecture.md` › Commands). This tag registers **616 `spec!(` sites across the id
+namespaces** (v0.11.2: 597; some ids are const-built — count your build with `figcraft-cli commands
+--json`); the generated parity checklist and README lag. **212 / 212** catalogued menu items have a
 command (`crates/engine/src/catalog.rs` `MENU`/`parity`, `docs/parity-checklist.md`) — 207 engine
 commands plus 5 ids the UI layer implements (`edit.copyAsText|Css|Svg|Png`, `edit.copyLink`;
 `crates/ui-egui/src/menus.rs`).
 
 Largest namespaces: `text` 57, `view` 48, `vector` 42, `tool` 29, `object` 28, `file` 22, `collab`
 21, `component` 21, `select` 21, `proto` 21, `library` 18, `variable` 18, `edit` 16, `comment` 14,
-`pref` 13, `plugin` 11, `style` 10, `arrange` 10, `board` 9, `transform` 9, `annotation`/`instance`/
-`version`/`page` 8 each, `branch` 7, `align`/`selection`/`stroke`/`shape` 6 each.
+`pref` 13, `plugin` 11, `style` 10, `arrange` 10, `board` 19, `transform` 9, `annotation`/`instance`/
+`version`/`page` 8 each, `branch` 7, `align`/`selection`/`stroke`/`shape` 6 each (per-namespace
+counts carried from the previous audit except `board`; the live registry is authoritative).
 
-Boards added the `board.` namespace (9) plus `file.newBoard`, the `data.` namespace (`data.fill`),
-`text.fit`, and the `devMode.` measurement commands; `vector.` grew by the fill rules. The registry
-now has 45 `specs()` collections including `crate::board`, `crate::datafill`,
-`crate::textfit` and `crate::dev_measurements` (`crates/engine/src/cmd/mod.rs` `registry`).
+Boards own the `board.` namespace (**19** commands — the original nine plus `board.reattach`,
+`board.table`, `board.tableEdit`, `board.template`, `board.templates`, `board.timer`,
+`board.timerState`, `board.vote`, `board.voteResults`, and the dot grid), plus `file.newBoard`, the
+`data.` namespace (`data.fill`), `text.fit`, and the `devMode.` measurement commands. The Dev Mode
+code generators live in `crates/engine/src/dev/` (`codegen.rs`, `codegen/{arkui,compose,css,html,swift}.rs`,
+`tailwind.rs`, `component_codegen.rs`) and gained Vue, React + Tailwind, Dart-constants and
+Android-VectorDrawable targets.
 
 Discovery, in order of usefulness to an agent:
 
@@ -49,7 +53,7 @@ Nine subcommands plus `help` / `--help` / `-h` and `--version` / `-V` / `version
 |---|---|
 | `info <file> [--json]` | Pages, node counts, top-level frames, styles/variables/images. Repairs and import warnings go to stderr as `note:` lines (`notes` in JSON). `missing font` lines / `missingFonts: [{family, layers}]` for fonts the file names that aren't installed. |
 | `export <file> -o <out> [--format png\|jpg\|svg\|webp\|pdf\|fig] [--scale N] [--page NAME] [--node ID\|NAME] [--bleed LENGTH] [--crop-marks] [--bleed-marks] [--cmyk]` | `-o` directory → one file per top-level frame (or per top-level layer when there are no frames); `-o` with an image extension → one file for `--node` or the whole page. `--node` takes an id (`12` or `0:12`) or a layer name. Format = `--format`, else the extension, else png. `--scale` default 1, max 64. `--bleed` takes points or `3mm`/`0.125in`, up to 2 in; it also sets the PDF page boxes (MediaBox/BleedBox/TrimBox). A visible tree deeper than 256 descendant levels fails SVG/PDF without touching an existing destination file. |
-| `convert <in> <out>` | Format by extension, both ways. In: `.figcraft`, `.json` (FigCraft or REST API), `.fig`, `.svg`, `.png/.jpg/.jpeg/.webp/.gif/.tif/.tiff/.bmp`. Out: `.figcraft`, `.json` (FigCraft JSON), `.svg`, `.png/.jpg/.webp`, `.pdf`, `.fig`. |
+| `convert <in> <out>` | Format by extension, both ways. In: `.figcraft`, `.json` (FigCraft or REST API), `.fig`, `.sketch` (Sketch 48+, new), `.svg`, `.png/.jpg/.jpeg/.webp/.gif/.tif/.tiff/.bmp`. Out: `.figcraft`, `.json` (FigCraft JSON), `.svg`, `.png/.jpg/.webp`, `.pdf`, `.fig`. |
 | `render <file> -o <out> [--scale N] [--page NAME]` | Whole page with its background, as png, jpg or webp; large pages scale down to fit 16384 px. |
 | `run <script.json\|script.jsonl> [--in <file>] [--out <file>]` | Headless command script; one JSON result line per step; **all-or-nothing, one undo step**. No network: it cannot host or join live sessions. |
 | `commands [--json] [--filter TEXT]` | The command catalog. |
@@ -77,7 +81,9 @@ Script shapes accepted by `run`: a JSON array of `{"command": id, "params": {…
 `{"commands": […]}` (as `command.batch` takes), or JSON lines (blank lines and `//` comments
 skipped). Ids are assigned in order — a new document's first page is id 1, so the first created
 layer is 2 — and `{"$step": n}` (zero-based) resolves to the `id` from step *n*'s result, with
-`{"$step": n, "field": "…"}` for another field. A script can start from a starter template:
+`{"$step": n, "field": "…"}` for another field. **New at this tag:** steps can be named with `as`
+and referenced with `$ref`, and `field` accepts paths (PR #1003); batch errors name the failing
+step (PR #1340). A script can start from a starter template:
 `file.newFromTemplate {template}` as its first step makes the template the document the rest of the
 script (and `--out`) acts on. A failing step prints `{"step":i,"command":…,"ok":false,"error":…,
 "rolledBack":true}` and exits 1; earlier steps are taken back and `--out` is not written.
@@ -265,6 +271,14 @@ A board is created with `file.newBoard {name?}` (File ▸ New board, the home sc
 | `board.stamp {x, y, stamp: thumbsUp\|heart\|plusOne\|star\|question\|check}` | → `{id}`; a round badge with the placer's name on hover. |
 | `board.ink {path \| points, highlighter?, color?, select?}` | → `{id}`; marker or wide see-through highlighter stroke. |
 | `board.setColor {ids?, color}` · `board.setStyle {ids?, shape?, fontSize?, style?, startCap?, endCap?}` | Recolour board objects; change a shape's outline/text size or a connector's routing and arrowheads. |
+| `board.reattach {…}` (new) | Re-attach a connector's end to another layer or point. |
+| `board.table {x, y, rows?, cols?}` · `board.tableEdit {…}` (new) | Insert a table on the board and edit its cells (`crates/engine/src/boards/board_table.rs`). |
+| `board.template {name, x?, y?}` · `board.templates {}` (new) | Place one of the **five code-built board templates** / list them as `[{id, name, description, width, height}]` (`crates/engine/src/boards/board_templates.rs`). |
+| `board.timer {…}` · `board.timerState {…}` (new) | Start/control a timer session and read its state. |
+| `board.vote {…}` · `board.voteResults {…}` (new) | Run a voting session and read its results. |
+
+Boards also gained a **dot grid** background, **curved connectors**, and re-attachable connector ends
+(PRs #1249, #1361, #1363).
 
 Pointer tools for boards: `tool.sticky`, `tool.shape`, `tool.connector`, `tool.marker`,
 `tool.highlighter`, `tool.eraser`, `tool.stamp` (Text, Section and Comment are the usual tools).
@@ -280,9 +294,10 @@ W stamp, Shift+Cmd/Ctrl+Enter next sticky (`crates/engine/src/keymap.rs`, `docs/
 ]
 ```
 
-Missing board features (do not promise them): timer, voting, board widgets, board templates, tables,
-mind maps, curved connectors, stamp wheel/emotes, sticky size presets/stacks, image cropping on
-boards, `.jam` import/export (`docs/boards-parity.md`).
+Missing board features (do not promise them): board widgets beyond the new plugin-widget
+capabilities, mind maps, stamp wheel/emotes, sticky size presets/stacks, image cropping on
+boards, audio/huddles, `.jam` import/export (`docs/boards-parity.md`). Timer, voting, templates,
+tables, curved connectors and the dot grid **exist now**.
 
 ## 8. Data fill and text fitting
 
@@ -305,7 +320,8 @@ one-word last lines and never grows text (`crates/engine/src/textfit.rs`).
 
 ## 9. Live sessions from a script (`collab.*`)
 
-**21 `collab.*` commands** at this tag. The headless MCP session and the attached app can host, join
+**21 `collab.*` commands** at this tag (set unchanged from v0.11.2; **`branch.*` commands now work
+inside live sessions**, PR #1367). The headless MCP session and the attached app can host, join
 and publish; the app can do all of them; the one-shot `run` cannot (no network link). The web build
 can only join.
 

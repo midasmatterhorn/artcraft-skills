@@ -1,9 +1,12 @@
 # DeckCraft — commands, shortcuts, control methods, MCP tools and file formats (agent reference)
 
-**Pin:** tag `v0.11.1`, commit `9ec39267931c0163dd5648c879043edcb9603cb8` — the code shipped in
-DeckCraft 0.11.1. **Verified:** 2026-10-26 against a read-only clone at that tag. All citations are
+**Pin:** tag `v0.12.0`, commit `29f0f7772c47aa2bfb74fcbb0c4d3b1503300849` — the code shipped in
+DeckCraft 0.12.0. **Verified:** 2026-10-29 against a read-only clone at that tag. All citations are
 repo-relative (`path` or `path:symbol`). Counts were re-parsed from the registries at this tag, not
-carried over.
+carried over. The v0.11.1→v0.12.0 delta: **326 → 328 engine commands** (+`format.languageAll`,
++`slide.selectRange`), MCP tools 25 and the control dispatch set unchanged; Reuse Slides gained a
+slide chooser, proofing language can be set for the whole presentation, Preferences chooses
+inches/centimetres, and the parameter-validation and media-decoder hardening wave landed.
 
 ---
 
@@ -80,8 +83,8 @@ artistic, zoom, compress. That order breaks shortcut ties. `Session::execute` is
 path for the UI, keyboard, CLI, control channel and MCP (`crates/engine/src/lib.rs:609`),
 panic-guarded by `crates/engine/src/guard.rs`.
 
-**Total: 326 commands** = **233** ordinary + **56** `noundo` + **37** `query`, in 28 modules; all
-ids unique.
+**Total: 328 commands** (was 326 = 233 ordinary + 56 `noundo` + 37 `query` at v0.11.1; the two new
+commands are `format.languageAll` and `slide.selectRange`); all ids unique.
 
 | Family module (under `crates/engine/src/cmd/`) | Commands | Covers |
 |---|---:|---|
@@ -205,7 +208,7 @@ run late.
 | Method (aliases) | Params | What it does |
 |---|---|---|
 | `engine.execute` (`ui.menu.invoke`, `command`) | `{command, params}` | Run any engine or UI command |
-| `engine.commands` | — | 326 engine commands + the 50 UI commands in the app (engine only, headless) |
+| `engine.commands` | — | 328 engine commands + the 51 UI commands in the app (engine only, headless) |
 | `document.inspect` | — | Slides, sections, layouts, theme, media, selection |
 | `ui.inspect` | — | UI state, tool, window/canvas/slide rects, dialog, Backstage page, show state, documents, perf |
 | `ui.pointer` | `{events:[{kind: down\|drag\|up\|move\|doubleclick\|tripleclick\|contextclick, x, y, mods?, pressure?}]}` | Pointer input in **slide points** through the active tool |

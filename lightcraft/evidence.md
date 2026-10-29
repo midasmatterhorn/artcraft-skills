@@ -1,72 +1,94 @@
-# evidence.md — LightCraft
+# LightCraft — evidence ledger (tag v0.15.0)
 
-Spot-check table for the orchestrator. Repo `storytold/lightcraft`, tag **v0.14.0**, commit
-`03c88c166c054c009db2a47187d59991f6232b85`, clean detached worktree, inspected 2026-10-26. The installed
-`/Applications/LightCraft.app` is the same build: `CFBundleShortVersionString` 0.14.0, `LightCraftBuildCommit`
-`03c88c166c054c009db2a47187d59991f6232b85`, binary `--version` prints `lightcraft 0.14.0`, bundle id
-`ai.storyteller.lightcraft`. The bundle declares **no** `CFBundleDocumentTypes`.
+Audit basis: this checkout is tag **`v0.15.0`**, commit **`e381c1ae6b2006ce627b243fe41697ce0d9608e0`** (shallow clone
+holding exactly this commit). Inspection date **2026-10-29**. Installed `/Applications/LightCraft.app`:
+`CFBundleShortVersionString` 0.15.0, `LightCraftBuildCommit` = the same SHA, binary prints `lightcraft 0.15.0`, bundle
+id `ai.storyteller.lightcraft`; the GUI was never launched. No `references/` directory.
 
-Tier legend: **implemented** = code path exists and is reachable from UI / CLI / command registry;
-**partial** = exists but visibly incomplete (what is missing is stated); **claimed** = asserted in README/docs but
-not confirmed in code.
+The v0.14.0 → v0.15.0 wave is small (238 commits): egui 0.37 + craft-ui shared docking (side panels in dock columns),
+a startup update prompt with self-update (craft-update), a new Sony ILCE-7RM5 camera profile, HEIC and raw-decoder
+hardening, faster full-size exports, Windows per-user install policy, and the shared-module refactor that moved the
+command registry from `crates/engine/src/cmd/mod.rs` to `crates/engine/src/cmd.rs`.
 
-| # | Capability claim | Evidence (repo-relative) | Tier |
+## 1. Capability claims → evidence → tier
+
+| # | Claim | Evidence (repo-relative) | Tier |
 |---|---|---|---|
-| 1 | The library is a folder: `catalog.snap` + `catalog.log` (append-only JSON-lines op log, CRC-32 per record, fsynced; torn final record repaired; mid-log preserved as `catalog.log.damaged-<seq>`; background compaction), plus `presets.json`, `view.json`, `prefs.json`, `thumbs/`, `Originals/`; one writer via `catalog.lock`; default `Pictures/LightCraft Library`, `LIGHTCRAFT_LIBRARY` overrides; every top-level command persists before replying and reports `unsaved` on failure | `crates/engine/src/library.rs:1-22,63-70`; `crates/catalog/src/journal.rs:1-40`; `crates/catalog/src/lock.rs:86` | implemented |
-| 2 | Importable extensions are one extension-only list of **39** (incl. `psb` added this tag; `avif` listed but never decodes; `heic`/`heif` only with the `heif` feature); modes Add / Copy / Move (copy-verify-then-remove), date/month/flat/folder-template filing, rename templates, duplicate detection by path and content, copy-as-DNG, watched folder `library.autoImport`, `folder.scanChanges` / `folder.synchronize`, web-picker accept list | `crates/engine/src/import.rs:37-44,373`; `crates/engine/src/cmd/library.rs`; `crates/engine/src/cmd/sync.rs` | implemented |
-| 3 | Raw decoded from sensor data: DNG (incl. lossy/Smart Preview, LinearRaw, DNG 1.7 JPEG XL tiles, Apple ProRAW), CR2, CR3 (lossless CRX + 0x100/0x200 C-RAW, R5 Mark II), ARW (incl. cRAW/ARW2, lossless L/M/S, A900 packed, ARW6 on ILCE-7RM6), NEF (uncompressed/lossless/lossy/lossy-after-split/table-less packed 12–14 bit), RAF (Bayer + X-Trans), RW2/RWL/RAW (formats 2/4/5/6/7/8 incl. tiled high-res), PEF, uncompressed ORF incl. 12.8 bpp, uncompressed SRW, ERF, MEF, MRW, 3FR/FFF, Kodak DCS520C TIFF, Sony SR2 | `docs/raw-parity.md`; `crates/raw/src/lib.rs`; `crates/raw/src/vendor/nef.rs`; `crates/raw/src/vendor/rw2.rs`; `crates/raw/src/vendor/mrw.rs` | implemented (variants partial) |
-| 4 | Per-model coverage: **551** of Adobe's 1,446 models verified (38%), **656** unverified, **202** preview-only, **37** unsupported (`docs/raw/coverage.tsv`, re-summed at this tag); ~94% of photographers fully decode, ~85% on a verified body; undecodable raws fall back to the embedded JPEG as `previewOnly` and are rechecked on version change or via `library.recheckPreviewOnly`; the prose headline in `docs/raw-parity.md:20-21` still says 201/38 | `docs/raw/coverage.tsv`; `docs/raw-parity.md:17-24`; `crates/engine/src/cmd/recheck.rs` | implemented (coverage partial) |
-| 5 | HEIC/HEIF decode behind the off-by-default `heif` feature, enabled in official packaging; installed 0.14.0 binary contains `lightcraft_heif::decode|probe|decode_thumbnail`. AVIF is import-listed but not decoded (export only). PSD **and PSB** import the merged composite; PSD/PSB EXIF + XMP image resources are read; `original` export with `removeLocation` is refused when a PSD/PSB embeds GPS | `crates/codecs/Cargo.toml:43-46`; `packaging/macos/package.sh:65`; `nm` on the installed binary; `crates/codecs/src/psd.rs`, `crates/codecs/src/sniff.rs`; `crates/meta/src/psd.rs:1-20` | partial (HEIC build-dependent) |
-| 6 | **122** named develop controls + **10** indexed specs (8 Point Color, 2 Red Eye) in 16 sections; **22** built-in develop profiles (looks) in `PROFILES`; scene-referred linear Rec.2020 32-bit float; process versions V1 (frozen) / V2 (current) with `develop.updateProcess`; `develop.*` commands incl. begin/end interaction | `crates/develop/src/controls.rs:144-296`; `crates/engine/src/presets.rs:476`; `docs/process-versions.md`; `crates/engine/src/cmd/develop.rs` | implemented |
-| 7 | Masking: brush, linear/radial, luminance/colour range, Subject/Sky/Background heuristics, Object/Describe via optional SAM 3; Add/Subtract/Intersect + invert; 17 local sliders + colour overlay + Amount; `mask.brushStroke {connect:true}` | `crates/develop/src/settings.rs:829-852`; `crates/engine/src/cmd/masks.rs`; `docs/ai-masks.md` | partial (AI masks need a model; SAM mirrors empty) |
-| 8 | Crop/straighten/aspect ratios (incl. `crop.lockAspect`), auto-straighten guard (>10°, ≥3 lines), Upright modes, Constrain Crop; Heal/Clone spots with auto source, PatchMatch Fill, Visualize Spots, Red Eye/Pet Eye; Photo Merge HDR / Panorama / HDR Panorama with Lanczos-3 resampling and 512 MP / 65,000 px maxima | `crates/engine/src/cmd/develop.rs`, `crates/engine/src/cmd/merge.rs`; `crates/inpaint/src/lib.rs:1-22`; `crates/merge/src/pano/mod.rs:34-57`; `crates/merge/src/flow.rs`, `crates/merge/src/refine.rs`; `docs/merge.md:20-31` | implemented |
-| 9 | GPU develop pipeline (wgpu compute on Metal/Vulkan/DX12) CPU-equivalent within 1/255, CPU fallback; AI Denoise is Bayer-only, no bundled weights (user ONNX + `denoise-model.json`), no X-Trans, not on merged DNGs; `denoise-serve` tiles over LAN/VPN with token auth | `docs/gpu-pipeline.md`; `docs/denoise.md:1-40`; `apps/lightcraft-cli/src/main.rs` USAGE | implemented (denoise partial) |
-| 10 | **41** built-in presets with Amount 0–200%; `.lcpreset` native; import XMP / `.lrtemplate` / Luminar `.lmp`/`.mplumpack` / `.zip` / `.cube` / local-effect presets; **8** bundled camera profiles (docs still say 5) + 52 spectral matrices + guarded per-file fit + neutral fallback; `lightcraft-cli calibrate` fits per-model profiles; measured ΔE 2.9–10 vs camera JPEG | `crates/engine/src/presets.rs:215`; `crates/engine/src/camera_profiles.rs:27-36`; `crates/raw/src/spectral_table.rs`; `docs/gaps.md:18` | implemented (colour partial) |
-| 11 | Embedded lens corrections: DNG opcodes, Panasonic/Leica RW2/RWL, Nikon Z 6II/Z 8/Z f, Sony ILCE-7RM4A/7CR/7RM6, Fujifilm 59 bodies; optional user-supplied lensfun XML via `LIGHTCRAFT_LENSFUN_DIR` (no DB bundled, Adobe `.lcp` never used, automatic matching, no fisheye) | `crates/raw/src/vendor/arw_lens.rs`, `crates/raw/src/vendor/arw_lens_rm6.rs`, `crates/raw/src/vendor/nef_lens.rs`, `crates/raw/src/vendor/raf_lens.rs`, `crates/raw/src/vendor/rw2.rs`; `crates/lensdb/src/lib.rs:1-14`; `crates/engine/src/lens_profiles.rs`; `docs/lens-profiles.md` | implemented (lens DB partial) |
-| 12 | **10** export formats `jpeg png tiff psd webp avif jxl original dng rendereddng`; validated options: quality, bit depth, five colour spaces with ICC, metadata policy, removeLocation (PSD/PSB GPS guard), sharpening, TIFF/DNG compression, conflict policy, six resize modes + `fit widthHeight` + dontEnlarge, ppi, limitKb incl. HDR gain-map JPEG, text/image watermark (vertical/rotation/anchors), HDR (gain-map JPEG, PQ/HLG AVIF, PQ PNG/JXL, float TIFF), JXL lossless/effort/progressive, sameAsOriginal, Apple Photos | `crates/engine/src/export.rs:16-33,627-687,870`; `docs/mcp.md` export helper; `docs/apple-photos.md` | implemented |
-| 13 | Output modules: Contact Sheet PDF (A4/Letter, captions, 150 dpi sRGB; 1,000 photos / 100 pages / 256 MiB, `export.contactSheet`); Print (`print.*`: four layout styles, cells, Auto Layout, templates in `.lcprint` files with `print.template.import|export` new at this tag, ICC/intent/BPC, 8/16-bit PDF, Page Options, Japanese paper sizes; no identity plate/watermark, Cut Guides, direct print or JPEG); Slideshow (playback, layouts, overlays, titles, templates; PDF/JPEG/AV1 MP4-WebM, no audio, ≤2 h) | `crates/engine/src/contact_sheet.rs:87-92`; `crates/engine/src/cmd/print.rs:385-401`; `crates/engine/src/print/template.rs:34`; `crates/engine/src/print_pdf.rs`; `crates/engine/src/slideshow_export.rs:40-42` | implemented (print/slideshow partial) |
-| 14 | XMP sidecars: manual + auto write, `lc:settings` under `http://ns.lightcraft.app/lc/1.0/`, owned-property replacement, foreign namespaces byte-for-byte (even with `lc:`/`xmp:` prefixes), merge-never-replace, atomic writes, retry, stem/full naming, `crs:` read approximate with warnings; GPX + offline GeoNames geocoding, keyword lists + keyword sets, `photo.setCaptureTime`, `.lrcat` import (read-only SQLite incl. WAL, 16 GiB cap) with an **open-vs-new library** choice, macOS Edit In (16-bit Adobe RGB TIFF default, flat PSD/8-bit optional, ≤50 photos) | `crates/meta/src/xmp.rs:18`; `docs/xmp-interop.md`; `crates/engine/src/cmd/xmp.rs`, `crates/engine/src/cmd/keywords.rs`, `crates/engine/src/cmd/manage.rs`; `crates/ui-egui/src/lightroom_destination.rs:1-30`; `docs/lightroom-catalog-import.md:87`; `crates/engine/src/cmd/convert.rs` | implemented (crs/Lightroom import approximate) |
-| 15 | Views/workspace: Photo Grid, Square Grid, People, Detail, Compare, Survey, Reference (⇧R), second window (⌘F11), full-screen preview, Lights Out, Before/After variants, soft proofing, info overlay/View Options, layout image, panel docking, multi-select Info panel (`view.infoSelectedPhotos`); activity stack; faces (XMP names + optional models), focus point (Sony ILCE-1 / ILCE-7SM3 only), Assisted Culling, Local browse, hold view, recent-libraries launch list | `crates/ui-egui/src/menus.rs:71-290`; `crates/ui-egui/src/panels/settings.rs:1481-1519`; `docs/parity-checklist.md`; `docs/background-tasks.md:1-10`; `docs/faces.md:1-24`; `docs/focus-points.md:36,66-67` | implemented (soft proof/faces/focus partial) |
-| 16 | Everything is a command: **375** engine specs (37 `specs()` sources) + **190** UI commands in `UI_COMMANDS` + **18** language commands = **208** UI entries (**583** commands reported); `engine.commands` returns id/label/menu/shortcut/params/enabled; control channel JSON-lines on loopback, no auth, 16 connections, 4 MiB lines, 60 s reply timeout, 5 s no-frame failure, 5 min idle close; **24 dispatch arms / 29 method names** incl. `ui.dropFiles` (new) | `crates/engine/src/cmd/mod.rs:140-180`; `crates/ui-egui/src/menus.rs:16,71`; `crates/ui-egui/src/control.rs:196`; `apps/lightcraft/src/control_server.rs:24-77`; `docs/control-protocol.md` | implemented |
-| 17 | MCP server over stdio (protocol `2025-06-18`, older accepted): **17** helper tools headless / **28** connected, 7 resources, one generated `cmd_*` tool per reported command (375 headless, 583 connected), so `tools/list` totals **392** headless / **611** connected; `--compact` helpers-only; headless `--demo`/`--library` or `--connect` to the app; strict helper-arg checking and MCP hints | `crates/mcp/src/tools.rs:78-345,415`; `crates/mcp/src/server.rs:16-41,200`; `docs/mcp.md` | implemented |
-| 18 | CLI subcommands `run mcp render snapshot merge synth-merge denoise-serve commands controls calibrate`; `run --demo/--library/--connect`, repeatable `--import`, `--script`, `--keep-going`; `render --set/--settings/--preset/--opt`; `merge` + `--preview`; headless CPU UI snapshot with `--size`/`--scale`/`ui.settle`; `commands` output sorted by id (new) | `apps/lightcraft-cli/src/main.rs:28-114,142-178`; `docs/control-protocol.md` "Headless rendering"; `docs/mcp.md` | implemented |
-| 19 | Native macOS/Windows/Linux/FreeBSD and a WebAssembly build of the same UI (WebGL2, OPFS/IndexedDB; WebGPU and Safari/Firefox pending; JXL export native-only; merges have no browser file access); **18** interface languages; display colour management (macOS screen, Linux colord, chosen ICC; Windows WCS missing); portable mode + `LIGHTCRAFT_CONFIG_DIR`; browser automation `await lightcraft.command(id, params)`; **no document format** (no `CFBundleDocumentTypes`) and **no desktop in-app backup**; Linux x64 CI gate on every push/PR, FreeBSD nightly | `docs/web.md`; `crates/ui-egui/src/i18n.rs:22-46`; `docs/display-profiles.md`; `apps/lightcraft/src/main.rs:793-815`; `apps/lightcraft-web/index.html:39-40`; `crates/ui-egui/src/menus.rs:863-868`; `.github/workflows/ci.yml`; `docs/gaps.md:26` | implemented (WASM/display partial) |
-| 20 | Maturity self-assessment: checklist **83.5%** of 543 in-scope rows (generated summary; ROADMAP and target-app-parity still say 81.6%/532), readiness ~61% full / ~51% practitioner / ~65% essentials, stage alpha, ~340–600 h to beta | `docs/parity-checklist.md:58`; `ROADMAP.md:3-22`; `docs/target-app-parity.md:15` | claimed |
+| 1 | Library is a folder: `catalog.snap` + `catalog.log` (CRC-32 JSON-lines, torn-append repair) | `crates/engine/src/library.rs:1-22`; `crates/catalog/src/journal.rs:1-40` | implemented |
+| 2 | Single-writer `catalog.lock`; Windows hard link to an original counts as the original | `crates/catalog/src/lock.rs:86`; PR #3020 | implemented |
+| 3 | 39 importable extensions, support decided by extension then decoder | `crates/engine/src/import/files.rs` `EXTENSIONS` (39 quoted entries counted) | implemented |
+| 4 | Raw coverage measured: 551 verified / 656 unverified / 202 preview / 37 unsupported of 1,446 | `docs/raw/coverage.tsv` awk sums on the `class` column (generated, test-enforced) — identical to v0.14.0 | implemented metric |
+| 5 | HEIC decodes behind the `heif` feature, on in official packaging; hostile-container hardening | `packaging/macos/package.sh:65`; `crates/codecs/Cargo.toml` comment (stale); PR #2770 | implemented (feature-gated) |
+| 6 | Lightroom catalog import with open/new destination choice | `crates/ui-egui/src/lightroom_destination.rs:1-30`; `docs/lightroom-catalog-import.md:87` | implemented (one-way, approximate) |
+| 7 | 122 named develop sliders + 10 indexed (8 Point Color, 2 Red Eye); 16 sections | `crates/develop/src/controls.rs` `controls!` rows (122 `"id" => ` rows) + `INDEXED` (10 `ControlSpec`) | implemented |
+| 8 | 41 built-in presets; 22 develop profiles | `crates/engine/src/presets.rs` (41 `"id", "` rows; `PROFILES` at `:476`, 22 rows) | implemented |
+| 9 | **9 bundled camera profiles** (+Sony ILCE-7RM5 this release) | `crates/engine/src/camera_profiles.rs:27` `BUNDLED` — 9 tuple entries, `"ILCE-7RM5"` present | implemented |
+| 10 | 52 spectral camera matrices | `crates/raw/src/spectral_table.rs` (52 `Camera {`) | implemented |
+| 11 | 10 export formats; validated `ExportOptions` | `crates/engine/src/export/options.rs:5` `enum ExportFormat` (10 variants); `crates/engine/src/export.rs` | implemented |
+| 12 | `.lcprint` print templates; contact sheet; slideshow PDF/JPEG/AV1 export | `crates/engine/src/print/template.rs:34`; `crates/engine/src/contact_sheet.rs:87-92`; `crates/engine/src/slideshow_export.rs:40-42` | implemented |
+| 13 | XMP sidecars with foreign-namespace preservation; `lc:settings` | `crates/meta/src/xmp.rs:18`; `docs/xmp-interop.md` | implemented |
+| 14 | **375 engine command specs** (unchanged) | `grep -rho 'cmd!' crates/engine/src/cmd/` = 375 (multi-line `cmd!(` counted); 39 `specs()` wiring sites in `crates/engine/src/cmd.rs` | implemented |
+| 15 | **191 UI commands (+`app.checkForUpdates`) + 18 language = 209; 584 live** | `crates/ui-egui/src/menus/ui_commands.rs`: 209 `("…"` rows; clean table diff vs v0.14.0 `menus.rs` shows +`app.checkForUpdates` only, nothing removed | implemented |
+| 16 | Control channel loopback, no auth, 16 connections, 4 MiB lines; 24 arms / 29 method names (set unchanged) | `apps/lightcraft/src/control_server.rs:24-77`; `crates/ui-egui/src/control.rs` match arms | implemented |
+| 17 | MCP: 17 headless / 28 connected helpers, 7 resources, generated `cmd_*` per command (392/612 `tools/list`) | `crates/mcp/src/tools.rs:78` `helper_tools`: 17 `tool(` calls before the `if has_ui` block + 11 inside it; `crates/mcp/src/server.rs` 7 `lightcraft://` resources | implemented |
+| 18 | 10 CLI subcommands; `render`/`merge`/`snapshot`/`calibrate`/`denoise-serve` behaviour | `apps/lightcraft-cli/src/main.rs` USAGE (10 `lightcraft-cli <sub>` forms) | implemented |
+| 19 | Headless CPU UI snapshots (`ui.settle`, `--size`, `--scale`) | `docs/control-protocol.md` "Headless rendering"; `apps/lightcraft-cli/src/main.rs` | implemented |
+| 20 | Startup update prompt + self-update via craft-update (new) | `Cargo.toml` `craft-update` pin rev `92d392cf…`; PR #2933; `app.checkForUpdates` UI command | implemented |
+| 21 | Web automation `lightcraft.command(id, params)`; OPFS library | `apps/lightcraft-web/index.html:39-40`; `docs/web.md` | implemented |
+| 22 | No document format (no `CFBundleDocumentTypes`); no desktop in-app backup | `/Applications/LightCraft.app/Contents/Info.plist`; backup commands wired to platform service only | implemented (absence verified) |
+| 23 | AI masks are classical except Object/Describe (optional SAM 3, not bundled, empty mirror list); denoise needs user ONNX | `docs/ai-masks.md`; `docs/denoise.md`; `docs/gaps.md:22,28` | partial (by design) |
 
-## Notes for the reviewer
+## 2. Automation-surface counts: v0.14.0 → v0.15.0
 
-- **Counts recomputed from source at v0.14.0:** 375 engine command specs (37 `specs()` sources); 190 `UI_COMMANDS`
-  entries plus 18 language commands = 208 UI entries (583 total commands); 17 headless / 28 connected MCP helper
-  tools; 7 MCP resources; 392 / 611 `tools/list` entries; 24 control dispatch arms exposing 29 method names; 10 CLI
-  subcommands; 39 import extensions; 10 export formats; 122 + 10 develop controls; 41 built-in presets; 22 develop
-  profiles; 8 bundled camera profiles; 52 spectral matrices; 18 interface languages.
-- **Deltas versus the v0.12.0 skill (measured against the v0.12.0 sources, fetched read-only from the same tag):**
-  engine commands **370 → 375** (`keyword.nextSet`, `keyword.previousSet`, `library.toggleFilters`,
-  `print.template.export`, `print.template.import`; nothing removed); UI commands **186 → 190** (`crop.lockAspect`,
-  `panel.addKeywords`, `view.frameRate`, `view.infoSelectedPhotos`); import extensions **38 → 39** (`psb`); control
-  methods **+1** (`ui.dropFiles`); new `.lcprint` print-template format; export formats, develop controls, presets,
-  camera profiles, languages and CLI subcommands unchanged.
-- **Correction of the previous skill:** it reported "28 MCP helper tools headless / 39 connected". Both tags have
-  **17 headless / 28 connected** — the baseline counted the full 28-entry `helper_tools` list as headless and then
-  added the 11 UI-only tools a second time (they are already inside `helper_tools` under `if has_ui`). Its
-  `tools/list` totals (398/613) are corrected here to 392/611.
-- **Docs that disagree with code at this tag (code was followed, drift recorded in SKILL.md):** "5 bundled profiles"
-  (`docs/gaps.md:18`, `docs/raw-parity.md:25`) vs 8 in `assets/camera-profiles/`; `docs/raw-parity.md:20-21`
-  201 preview / 38 unsupported vs generated `docs/raw/coverage.tsv` 202 / 37; `ROADMAP.md:15` and
-  `docs/target-app-parity.md:15` 81.6%/532 vs generated checklist 83.5%/543; `crates/codecs/Cargo.toml:45` says
-  releases don't ship `heif` while `packaging/macos/package.sh:65` passes it; `docs/gaps.md:38` lists Vietnamese as
-  absent although `crates/ui-egui/src/menus.rs` ships it; `docs/gaps.md:26` still frames CI as FreeBSD-only while
-  `.github/workflows/ci.yml` runs the Linux x64 gate on every push/PR.
-- **`lightcraft-cli` is not installed on this machine and is not inside the `.app`** (checked its `Contents/MacOS/`
-  and `Resources/`); SKILL.md says so and points at the macOS release asset or `cargo build -p lightcraft-cli`.
-- **No GUI was launched** during this pass. Installed-bundle checks were read-only: `--version`, `nm` for the HEIC
-  symbols, `/Applications/LightCraft.app/Contents/Info.plist` keys, and file presence. All GUI/menu claims come from the command registry, control-protocol
-  docs, parity checklist and packaging metadata.
-- **Backup:** `file.backupLibrary` / `file.restoreLibrary` still have no desktop implementation — on desktop they
-  return "the library is a folder; back it up with your other files" (`crates/ui-egui/src/menus.rs:863-868`).
-  SKILL.md tells agents to copy the library folder.
-- `docs/parity-checklist.md` is the project's row-by-row tracker and `docs/gaps.md` its ranked gap list — better
-  evidence for a specific feature question than any headline percentage. `cargo xtask parity` checks that cited
-  command/control ids still exist.
-- v0.12.0 sources used only for the delta measurement were fetched read-only from the public tag with `curl`; the
-  cloned worktree at v0.14.0 was never modified (`git rev-parse HEAD` = `03c88c166c054c009db2a47187d59991f6232b85`).
+| Surface | v0.14.0 | v0.15.0 (measured) | Change |
+|---|---:|---:|---|
+| Engine command specs | 375 | **375** | unchanged; registry file moved `cmd/mod.rs` → `cmd.rs` (39 wiring sites, was 37) |
+| UI commands | 190 | **191** | +`app.checkForUpdates` (update prompt); nothing removed |
+| Language commands | 18 | **18** | unchanged |
+| Total live commands | 583 | **584** | 375 + 209 |
+| MCP helpers | 17 headless / 28 connected | **17 / 28** | unchanged set; `tools.rs` structure verified |
+| MCP resources | 7 | **7** | unchanged |
+| `tools/list` | 392 / 611 | **392 / 612** | headless = 17+375; connected = 28+584 |
+| Control methods | 24 arms / 29 names | **same set** | `ui.dropFiles` etc. all present |
+| CLI subcommands | 10 | **10** | unchanged |
+| Import extensions | 39 | **39** | unchanged |
+| Export formats | 10 | **10** | unchanged; enum moved to `export/options.rs` |
+| Develop controls | 122 + 10 | **122 + 10** | unchanged |
+| Built-in presets | 41 | **41** | unchanged |
+| Develop profiles | 22 | **22** | unchanged |
+| Bundled camera profiles | 8 | **9** | +Sony ILCE-7RM5 (#3022) |
+| Spectral matrices | 52 | **52** | unchanged |
+| Interface languages | 18 | **18** | unchanged |
+| Raw coverage tiers | 551/656/202/37 of 1,446 | **same** | generated table unchanged |
+
+## 3. Uncertain / not verified
+
+- MCP totals derived statically, not from a running `tools/list`.
+- GUI behaviour not launched; registry + docs + packaging are the evidence.
+- Render fidelity vs Lightroom remains unmeasured by the project itself (`docs/gaps.md:20`).
+
+## 4. Doc-vs-code drift found at this tag (code wins)
+
+| Doc statement | Code reality |
+|---|---|
+| `docs/gaps.md:18`, `docs/raw-parity.md` "5 bundled profiles" | 9 in `camera_profiles.rs` `BUNDLED` |
+| `docs/raw-parity.md:20-21` headline 201 preview / 38 unsupported | generated `docs/raw/coverage.tsv`: 202 / 37 |
+| `ROADMAP.md` / `docs/target-app-parity.md` 81.6% of 532 | generated `docs/parity-checklist.md:58`: 83.5% of 543 |
+| `crates/codecs/Cargo.toml` "releases don't ship heif" | `packaging/macos/package.sh:65` passes the feature; installed binary has the symbols |
+| `docs/gaps.md:38` "Vietnamese absent" | ships in `crates/ui-egui/src/i18n.rs` |
+
+## 5. Verification commands (read-only)
+
+```sh
+git -C <clone> rev-parse HEAD                                   # e381c1ae6b2006ce627b243fe41697ce0d9608e0
+grep -rho 'cmd!' crates/engine/src/cmd/ | wc -l                 # 375
+grep -c 'specs()' crates/engine/src/cmd.rs                      # 39 wiring sites
+awk '/const UI_COMMANDS/,/^\];/' crates/ui-egui/src/menus/ui_commands.rs | grep -cE '^\s+\("'   # 191
+awk '/const LANGUAGE_COMMANDS/,/^];/' crates/ui-egui/src/menus/ui_commands.rs | grep -cE '^\s+\("'  # 18
+sed -n '78,345p' crates/mcp/src/tools.rs | grep -cE '^\s+tool\($'  # 17 headless helpers (+11 in if has_ui)
+awk '/pub const BUNDLED/,/^];/' crates/engine/src/camera_profiles.rs | grep -cE '^\s+\("'  # 9
+awk '/pub const EXTENSIONS/,/^];/' crates/engine/src/import/files.rs | grep -oE '"[a-z0-9]+"' | wc -l  # 39
+awk '/pub enum ExportFormat/,/^}/' crates/engine/src/export/options.rs | grep -cE '^\s+[A-Z]'  # 10
+grep -cE '^\s+"[a-z]+\.[a-zA-Z.]+" => ' crates/develop/src/controls.rs   # 122 named controls
+awk -F'\t' 'NR>2 {v[$5]++} END {for (k in v) print k, v[k]}' docs/raw/coverage.tsv  # 202/37/656/551
+```
