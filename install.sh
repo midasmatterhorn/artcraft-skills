@@ -12,7 +12,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 dest="${HOME}/.agents/skills"
-skills="photocraft lightcraft vectorcraft figcraft designcraft wordcraft deckcraft gridcraft pdfcraft effectcraft filmcraft soundcraft cadcraft"
+skills="photocraft lightcraft vectorcraft figcraft designcraft wordcraft deckcraft gridcraft pdfcraft effectcraft filmcraft soundcraft cadcraft craft-anything solidcraft"
 force=false
 for arg in "$@"; do
   case "$arg" in

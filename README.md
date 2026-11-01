@@ -48,7 +48,7 @@ Clone https://github.com/midasmatterhorn/artcraft-skills.git into a temporary di
 - Gemini CLI (macOS/Linux): the default install works — Gemini CLI scans ~/.agents/skills/ too; use `bash install.sh --gemini` to scope it to ~/.gemini/skills/ instead.
 - Google Antigravity (macOS/Linux): run `bash install.sh --antigravity`, which installs into ~/.gemini/config/skills/, Antigravity's global skills directory.
 - Everyone else (OpenAI Codex, ChatGPT desktop, ZCode, Devin, CommandCode, or any other SKILL.md-standard agent): run `bash install.sh`; the default target is ~/.agents/skills/, which those agents scan natively.
-Verify the install: all 13 skill directories must be present under the target directory, each containing SKILL.md and agents/openai.yaml. Print the target directory you used.
+Verify the install: all 15 skill directories must be present under the target directory, each containing SKILL.md and agents/openai.yaml. Print the target directory you used.
 Then tell me to restart my agent session so the new skills are discovered.
 ```
 
@@ -67,7 +67,7 @@ Invoke a skill explicitly with `$photocraft` (or `$wordcraft`, …), or let impl
 ### Claude Code
 
 ```sh
-bash install.sh --claude   # copies all 13 skills into ~/.claude/skills/
+bash install.sh --claude   # copies all 15 skills into ~/.claude/skills/
 ```
 
 `--claude` targets Claude Code's user-scoped `~/.claude/skills/` directory (a project-scoped `.claude/skills/` works the same way). Prefer symlinks when you want `git pull` to keep skills current:
@@ -79,7 +79,7 @@ ln -s "$PWD/photocraft" ~/.claude/skills/photocraft   # repeat for each skill
 ### OpenCode
 
 ```sh
-bash install.sh --opencode   # copies all 13 skills into ~/.config/opencode/skills/
+bash install.sh --opencode   # copies all 15 skills into ~/.config/opencode/skills/
 ```
 
 `--opencode` targets OpenCode's global skills directory `~/.config/opencode/skills/`, where they are discovered for every project. To scope skills to a single project instead, symlink them into that project's `.opencode/skills/` directory:
@@ -93,7 +93,7 @@ As with Claude Code, symlinks mean `git pull` keeps the installed skills current
 ### Gemini CLI
 
 ```sh
-bash install.sh --gemini   # copies all 13 skills into ~/.gemini/skills/
+bash install.sh --gemini   # copies all 15 skills into ~/.gemini/skills/
 ```
 
 `--gemini` targets Gemini CLI's user-scoped `~/.gemini/skills/` directory. Gemini CLI also scans the shared `~/.agents/skills/` (preferring it within the same tier), so the default install already works — use `--gemini` only when you want the skills scoped to Gemini alone. For a single project, symlink into that project's `.gemini/skills/` (or its `.agents/skills/` alias):
@@ -105,7 +105,7 @@ ln -s "$PWD/photocraft" .gemini/skills/photocraft   # repeat for each skill
 ### Google Antigravity
 
 ```sh
-bash install.sh --antigravity   # copies all 13 skills into ~/.gemini/config/skills/
+bash install.sh --antigravity   # copies all 15 skills into ~/.gemini/config/skills/
 ```
 
 `--antigravity` targets Antigravity's global skills directory `~/.gemini/config/skills/`, discovered across the Antigravity app, IDE and CLI. For a single project, symlink into the repo's `.agents/skills/` directory, which Antigravity scans at workspace level:
@@ -163,6 +163,8 @@ One skill per app across the whole Craft App Suite — the same from-scratch Rus
 | <img src="assets/icons/filmcraft.png" width="32" alt="FilmCraft icon" align="absmiddle">&nbsp;**[FilmCraft](https://getartcraft.com/apps/filmcraft)** | Video editing, color and sound | [`filmcraft`](filmcraft) | 0.15.0&nbsp;@&nbsp;`94ceaa9` | [GitHub](https://github.com/storytold/filmcraft) |
 | <img src="assets/icons/soundcraft.png" width="32" alt="SoundCraft icon" align="absmiddle">&nbsp;**[SoundCraft](https://getartcraft.com/apps/soundcraft)** | Audio recording and editing | [`soundcraft`](soundcraft) | 0.15.0&nbsp;@&nbsp;`a97ce75` | [GitHub](https://github.com/storytold/soundcraft) |
 | <img src="assets/icons/cadcraft.png" width="32" alt="CADCraft icon" align="absmiddle">&nbsp;**[CADCraft](https://getartcraft.com/apps/cadcraft)** | Computer-aided design | [`cadcraft`](cadcraft) | 0.15.1&nbsp;@&nbsp;`660e15c` | [GitHub](https://github.com/storytold/cadcraft) |
+| **[Craft Anything](https://github.com/storytold/craft-anything)** | Study how software works, rebuild it with AI | [`craft-anything`](craft-anything) | 0.1.0&nbsp;@&nbsp;`c316051` | [GitHub](https://github.com/storytold/craft-anything) |
+| **[SolidCraft](https://github.com/tangency-labs/solidcraft)** | Parametric 3D CAD | [`solidcraft`](solidcraft) | 0.29.0&nbsp;@&nbsp;`3a5195b` | [GitHub](https://github.com/tangency-labs/solidcraft) |
 
 *Skill based on* names the app release and commit each skill was written and verified against; the apps are early-alpha and move fast, so every skill also carries a *verify against your installed version* note.
 
@@ -187,6 +189,7 @@ The full method, including the regeneration recipe, lives alongside the skill so
 
 - Apps: https://getartcraft.com/apps · Source: https://github.com/storytold
 - Launcher: https://github.com/storytold/craft-launcher
+- SolidCraft: https://github.com/tangency-labs/solidcraft (Tangency Labs; skills authored from its public source under the same clean-room documentation rules — MIT OR Apache-2.0)
 
 ## License
 
