@@ -1,12 +1,12 @@
 # ArtCraft Agent Skills
 
-**Thirteen evidence-verified agent skills — plain `SKILL.md` files following the [agentskills.io](https://agentskills.io) standard — that teach AI coding agents to drive the [ArtCraft](https://getartcraft.com) creative suite. Built for Claude Code, OpenAI Codex & ChatGPT desktop, OpenCode, Devin, CommandCode, ZCode, Google Antigravity and Gemini CLI.**
+**Fifteen evidence-verified agent skills — plain `SKILL.md` files following the [agentskills.io](https://agentskills.io) standard — that teach AI coding agents to drive the [ArtCraft](https://getartcraft.com) creative suite. Built for Claude Code, OpenAI Codex & ChatGPT desktop, OpenCode, Devin, CommandCode, ZCode, Google Antigravity and Gemini CLI.**
 
 <p align="center">
-  <img src="assets/app-logos-marquee.svg" alt="The thirteen ArtCraft apps scrolling past: PhotoCraft, LightCraft, VectorCraft, FigCraft, DesignCraft, WordCraft, DeckCraft, GridCraft, PdfCraft, EffectCraft, FilmCraft, SoundCraft and CADCraft" width="100%">
+  <img src="assets/app-logos-marquee.svg" alt="The fifteen apps scrolling past: PhotoCraft, LightCraft, VectorCraft, FigCraft, DesignCraft, WordCraft, DeckCraft, GridCraft, PdfCraft, EffectCraft, FilmCraft, SoundCraft, CADCraft, Craft Anything and SolidCraft" width="100%">
 </p>
 
-ArtCraft is the open-source, pure-Rust, clean-room creative suite from the [`storytold`](https://github.com/storytold) organization (Photoshop-, Illustrator-, Premiere-, Lightroom-, Acrobat-, After Effects-, InDesign-, Figma-, Word-, Pro Tools-, PowerPoint-, AutoCAD- and Excel-style apps, all installable via the [ArtCraft Launcher](https://github.com/storytold/craft-launcher)).
+ArtCraft is the open-source, pure-Rust, clean-room creative suite from the [`storytold`](https://github.com/storytold) organization (Photoshop-, Illustrator-, Premiere-, Lightroom-, Acrobat-, After Effects-, InDesign-, Figma-, Word-, Pro Tools-, PowerPoint-, AutoCAD- and Excel-style apps, all installable via the [ArtCraft Launcher](https://github.com/storytold/craft-launcher)), plus two more apps the collection covers: Craft Anything (ArtCraft's own "see how software works, rebuild it with AI" workbench) and SolidCraft (Tangency Labs' parametric 3D CAD).
 
 Each skill teaches an AI coding agent **what one app can really do, what it cannot do yet, and how to drive it correctly** — through the app's first-class automation surface (headless CLI, [MCP](https://modelcontextprotocol.io) (Model Context Protocol) server, localhost JSON control channel) rather than blind GUI automation. Mention an app or one of its file formats — `.psd`, `.pptx`, `.xlsx`, `.docx`, `.dxf` — and the matching skill triggers.
 
@@ -163,8 +163,8 @@ One skill per app across the whole Craft App Suite — the same from-scratch Rus
 | <img src="assets/icons/filmcraft.png" width="32" alt="FilmCraft icon" align="absmiddle">&nbsp;**[FilmCraft](https://getartcraft.com/apps/filmcraft)** | Video editing, color and sound | [`filmcraft`](filmcraft) | 0.15.0&nbsp;@&nbsp;`94ceaa9` | [GitHub](https://github.com/storytold/filmcraft) |
 | <img src="assets/icons/soundcraft.png" width="32" alt="SoundCraft icon" align="absmiddle">&nbsp;**[SoundCraft](https://getartcraft.com/apps/soundcraft)** | Audio recording and editing | [`soundcraft`](soundcraft) | 0.15.0&nbsp;@&nbsp;`a97ce75` | [GitHub](https://github.com/storytold/soundcraft) |
 | <img src="assets/icons/cadcraft.png" width="32" alt="CADCraft icon" align="absmiddle">&nbsp;**[CADCraft](https://getartcraft.com/apps/cadcraft)** | Computer-aided design | [`cadcraft`](cadcraft) | 0.15.1&nbsp;@&nbsp;`660e15c` | [GitHub](https://github.com/storytold/cadcraft) |
-| **[Craft Anything](https://github.com/storytold/craft-anything)** | Study how software works, rebuild it with AI | [`craft-anything`](craft-anything) | 0.1.0&nbsp;@&nbsp;`c316051` | [GitHub](https://github.com/storytold/craft-anything) |
-| **[SolidCraft](https://github.com/tangency-labs/solidcraft)** | Parametric 3D CAD | [`solidcraft`](solidcraft) | 0.29.0&nbsp;@&nbsp;`3a5195b` | [GitHub](https://github.com/tangency-labs/solidcraft) |
+| <img src="assets/icons/craft-anything.png" width="32" alt="Craft Anything icon" align="absmiddle">&nbsp;**[Craft Anything](https://github.com/storytold/craft-anything)** | Study how software works, rebuild it with AI | [`craft-anything`](craft-anything) | 0.1.0&nbsp;@&nbsp;`c316051` | [GitHub](https://github.com/storytold/craft-anything) |
+| <img src="assets/icons/solidcraft.png" width="32" alt="SolidCraft icon" align="absmiddle">&nbsp;**[SolidCraft](https://github.com/tangency-labs/solidcraft)** | Parametric 3D CAD | [`solidcraft`](solidcraft) | 0.29.0&nbsp;@&nbsp;`3a5195b` | [GitHub](https://github.com/tangency-labs/solidcraft) |
 
 *Skill based on* names the app release and commit each skill was written and verified against; the apps are early-alpha and move fast, so every skill also carries a *verify against your installed version* note.
 
