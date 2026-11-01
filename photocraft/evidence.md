@@ -1,6 +1,6 @@
-# PhotoCraft — evidence ledger (tag v0.17.0)
+# PhotoCraft — evidence ledger (tag v0.18.0)
 
-Audit basis: this checkout is tag **`v0.17.0`**, commit **`b8c3f3aa8e2918032cadc0e042664414a03be333`** ("Release 0.17.0";
+Audit basis: this checkout is tag **`v0.18.0`**, commit **`8a87a457abb43ac344deeb3fdb67541b91a72ff1`** ("Release 0.18.0", 2026-10-31; inspection 2026-11-01; installed bundle still 0.17.0;
 the clone is shallow and holds exactly this commit, so tag-to-tag diffs were unavailable and every delta below was
 re-measured here and compared against the previous skill (v0.16.0) and the repo's own revision histories). Inspection
 date **2026-10-29**. Installed `/Applications/PhotoCraft.app` = 0.17.0 (`CFBundleShortVersionString` — current this
@@ -46,7 +46,11 @@ named gap; **claimed-only** = said in docs/README but absent or contradicted by 
 | 29 | Startup self-update prompt; update check delegated to craft-update | `crates/engine/src/cmd/updates_cmds.rs`; `Cargo.toml` `craft-update` pin | implemented (no periodic recheck) |
 | 30 | Dead preferences 12 of 181 | `docs/scorecard.md:203` (generated count) | implemented metric |
 
-## 2. Automation-surface counts: previous skill (v0.16.0) → this tag (v0.17.0)
+## 2. Automation-surface counts: v0.17.0 → v0.18.0
+
+Delta (re-diffed between tags): registry shape unchanged; `photocraft-cli` bundled into the macOS app
+(PR #4742); multi-page-TIFF video-frames import; strip-compositor smart-object sources; 4-stage Cutout;
+locale catalogs 21 → 26 (+Finnish); startup report; root-alias resolution in automation.
 
 Every row was re-measured from this checkout.
 
@@ -90,7 +94,7 @@ Every row was re-measured from this checkout.
 ## 5. Verification commands (read-only, reproduce the counts)
 
 ```sh
-git -C <clone> rev-parse HEAD                         # b8c3f3aa8e2918032cadc0e042664414a03be333
+git -C <clone> rev-parse HEAD                         # 8a87a457abb43ac344deeb3fdb67541b91a72ff1
 grep -n 'const ALL: \[Tool' crates/ui-egui/src/state/tool.rs        # [Tool; 68]
 sed -n '5p' docs/parity-checklist.md                                # 631 of 631 menu items live
 grep -c '#\[tool(' crates/automation/src/server.rs                  # 26 MCP tools

@@ -1,8 +1,14 @@
-# CADCraft — evidence ledger (tag v0.14.0)
+# CADCraft — evidence ledger (tag v0.15.1)
 
-Audit basis: this checkout is tag **`v0.14.0`**, commit **`fbd97d432cdf36a566c0c53739481bd6f0c32b0d`**
-("Release 0.14.0", 2026-10-28; shallow clone of the release tag). Inspection date **2026-10-29**.
-Installed `/Applications/CADCraft.app` prints `cadcraft 0.14.0 (fbd97d43…)`; the GUI was never launched.
+Audit basis: this checkout is tag **`v0.15.1`**, commit **`660e15c9f494ce647e87de10adbb01a8786e0901`**
+("Release 0.15.1", 2026-10-31; shallow clone of the release tag). Inspection date **2026-11-01**.
+Installed `/Applications/CADCraft.app` still prints `cadcraft 0.14.0 (fbd97d43…)` (bundle lags the tag); the GUI was never launched.
+
+v0.14.0 → v0.15.1 delta: **+2 engine commands** (`chprop` #2497, `solid` #2489; `CommandSpec::new`
+id sets diffed between tags: 419 → 421 in direct form), `-UNITS` (#2562), PEDIT Multiple (#2225),
+BEDIT block switching (#2219), DXF code-page saving, DWG CLAYER/draw-order persistence, `.bak` saves,
+MCP reply-line bound (#1925), control-server buffer bound; MCP tools, control methods, CLI verbs unchanged.
+Note: "Add Vietnamese (#2541)" merged on main after the tag — 16 language catalogs at this tag, no `vi`.
 
 ## 1. Capability claims → evidence → tier
 
@@ -58,7 +64,7 @@ Installed `/Applications/CADCraft.app` prints `cadcraft 0.14.0 (fbd97d43…)`; t
 ## 5. Verification commands (read-only)
 
 ```sh
-git -C <clone> rev-parse HEAD                                   # fbd97d432cdf36a566c0c53739481bd6f0c32b0d
+git -C <clone> rev-parse HEAD                                   # 660e15c9f494ce647e87de10adbb01a8786e0901
 grep -rho 'CommandSpec::new(' crates/ | wc -l                   # 428
 grep -rhoE '^\s+gc!\(' crates/engine/src/ | wc -l               # 12
 grep -rhoE '^\s+dc!\(' crates/engine/src/ | wc -l               # 6

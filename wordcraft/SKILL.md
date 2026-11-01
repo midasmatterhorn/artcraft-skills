@@ -2,7 +2,7 @@
 name: wordcraft
 description: >-
   WordCraft is an open-source, clean-room reimplementation of Microsoft Word in Rust (alpha,
-  v0.12.0): a ribbon word processor that reads and writes .docx (password-protected and
+  v0.13.2): a ribbon word processor that reads and writes .docx (password-protected and
   AES-encrypted included), opens legacy .doc, exports PDF, runs several documents at once (one
   window each), plus a CLI (wordcraft-cli), a 17-tool MCP server, a localhost JSON control channel
   and a headless screenshot harness for agents. Trigger this skill whenever the user mentions
@@ -17,7 +17,7 @@ description: >-
 
 # WordCraft
 
-Audit basis: this checkout is tag `v0.12.0`, commit `3de6ff95af86c19d67030cd96dba15cd6a45a25e`. The installed `/Applications/WordCraft.app` reports version `0.12.0` with bundle id `ai.storyteller.wordcraft`, and its binary prints `wordcraft 0.12.0 (3de6ff95)`, so the bundle matches this source. **Verify against your installed version** (`wordcraft --version`, `wordcraft-cli --version`) if the ArtCraft Launcher has auto-updated since. No `references/` directory ships with this skill: everything below is cited inline to the repo.
+Audit basis: this checkout is tag `v0.13.2`, commit `2be33e6dc9c246a57995b131ee85491ce81de328`. The installed `/Applications/WordCraft.app` still reports version `0.12.0` with bundle id `ai.storyteller.wordcraft` and its binary prints `wordcraft 0.12.0 (3de6ff95)` — **the installed bundle lags this tag.** **Verify against your installed version** (`wordcraft --version`, `wordcraft-cli --version`) before relying on behaviour added in 0.13.x. No `references/` directory ships with this skill: everything below is cited inline to the repo.
 
 ## Overview
 
@@ -29,22 +29,31 @@ Everything user-visible is a **command with an id**; the ribbon, keyboard, comma
 
 ### Automation surface at a glance
 
-Every number below was re-counted from this tag's code on 2026-10-29; the repo's own prose counts are stale (see the note under the table).
+Every number below was re-counted from this tag's code on 2026-11-01 (all unchanged from v0.12.0; `git diff v0.12.0 v0.13.2 -- crates/mcp crates/ui-egui/src/control.rs crates/engine/src/cmd.rs` is empty); the repo's own prose counts are stale (see the note under the table).
 
-| Surface | v0.12.0 | Change since v0.11.0 |
+| Surface | v0.13.2 | Change since v0.12.0 |
 |---|---|---|
-| Engine commands (`CommandSpec::new` with a literal id) | **648** | **+5**: multi-document ids (`file.closeDocument`, `view.stylesPaneDock`, `view.switchWindows`) plus further additions in other namespaces; **0 removed** |
+| Engine commands (`CommandSpec::new` with a literal id) | **648** | **0 changed** — 648 ids at both tags |
 | Catalog coverage | **505 / 520 (97.1%)** | was 504/520 (96.9%); `docs/parity-checklist.md:5` |
 | CLI subcommands | **10** | unchanged (`apps/wordcraft-cli/src/main.rs` `SUBCOMMANDS`) |
 | CLI flags | **21** plus `-h/--help`, `--version` | unchanged |
-| MCP tools | **17** | **+1**: `list_documents` (multi-document, `crates/mcp/src/tools.rs`) |
-| Control-channel methods | **21**, plus command-id fallthrough | **+2**: `file.close`, `file.exportPng`; `engine.execute`/`document.inspect`/`ui.render` take `doc` (`crates/ui-egui/src/control.rs` header, `control/handler.rs`) |
-| Interface languages | **27** | unchanged count; catalogs live in `storytold/craft-i18n` (`craft-i18n.rev` now `9205108c…`) |
+| MCP tools | **17** | unchanged (17 tools; `crates/mcp/src/tools.rs` is byte-identical to v0.12.0) |
+| Control-channel methods | **21**, plus command-id fallthrough | unchanged (21; `crates/ui-egui/src/control.rs` is byte-identical to v0.12.0) |
+| Interface languages | **27** | unchanged count; catalogs live in `storytold/craft-i18n` (`craft-i18n.rev` now `92d392cf…`) |
 | Proofing variants | **15** | unchanged (`crates/proof/src/lang.rs`) |
 | Default shortcuts | 167 specs carry a `.key()` | was 164 (+3); docs say 140/158 — stale |
 | Open / save extensions | 19 / 14 | unchanged (`crates/engine/src/io.rs`) |
 
 Do not quote the repo's command counts: README and ROADMAP still print hundreds-low numbers and `docs/mcp.md` says "over 270" tools — all stale; count with `wordcraft-cli commands --json`. The dialog count runs the other way: docs say "60 modal dialogs", the code answers to 89 distinct names at v0.11.0, and **Custom Document Properties** (`file.properties` dialog, PR #2997) joins this line.
+
+### New in v0.13.0–0.13.2 (verified against the v0.12.0 source; automation surface unchanged)
+
+- **Tables can be copied and cut** — whole tables, rows and cells (#1744, #1784); **Table Properties row/column/cell settings follow the selection** (#4857); tables share spanning minima by preferred widths (#1883); a zero-sized paragraph frame stays in normal flow (#2810).
+- **Mailings: recipient label sheets can generate all sheets at once** (M9, #4880).
+- **Layout parity: field results support `\* DollarText`, `\* Hex` and `\* ArabicDash`** (#4361); built-in heading styles carry their outline level without `w:outlineLvl`, so the Navigation pane lists them (#4696).
+- **Fallback face for glyphs the font lacks**: Chart and SmartArt text draws in a fallback face, so Chinese labels no longer show boxes (#4720); Traditional Chinese draws hanzi to the Taiwan standard with an installed TC font (#3380).
+- **Format Painter: double-click a word to paint it** (#4410); shading buttons show the last picked colour (#4412); Insert ▸ Shapes shows basic shapes as an icon grid (#4349); Layout ▸ Arrange ▸ Group stays on while a group is selected (#4229).
+- **Interchange hardening**: DOCX keeps run-level `snapToGrid`/`webHidden` and custom-property bookmark links; RTF keeps Windows/Enhanced-Metafile pictures; comment ranges inside footnotes/endnotes survive a round-trip; bibliography keeps a source's corporate author; PDF export writes a glyph id above 65535 as `.notdef` instead of failing; HTML `<font size>` offsets no longer overflow; Markdown emphasis flanks punctuation correctly; LaTeX export keeps `--` and `''` apart across text runs.
 
 ### New in v0.12.0 (verified against the v0.11.0 source)
 
@@ -66,7 +75,7 @@ Do not quote the repo's command counts: README and ROADMAP still print hundreds-
 - Carried from v0.11.0 and re-verified: mail-merge record navigation/ranges and Print Documents, `view.readPageColor`, Spanish proofing ×4, highlight toggling, AutoFormat `*bold*`/`_italic_`, Convert to Text, field depth (docinfo fields, `\* CardText|OrdText|DollarText|Hex`), Restrict Editing enforced on `file.*` and identity, line caps, no-op commands are not edits, DOCX unset default font size, MCP bridge that starts before the app, `type_text {"paragraphs": true}`, external i18n catalogs.
 
 ### Editing, formatting, document features
-- Writing: typing/IME, AutoCorrect, list autoformat, selections, clipboard with formatting (HTML/RTF from other programs), undo/redo incl. an undo-history list (`edit.undoTo`, `edit.undoHistory`), find & replace with regex (capture-group expansion now); typing behaviour is pinned to Word's by `crates/engine/src/tests_typing.rs`.
+- Writing: typing/IME, AutoCorrect, list autoformat, selections, clipboard with formatting (HTML/RTF from other programs), undo/redo incl. an undo-history list (`edit.undoTo`, `edit.undoHistory`), find & replace with regex (capture-group expansion now); typing behaviour is pinned to Word's by `crates/engine/src/tests/typing.rs`.
 - Formatting, paragraphs, styles/themes/style sets, lists (Arabic letter numbering drawn), tables (styles with band sizes, merge/split, sort, formulas, Convert to Text), pages/sections (margins, columns, headers/footers with editable three-column presets, watermark, line numbers, hyphenation, drop caps, page borders), objects (pictures with crop/recolour/background removal, shapes, text boxes, groups, drawing canvases, wrap, free rotation), references (TOC, footnotes/endnotes, citations APA/MLA/Chicago/IEEE, captions, table of figures, index, cross-references, Zotero), review (spelling/grammar, comments with local-time stamps, track changes incl. moves and formatting revisions, accept/reject, compare, restrict editing), mail merge (CSV/spreadsheets, rules, Finish & Merge, Print Documents), Draw-tab ink, Read Aloud, Print/Web/Draft/Read/Focus/Full Screen views.
 - Content controls (`w:sdt`), move tracking (`w:moveFrom`/`w:moveTo`), formatting revisions and glossary/building blocks round-trip.
 
@@ -213,8 +222,8 @@ Alpha software that never crashes by design but is unproven on real-world files:
 
 ## Sources & evidence
 
-- Repo: https://github.com/storytold/wordcraft (org `storytold`), inspected read-only at **tag `v0.12.0`**, commit **`3de6ff95af86c19d67030cd96dba15cd6a45a25e`** ("Release 0.12.0", 2026-10-28), audited 2026-10-29.
-- Installed app `/Applications/WordCraft.app` is exactly this release: bundle id `ai.storyteller.wordcraft`, and the binary prints `wordcraft 0.12.0 (3de6ff95)`. If your installed version differs, verify against it (`wordcraft --version`, `wordcraft-cli --version`).
+- Repo: https://github.com/storytold/wordcraft (org `storytold`), inspected read-only at **tag `v0.13.2`**, commit **`2be33e6dc9c246a57995b131ee85491ce81de328`** ("Release 0.13.2", 2026-10-31), audited 2026-11-01.
+- Installed app `/Applications/WordCraft.app` is still 0.12.0: bundle id `ai.storyteller.wordcraft`, binary prints `wordcraft 0.12.0 (3de6ff95)` — the bundle lags the tag. If your installed version differs, verify against it (`wordcraft --version`, `wordcraft-cli --version`).
 - Key files read: README.md, ROADMAP.md, Cargo.toml, AGENTS.md, craft-i18n.rev, docs/{gaps,file-format-parity,mcp,control-protocol,recovery,zotero,parity-checklist}.md, apps/wordcraft/src/main.rs, apps/wordcraft-cli/src/{main.rs,script.rs,automation_args.rs}, crates/engine/src/{io.rs,catalog.rs,session.rs,file_access.rs}, crates/engine/src/cmd/ (mod, file, tools, user_templates, mailings, view, format, protect, table), crates/docx/src/crypt.rs (agile + Standard), crates/docbin/src/{lib,crypt}.rs, crates/formats/src/{rtf,odt,latex,markdown}.rs, crates/mcp/src/{tools,server,backend}.rs, crates/ui-egui/src/{windows,control,control/handler,dialogs,printing,zotero}.rs, crates/ui-egui/examples/ui_shot.rs, crates/proof/src/lang.rs, crates/control-key/src/lib.rs, crates/zotero/, xtask/src/main.rs.
-- Counts were re-measured from this tag's code on 2026-10-29 (see the table and `evidence.md`), and the capability delta since v0.11.0 was established by diffing this tree against the v0.11.0 release source (fetched shallow ref): commands 643 → 648 (+5, none removed), catalog 504/520 → 505/520, MCP tools 16 → 17 (+`list_documents`), control methods 19 → 21 (+`file.close`, `file.exportPng`; `doc` addressing), shortcut-bearing specs 164 → 167, CLI 10/21 → 10/21, proofing 15 → 15, languages 27 → 27, formats unchanged.
+- Counts were re-measured from this tag's code on 2026-11-01 (see the table and `evidence.md`); the v0.12.0 → v0.13.2 diff touched none of the counted surfaces (commands, catalog, MCP, control, CLI, proofing, languages, formats all unchanged). The capability delta since v0.11.0 recorded in the previous audit (commands 643 → 648, MCP 16 → 17, control 19 → 21, shortcuts 164 → 167) still stands as the last registry change.
 - Nothing was built or launched; the clone and the v0.11.0 release source were only read, and the installed app was version-checked from its binary. Where the repo contradicts itself (command counts, dialog count, shortcut count, gap #1) the contradiction is stated in place rather than resolved by guesswork.

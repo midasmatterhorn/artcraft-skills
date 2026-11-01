@@ -1,8 +1,13 @@
-# FigCraft — evidence ledger (tag v0.12.1)
+# FigCraft — evidence ledger (tag v0.13.1)
 
-Audit basis: this checkout is tag **`v0.12.1`**, commit **`ef9721c5b9d0f1cc19a74449cbe175fc06bf8efa`**
-("Release 0.12.1", shallow clone). Inspection date **2026-10-29**. Installed `/Applications/FigCraft.app`
-reports 0.12.1 and its binary prints the same full SHA; the GUI was never launched.
+Audit basis: this checkout is tag **`v0.13.1`**, commit **`76f520ffaaab73fcacf14dfaf30f29272ec178cb`**
+("Release 0.13.1", shallow clone). Inspection date **2026-11-01**. Installed `/Applications/FigCraft.app`
+still reports 0.12.1 (bundle lags the tag); the GUI was never launched.
+
+v0.12.1 → v0.13.1 delta: spec! sites 473 → 481 (+`comment.prompt`, `file.fontReport` net new;
+several registrations re-wrapped multiline), CLI 9 → 10 verbs (+`connect publish`, clap-parsed,
+shell completions + man pages), locales 22 → 24 (+ar, +bs), MCP tools 18 / control methods 17
+unchanged, FigJam `.jam` boards, comment mentions, variable colour calculations, server team list.
 
 The v0.11.2 → v0.12.1 wave is large (598 commits): Sketch import, `.fig` export/import improvements,
 five new Dev Mode code targets, boards growth (9 → 19 commands), plugin API 4, `command.batch` named
@@ -71,7 +76,7 @@ update prompt.
 ## 5. Verification commands (read-only)
 
 ```sh
-git -C <clone> rev-parse HEAD                                   # ef9721c5b9d0f1cc19a74449cbe175fc06bf8efa
+git -C <clone> rev-parse HEAD                                   # 76f520ffaaab73fcacf14dfaf30f29272ec178cb
 grep -rho 'spec!(' crates/engine/src/ | wc -l                   # 616
 grep -E '212' docs/parity-checklist.md | head -1                # 212 / 212 menu items
 awk 'NR>=160 && NR<345' crates/engine/src/keymap.rs | grep -cE '^\s+k\('   # 159

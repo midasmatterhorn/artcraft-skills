@@ -1,6 +1,6 @@
 # FilmCraft file formats — what the code actually reads and writes
 
-Version: repo tag **v0.14.0**, commit `a2d8e9ce269aba9c399e36262522e11456df6fbf` (inspected 2026-10-29).
+Version: repo tag **v0.15.0**, commit `94ceaa91a58e3e18ebe5676c10befa56759c9ceb` (inspected 2026-11-01). Carried from v0.14.0 unless marked **New in 0.15.0**.
 Every list below is read out of the code, not the marketing docs. Where a doc contradicts the code, the
 contradiction is named and the code wins. New since v0.13.0: **uncompressed QuickTime video decodes**
 (raw 24-bit RGB, 2vuy, v210), PNG Sequence writes RGB files when alpha is off, OTIO export bounds
@@ -90,7 +90,7 @@ Animated GIF, APNG and (new in 0.13.0) animated WebP import as clips with transp
 (`crates/media/src/animated.rs`).
 
 Write (as numbered sequences): PNG, TIFF, BMP, JPEG, TGA, DPX (10-bit), OpenEXR (half float, linear;
-uncompressed/RLE/ZIPS/ZIP, or `alpha: true` for RGBA), plus animated GIF (`Format` enum,
+uncompressed/RLE/ZIPS/ZIP, or `alpha: true` for RGBA), plus animated GIF (`Format` enum, **binary transparency on export since 0.15.0**,
 `crates/export/src/lib.rs:272-294`).
 
 No PSD, PIZ/B44/DWA/tiled/deep EXR, HEIC (`docs/file-format-parity.md:55-65`).

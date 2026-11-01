@@ -1,14 +1,17 @@
-# LightCraft — evidence ledger (tag v0.15.0)
+# LightCraft — evidence ledger (tag v0.16.0)
 
-Audit basis: this checkout is tag **`v0.15.0`**, commit **`e381c1ae6b2006ce627b243fe41697ce0d9608e0`** (shallow clone
-holding exactly this commit). Inspection date **2026-10-29**. Installed `/Applications/LightCraft.app`:
-`CFBundleShortVersionString` 0.15.0, `LightCraftBuildCommit` = the same SHA, binary prints `lightcraft 0.15.0`, bundle
-id `ai.storyteller.lightcraft`; the GUI was never launched. No `references/` directory.
+Audit basis: this checkout is tag **`v0.16.0`**, commit **`cdf00cc84bf87f544d6dbc40e3bc0456641661a9`** (shallow clone
+holding exactly this commit). Inspection date **2026-11-01**. Installed `/Applications/LightCraft.app`:
+`CFBundleShortVersionString` 0.15.0, binary prints `lightcraft 0.15.0` — **the installed bundle lags this tag**;
+bundle id `ai.storyteller.lightcraft`; the GUI was never launched. No `references/` directory.
 
-The v0.14.0 → v0.15.0 wave is small (238 commits): egui 0.37 + craft-ui shared docking (side panels in dock columns),
-a startup update prompt with self-update (craft-update), a new Sony ILCE-7RM5 camera profile, HEIC and raw-decoder
-hardening, faster full-size exports, Windows per-user install policy, and the shared-module refactor that moved the
-command registry from `crates/engine/src/cmd/mod.rs` to `crates/engine/src/cmd.rs`.
+The v0.15.0 → v0.16.0 wave is a large community-integration release (~250 merged PRs) with **no command-registry
+change**: Space-hold pan over tools, Alt/Option-drag clipping/sharpening previews, AHD demosaic blending, faster
+compressed RAF decode, Canon maker-note lens + preview colour space, Sony ILCE-6700 and Fujifilm X-S20 embedded
+lens corrections, compact-camera lens profiles, X-Trans III Kelvin from the RAF neutral pair, per-file colour fit
+on the vignetting-corrected sensor, MCP render/screenshot PNGs via a private temp folder, CLI hardening (UTF-8 BOM,
+inf/NaN refusal, non-object params rejected, stop after failed import), face look-alikes in seconds, parallel GPU
+kernel builds with OOM fallback, and launch-time library selection fixes.
 
 ## 1. Capability claims → evidence → tier
 
@@ -71,7 +74,6 @@ command registry from `crates/engine/src/cmd/mod.rs` to `crates/engine/src/cmd.r
 
 | Doc statement | Code reality |
 |---|---|
-| `docs/gaps.md:18`, `docs/raw-parity.md` "5 bundled profiles" | 9 in `camera_profiles.rs` `BUNDLED` |
 | `docs/raw-parity.md:20-21` headline 201 preview / 38 unsupported | generated `docs/raw/coverage.tsv`: 202 / 37 |
 | `ROADMAP.md` / `docs/target-app-parity.md` 81.6% of 532 | generated `docs/parity-checklist.md:58`: 83.5% of 543 |
 | `crates/codecs/Cargo.toml` "releases don't ship heif" | `packaging/macos/package.sh:65` passes the feature; installed binary has the symbols |
@@ -80,7 +82,7 @@ command registry from `crates/engine/src/cmd/mod.rs` to `crates/engine/src/cmd.r
 ## 5. Verification commands (read-only)
 
 ```sh
-git -C <clone> rev-parse HEAD                                   # e381c1ae6b2006ce627b243fe41697ce0d9608e0
+git -C <clone> rev-parse HEAD                                   # cdf00cc84bf87f544d6dbc40e3bc0456641661a9
 grep -rho 'cmd!' crates/engine/src/cmd/ | wc -l                 # 375
 grep -c 'specs()' crates/engine/src/cmd.rs                      # 39 wiring sites
 awk '/const UI_COMMANDS/,/^\];/' crates/ui-egui/src/menus/ui_commands.rs | grep -cE '^\s+\("'   # 191

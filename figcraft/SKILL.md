@@ -15,11 +15,12 @@ description: >
   not Figma and runs no Figma plugins.
 ---
 
-Audit basis: this checkout is tag `v0.12.1`, commit `ef9721c5b9d0f1cc19a74449cbe175fc06bf8efa`
-("Release 0.12.1", released 2026-10-28). The installed `/Applications/FigCraft.app` reports version
-`0.12.1` (`CFBundleShortVersionString`) and its binary prints `FigCraft 0.12.1
-(ef9721c5b9d0f1cc19a74449cbe175fc06bf8efa)`, so the bundle matches this source exactly.
-**Verify against your installed version** if the ArtCraft Launcher has auto-updated since. Deep
+Audit basis: this checkout is tag `v0.13.1`, commit `76f520ffaaab73fcacf14dfaf30f29272ec178cb`
+("Release 0.13.1", released 2026-10-31). The installed `/Applications/FigCraft.app` still reports
+version `0.12.1` and prints `FigCraft 0.12.1 (ef9721c5…)` — **the installed bundle lags this tag.**
+**Verify against your installed version** before relying on behaviour added in 0.13.x.
+
+v0.12.1 → v0.13.1 wave, re-diffed from the tags: **FigJam `.jam` files open, as boards** (#1586); **SVG import reads `color()`/`color-mix()`** (#1550); the **browser build uses the fonts installed on this computer** (Local Font Access, #1051) and can **publish to a server** (Share ▸ Online, #917); **comment mentions** — `comment.list` filters by a mentioned name, `comment.people` lists mentions, `comment.next`/`comment.prompt` drive them (#1415, #1591) — and share links gained a **comment-only access level** (#1525); **colour variables can be calculated from others**, faded or mixed per mode (#1280), with Penpot tokens and CSS export never naming a calculation they leave out; **effects: stacked layer blurs keep the margin they reach together** and the SVG export chains blurs and shadows; **plugin panels gained sliders, hover styles and images** (#1637/#1634/#1639); `.fig` **elbowed and curved connectors without a saved path are routed** (#1649) and connector labels are kept (#1659); Grid **auto-placement** on an occupancy bitmap (#1593); a **server team list** (`team_files`) shows in Home ▸ Online with tokenless team links; `doc.list` gives file **names, not paths** (#1117); a batch keeps **one undo snapshot** (#1099); the **CLI is now clap-parsed (RFC-0012) with shell completions and man pages** (#1396) and gained **`connect publish`** for code-connect mappings (#1643). New engine ids: +`comment.prompt`, +`file.fontReport` (net, over reformatted registrations); locales 22 → 24 (+`ar`, +`bs`). Deep
 operational detail — the full CLI, control-channel and MCP tables, live-session commands and the
 server — is in `references/automation-surfaces.md`.
 
@@ -73,7 +74,7 @@ dialog); **`command.batch` named step references** (`as` / `$ref`) and paths in 
   (stroke rings preserved), dashes (too-fine dashes draw solid instead of exhausting memory), per-side
   strokes, brushes and pen pressure, text on a path (its path scales with `transform.scale`), pattern
   fills, and fill rules with loop reversal for holes (`vector.fillRule`, `vector.reverseLoop`;
-  `crates/engine/src/vectoredit.rs`, `crates/pathops/src/lib.rs`, `crates/engine/src/shapebuilder.rs`).
+  `crates/engine/src/canvas/vectoredit.rs`, `crates/pathops/src/lib.rs`, `crates/engine/src/canvas/shapebuilder.rs` — engine modules re-homed under `content/`, `canvas/` and `sharing/` in v0.13.x).
 - **Text**: in-place editing, mixed styles (runs stay disjoint across insertions), auto width/height
   (auto height takes max lines into account), truncated text fills its last line and keeps
   truncating when resized, variable font axes, OpenType features, lists, bidi/RTL, HarfRust shaping
@@ -84,7 +85,7 @@ dialog); **`command.batch` named step references** (`as` / `$ref`) and paths in 
   font new text starts in; Thai faces and Noto symbol/math fallbacks ship in the fallback list.
   **CJK kinsoku is complete to JIS X 4051**; Backspace removes Thai and other marks one at a time;
   justified text does not widen U+200B. `text.fit` shrinks a fixed-width text to the largest size
-  that fits `maxLines` (`crates/engine/src/textfit.rs`).
+  that fits `maxLines` (`crates/engine/src/content/textfit.rs`).
 - **Paint and effects**: solid and linear/radial/angular/diamond gradients, image fills with
   adjustments (**crop image fills on Cmd/Ctrl resize**; **paste images into selected shapes**;
   magnified images show their pixels), pattern fills, blend modes, inner/drop shadows, uniform and
@@ -127,7 +128,7 @@ dialog); **`command.batch` named step references** (`as` / `$ref`) and paths in 
   `docs/collaboration-parity.md`).
 - **Data pipelines**: `data.fill` repeats a frame once per data row, optionally per output size and
   exporting each copy; with `text.fit` it is a carousel/social-post generator in one command
-  (`crates/engine/src/datafill.rs`, `docs/mcp.md` › Filling copies with data).
+  (`crates/engine/src/content/datafill.rs`, `docs/mcp.md` › Filling copies with data).
 
 **Formats it opens (verified in code)**
 - `.figcraft` — native zip, or a bare `document.json` (`crates/format/src/lib.rs`).
@@ -194,7 +195,7 @@ dialog); **`command.batch` named step references** (`as` / `$ref`) and paths in 
 - **Live sessions from a script** — **21 `collab.*` commands** cover host/join/share/publish, cursors,
   chat and spotlight; **`branch.*` commands work inside live sessions now**; the headless MCP session
   and the attached app can host, join and publish, the one-shot `run` cannot (no network link)
-  (`crates/engine/src/live.rs`, `online.rs`, `docs/mcp.md` › Live sessions); boards sync like any
+  (`crates/engine/src/sharing/live.rs`, `sharing/online.rs`, `docs/mcp.md` › Live sessions); boards sync like any
   document.
 - **Plugins** — sandboxed WebAssembly (wasmi, metered fuel, memory cap, no fs/net/clock), manifest
   permissions (**API version 4**; new `saveFile` permission with a host-owned save dialog), panels,
@@ -362,7 +363,7 @@ What an agent can legitimately do:
   export-only.
 - **Generate batches.** `data.fill` + `text.fit` turn one frame and a JSON list of rows into a
   carousel or a set of post sizes with the text fitted — no per-copy editing loop
-  (`crates/engine/src/datafill.rs`, `docs/mcp.md` › Filling copies with data).
+  (`crates/engine/src/content/datafill.rs`, `docs/mcp.md` › Filling copies with data).
 - **Inspect and repair native files** (cautiously). A `.figcraft` is a plain zip:
   `unzip -p f.figcraft document.json` reads the whole model, `images/<sha256>` holds raw image bytes,
   and `versions/index.json` / `branches/index.json` hold history. Reading is lenient (structural
@@ -426,11 +427,16 @@ FigCraft is alpha; treat every automated run as untrusted until checked:
 
 ## Sources & evidence
 
-- Repo: https://github.com/storytold/figcraft — inspected at tag **v0.12.1**, commit
-  **ef9721c5b9d0f1cc19a74449cbe175fc06bf8efa** ("Release 0.12.1", 2026-10-28); the installed app
-  reports the same version and commit. Date inspected: 2026-10-29.
-- Delta v0.11.2 → v0.12.1, re-measured rather than copied: **616** `spec!(` registration sites
-  (was 597; some ids const-built — the live count is `figcraft-cli commands --json`), **19**
+- Repo: https://github.com/storytold/figcraft — inspected at tag **v0.13.1**, commit
+  **76f520ffaaab73fcacf14dfaf30f29272ec178cb** ("Release 0.13.1", 2026-10-31); the installed app
+  still reports 0.12.1 (bundle lags the tag). Date inspected: 2026-11-01; the v0.12.1 ref was
+  fetched for set diffs.
+- Delta v0.12.1 → v0.13.1, re-measured rather than copied: **481** `spec!(` registration sites in
+  `crates/engine/src/cmd/` (was 473 at v0.12.1; some ids const-built — the live count is
+  `figcraft-cli commands --json`); net new ids +`comment.prompt`, +`file.fontReport`; **10** CLI
+  subcommands (was 9; +`connect publish`, clap-parsed); **24** locale catalogs (was 22); MCP tools,
+  control methods and menu-catalog shapes unchanged. Prior audit: **616** `spec!(` sites
+  (v0.11.2 → v0.12.1), **19**
   `board.*` commands (was 9) and **5** board templates (new), **22** locale catalogs (was 19),
   **22** `collab.*` commands (was 21; branches in live sessions), plugin **API 4** (was 3; widgets
   take text input + property menu, `saveFile` permission). Unchanged shapes: 9 CLI subcommands, 17

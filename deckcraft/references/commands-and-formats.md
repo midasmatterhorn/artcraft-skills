@@ -1,7 +1,7 @@
 # DeckCraft — commands, shortcuts, control methods, MCP tools and file formats (agent reference)
 
-**Pin:** tag `v0.12.0`, commit `29f0f7772c47aa2bfb74fcbb0c4d3b1503300849` — the code shipped in
-DeckCraft 0.12.0. **Verified:** 2026-10-29 against a read-only clone at that tag. All citations are
+**Pin:** tag `v0.13.1`, commit `4ce2944630b04188dee8504c14151994d06c416a` — the code shipped in
+DeckCraft 0.13.x. **Verified:** 2026-11-01 against a read-only clone at this tag; all counts from the v0.12.0 audit re-checked unchanged at v0.13.1. All citations are
 repo-relative (`path` or `path:symbol`). Counts were re-parsed from the registries at this tag, not
 carried over. The v0.11.1→v0.12.0 delta: **326 → 328 engine commands** (+`format.languageAll`,
 +`slide.selectRange`), MCP tools 25 and the control dispatch set unchanged; Reuse Slides gained a
@@ -273,7 +273,7 @@ connected mode only (`APP_ONLY`).
   command.
 - Connected mode validates the reply envelope, caps a reply at 16 MiB and reconnects instead of
   replaying (`crates/mcp/src/backend.rs`; `docs/mcp.md`).
-- File confinement: `--automation-read-root DIR` / `--automation-write-root DIR` confine every path
+- File confinement: `--automation-read-root DIR` / `--automation-write-root DIR` confine every path (each flag may be repeated since v0.13.0)
   a command reads and writes, links followed; a root omitted grants none of its access, `--flag=DIR`
   is accepted, a repeated flag is an error, and the roots apply to the in-process server only — they
   conflict with `--connect` (`crates/engine/src/file_access.rs`; `apps/deckcraft-cli/src/automation_args.rs`).

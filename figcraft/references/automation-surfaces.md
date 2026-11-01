@@ -1,8 +1,9 @@
 # FigCraft automation surfaces — operational detail
 
-Load this when a job is bigger than a couple of command calls. Everything here is from the v0.12.1
-tree (commit `ef9721c5b9d0f1cc19a74449cbe175fc06bf8efa`, tag `v0.12.1`, 2026-10-28), re-measured at
-that tag. Repo-relative paths only; no machine paths are named.
+Load this when a job is bigger than a couple of command calls. Everything here is from the v0.13.1
+tree (commit `76f520ffaaab73fcacf14dfaf30f29272ec178cb`, tag `v0.13.1`, 2026-10-31), re-measured at
+that tag; the v0.12.1 audit's shapes were re-checked unchanged (MCP tools, control methods; CLI now
+clap-parsed with +`connect publish`). Repo-relative paths only; no machine paths are named.
 
 ## 1. Three ways in, one command registry
 
@@ -305,11 +306,11 @@ tables, curved connectors and the dot grid **exist now**.
 undo step; each key of a row names a layer in the copy, a string sets its text, and
 `{text?, fill?, visible?}` sets more. `formats: [{name?, width, height}]` makes every row once per
 size (the copy is resized so its auto layout reflows); `dir` exports each copy after the edits land.
-Returns `{ids, missing, files?, errors?}` (`crates/engine/src/datafill.rs`).
+Returns `{ids, missing, files?, errors?}` (`crates/engine/src/content/datafill.rs`).
 
 `text.fit {ids?, maxLines?, minSize?, orphans?}` gives a fixed-width text the largest font size
 (down to `minSize`, default 60% of the current) that stays within `maxLines` and its box; it avoids
-one-word last lines and never grows text (`crates/engine/src/textfit.rs`).
+one-word last lines and never grows text (`crates/engine/src/content/textfit.rs`).
 
 ```json
 {"command": "data.fill", "params": {"id": 80, "dir": "out/carousel", "rows": [

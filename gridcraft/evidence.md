@@ -1,8 +1,14 @@
-# GridCraft — evidence ledger (tag v0.13.0)
+# GridCraft — evidence ledger (tag v0.14.2)
 
-Audit basis: this checkout is tag **`v0.13.0`**, commit **`43284377d2466037628e57d8ad0c891778fdb45c`**
+Audit basis: this checkout is tag **`v0.14.2`**, commit **`55850841d39f030fb42f0a07e54903decea7b067`**
 (shallow clone plus a fetched `v0.12.1` ref for set diffs). Inspection date **2026-10-29**. Installed
-`/Applications/GridCraft.app` prints `GridCraft 0.13.0`; the GUI was never launched.
+`/Applications/GridCraft.app` still prints `GridCraft 0.13.0` (bundle lags the tag); the GUI was never launched.
+
+v0.13.0 → v0.14.2 delta: +9 engine commands (`macro.*`), macro recorder/step-editor UI,
+macros persisted into xlsx, CSV export `values:true`, encrypted-xlsx integrity-key fix,
+Ctrl+Arrow data-edge jumps, checkbox-cell printing, control-channel token deadline enforcement,
+function-parity wave (YEARFRAC/MOD/NUMBERVALUE/PERCENTRANK/IMSQRT/HYPERLINK/UNICHAR/distributions).
+MCP tools, control methods, CLI subcommands, catalog coverage: unchanged (re-counted).
 
 ## 1. Capability claims → evidence → tier
 
@@ -56,7 +62,7 @@ Audit basis: this checkout is tag **`v0.13.0`**, commit **`43284377d2466037628e5
 ## 5. Verification commands (read-only)
 
 ```sh
-git -C <clone> rev-parse HEAD                                   # 43284377d2466037628e57d8ad0c891778fdb45c
+git -C <clone> rev-parse HEAD                                   # 55850841d39f030fb42f0a07e54903decea7b067
 grep -rho 'cmd!' crates/engine/src/ | wc -l                     # 354
 grep -cE '^\s+tool\(' crates/mcp/src/tools.rs                   # 22
 sed -n '4,5p;26,42p' apps/gridcraft/src/control_server.rs       # token auth + make_token

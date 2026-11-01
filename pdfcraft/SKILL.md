@@ -3,13 +3,15 @@ name: pdfcraft
 description: PdfCraft is the ArtCraft PDF workbench, a clean-room Acrobat Pro reimplementation for macOS, Windows, Linux, FreeBSD and the web. Use this skill whenever the user mentions PdfCraft or pdfcraft-cli, asks what it can do, which file formats or shortcuts it supports, or asks to read, render, search, organize, combine, split, rotate, annotate, fill, calculate, sign, redact, OCR, compare, print, protect, layer, measure or convert a PDF; when preparing assets or inputs for it; when driving it headlessly through the CLI, the MCP server or the UI control channel; or when verifying, repairing or troubleshooting its output — even if the app is not named (for example "merge these PDFs", "make this scan searchable", "fix this form's calculation order", "redact this contract", "convert this PDF to Word").
 ---
 
-Audit basis: this checkout is tag `v0.15.0`, commit `75360d1d7db06fed974f48c914d4c04132757187`. The installed `/Applications/PdfCraft.app` reports version `0.15.0` (bundle id `ai.storyteller.pdfcraft`, minimum macOS 11.0), and `/Applications/PdfCraft.app/Contents/MacOS/PdfCraft --version` prints `pdfcraft 0.15.0`, so the bundle matches this source. **Verify against your installed version** if the ArtCraft Launcher has auto-updated since. Deep detail: `references/automation-tools.md` lists all 179 automation tools at this tag.
+Audit basis: this checkout is tag `v0.16.1`, commit `24bb85308e4b65404fc908506ade6341a29999d7` ("Release 0.16.1", 2026-10-31). The installed `/Applications/PdfCraft.app` still reports version `0.15.0` (bundle id `ai.storyteller.pdfcraft`, minimum macOS 11.0) — **the installed bundle lags this tag.** **Verify against your installed version.** Deep detail: `references/automation-tools.md` lists all 182 automation tools at this tag.
 
 ## Overview
 
 PdfCraft is an open-source, pure-Rust PDF reader and editor ("The PDF workbench; an open-source, modern PDF reader and editor", `README.md`), built clean-room with Adobe Acrobat Pro as the documented parity target (`docs/target-app-parity.md`). It is **alpha** (README "What's next": 57% of its tracked Acrobat features, 94% of core essentials, ~55% ready for everyday work) and runs on macOS, Windows, Linux and FreeBSD plus a WebAssembly shell (`apps/pdfcraft-web`, `docs/architecture.md`). Source: GitHub storytold/pdfcraft. The UI migrated to egui 0.37 this release, with side panels on craft-ui task panes, craft-ui ComboBoxes everywhere, and **native macOS menus from craft-menu**.
 
-The PDF object graph is the document model: there is no separate project file, so the `.pdf` **is** the project (`docs/architecture.md` §Data model and editing). Pages are drawn by the vendored `hayro` 0.7.x family while PdfCraft's own renderer is built (`docs/gaps.md` gap 2; `vendor/README.md`), so rendering is good but not Acrobat-measured. This tag (v0.15.0, 2026-10-28) keeps the automation surface identical to v0.14.0 and spends its budget on XFA form performance and correctness, redaction hardening (F-008/F-011), page-image export on worker threads, a Page tools menu, Persian, and the usual platform refresh.
+The PDF object graph is the document model: there is no separate project file, so the `.pdf` **is** the project (`docs/architecture.md` §Data model and editing). Pages are drawn by the vendored `hayro` 0.7.x family while PdfCraft's own renderer is built (`docs/gaps.md` gap 2; `vendor/README.md`), so rendering is good but not Acrobat-measured. v0.15.0 (2026-10-28) kept the engine registry identical to v0.14.0 and spent its budget on XFA form performance and correctness, redaction hardening (F-008/F-011), page-image export on worker threads, a Page tools menu, Persian, and the usual platform refresh.
+
+v0.16.0–0.16.1 changes the automation surface by **+3 tools** and **no engine-command change** (205 `c(` ids at both tags): **`doc_backdrops`**, **`bookmark_from_text_styles`** and **`text_styles`**. Feature highlights: **form calculation order** is first-class — `form_calculation_order` reports each field's calculation (sum/product/average/notations/custom scripts) and `form_set_props` refuses unknown, mistyped or conflicting `calculate`/`validate` keys and notations it could not store as written; **Page properties sets the selected pages' tab order** (#4516); **Import comments copies another PDF's comments onto the same pages** (#4595); **Alt+Left / Alt+Right walk the view history** (#3632); the **window title marks unsaved changes** (#3640); **Export Data as CSV keeps formula-like cells as text** (#2524); reading-colour preferences gained a settings shortcut (#2627); content streams step over a malformed token instead of ending the page; Type1 fonts with an OpenType-wrapped CFF program draw their own face; a moved comment is drawn where it goes while dragged; and CJK viewer fidelity landed exact GBK glyph rasters for installed Chinese families.
 
 ## Capabilities (verified)
 
@@ -17,23 +19,23 @@ Unless a bullet says **partial**, the path is wired into the UI and/or the CLI a
 
 ### Automation surface at a glance
 
-| Surface | Count at v0.15.0 | Change vs the v0.14.0 skill |
+| Surface | Count at v0.16.1 | Change vs the v0.15.0 skill |
 |---|---|---|
-| Automation tools (`crates/automation/src/tools.rs`) | **179** (153 inline + 26 multi-line `t(` entries) | unchanged set |
-| Command registry (`crates/engine/src/commands.rs:165` `COMMANDS`) | **205** | unchanged set (id diff: 0 added, 0 removed) |
+| Automation tools (`crates/automation/src/tools.rs`) | **182** (154 inline + 28 multi-line `t(` entries) | **+3** — `doc_backdrops`, `bookmark_from_text_styles`, `text_styles` |
+| Command registry (`crates/engine/src/commands.rs:165` `COMMANDS`) | **205** | unchanged set (205 `c(` ids at both tags, id diff: 0 added, 0 removed) |
 | Tools mapped to a command (`ToolDef::command`) | 71 | unchanged |
 | CLI subcommands (`apps/pdfcraft-cli/src/main.rs`) | **14 documented**, plus internal `check-one` | unchanged; 25 `--flag` names |
 | UI control methods (`crates/ui-egui/src/control/requests.rs`) | **17** | unchanged |
 | Interface languages (`crates/ui-egui/src/i18n/`) | **35** (English + 34 catalogs; **Persian `fa` added**) | +1 |
 | All tools catalogue (`crates/engine/src/catalog.rs`) | 150 items, 24 groups, 5 categories; planned badges remain a plan | unchanged |
-| MCP tools | the same **179**, or 17 entries under `--compact` (15 core + `tool_search` + `tool_call`) | unchanged |
+| MCP tools | the same **182**, or 17 entries under `--compact` (15 core + `tool_search` + `tool_call`) | +3 |
 | MCP resources | 4 URI templates + 2 list resources | unchanged; 16 MiB request-line cap |
 | Convertible input extensions (`CONVERTIBLE`, `crates/create/src/lib.rs`) | **12** | unchanged |
 | Office export targets (`OfficeFormat::from_extension`, `crates/engine/src/compare.rs`) | **4** kinds / 5 extensions | unchanged |
 | Form-data extensions (`crates/xfdf/src/lib.rs`) | **8** → 6 formats | unchanged |
 | Page-image export formats | **3** (png, jpeg, tiff; `pdfcraft-cli render` also writes `.pam`) | unchanged; **exported on worker threads (~80% less wall time)** |
 
-`pdfcraft-cli tools` is the live capability contract; the full name/title/hint table is in `references/automation-tools.md`. Every tool has a JSON Schema, read-only (48) or destructive (25) hints and an optional registry command id. Repo docs lag badly: several still say "141 automation tools" and "184 registered commands" (real: 179 / 205).
+`pdfcraft-cli tools` is the live capability contract; the full name/title/hint table is in `references/automation-tools.md`. Every tool has a JSON Schema, read-only or destructive hints and an optional registry command id. Repo docs lag badly: several still say "141 automation tools" and "184 registered commands" (real: 182 / 205).
 
 ### Reading, navigation and text
 - Tiled CPU rendering with single, continuous, two-up and two-page layouts, rotation, full screen, Read mode, light/dark/system themes and per-tab history. Optional gapless page display and an independent thumbnail slider.

@@ -1,8 +1,13 @@
-# VectorCraft — evidence ledger (tag v0.18.0)
+# VectorCraft — evidence ledger (tag v0.19.0)
 
-Audit basis: this checkout is tag **`v0.18.0`**, commit **`68b68a30acad9b3d8a72802b35f43b82e2bd7d3a`** ("Release
-0.18.0", shallow clone). Inspection date **2026-10-29**. Installed `/Applications/VectorCraft.app` reports 0.18.0
-(`CFBundleIdentifier ai.storyteller.vectorcraft`), binary prints `vectorcraft 0.18.0`; the GUI was never launched.
+Audit basis: this checkout is tag **`v0.19.0`**, commit **`bcebabe3f8c23a376ac68e9e6726590af278f7bb`** ("Release
+0.19.0", 2026-10-31, shallow clone). Inspection date **2026-11-01**. Installed `/Applications/VectorCraft.app` still reports 0.18.0
+(`CFBundleIdentifier ai.storyteller.vectorcraft`), binary prints `vectorcraft 0.18.0` (bundle lags the tag); the GUI was never launched.
+
+v0.18.0 → v0.19.0 delta: registry set unchanged (2 ids re-wrapped multiline; 25 control methods re-counted);
+Add-ons Arrange Tools, Smooth slider section smoothing, Optical kerning, JPEG 2000 import, Export for Screens
+single-PDF, Intertwine by id/nearest, Eyedropper Shift-click pattern/mesh sample, Symbols/Brushes delete
+confirm + Alt-click, PDF/EPS pattern-tile flattening, Batch data-set naming, Objects on Path options.
 No `references/` directory.
 
 ## 1. Capability claims → evidence → tier
@@ -18,7 +23,7 @@ No `references/` directory.
 | 7 | 31 `OPEN_EXTS`; Place +`.txt/.rtf/.docx` | `crates/engine/src/cmd/fileio/formats.rs:473` (31 quoted entries; moved from `fileio/mod.rs` in the shared-module refactor) | implemented |
 | 8 | 6 `SAVE_FORMATS`; `TEMPLATE_FORMATS` = template, ait; native v4 | `crates/engine/src/cmd/fileio/save.rs`; `crates/format/src/lib.rs:53` `VERSION: u32 = 4` | implemented |
 | 9 | Effect catalogue 116 = 86 literal + 15 warps + 12 Pathfinder + Trap + Crop Marks + Rasterize | `crates/effects/src/catalog.rs:144` `effect_catalog()` (86 `g(`/`r(` entries), `WARP_STYLES` `[(&str,&str); 15]` at `:125`, `crates/effects/src/group.rs:24` `PATHFINDER_EFFECTS: 12` | implemented |
-| 10 | 57 Photoshop-style raster filters | `crates/effects/src/pixel/mod.rs` `PIXEL_EFFECTS` (56) + `blur.gaussian` | implemented |
+| 10 | 57 Photoshop-style raster filters | `crates/effects/src/pixel.rs` `PIXEL_EFFECTS` (56; was `pixel/mod.rs`) + `blur.gaussian` | implemented |
 | 11 | 94 tool ids | `crates/tools/src/catalog.rs` `t(` entries = 94 (was 92) | implemented |
 | 12 | Panels on craft-ui docking; 36 `ICON_PANELS` entries | `crates/ui-egui/src/state.rs:160`; `crates/ui-egui/src/panel_docking.rs` | implemented |
 | 13 | 25 languages (24 tsv + English) | `ls crates/ui-egui/src/i18n/` = 24 `.tsv` | implemented |
@@ -70,7 +75,7 @@ No `references/` directory.
 ## 5. Verification commands (read-only)
 
 ```sh
-git -C <clone> rev-parse HEAD                                   # 68b68a30acad9b3d8a72802b35f43b82e2bd7d3a
+git -C <clone> rev-parse HEAD                                   # bcebabe3f8c23a376ac68e9e6726590af278f7bb
 grep -rho 'cmd!' crates/engine/src/ | wc -l                     # 801
 awk '/pub (static|const) UI_COMMANDS/,/^];/' crates/ui-egui/src/menus/ui_commands.rs | grep -cE '^\s+(UiCommand|\()'   # 374
 grep -cE '^\s+"[a-z_]+",$' crates/mcp/src/tools/definitions.rs  # 31 (multi-line tool names)

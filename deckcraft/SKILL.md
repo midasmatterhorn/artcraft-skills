@@ -15,11 +15,13 @@ description: >-
   not use it for Microsoft PowerPoint itself.
 ---
 
-Audit basis: this checkout is tag `v0.12.0`, commit `29f0f7772c47aa2bfb74fcbb0c4d3b1503300849` (`git rev-parse HEAD` in the pinned clone). The installed `/Applications/DeckCraft.app` reports `CFBundleShortVersionString` 0.12.0, `CFBundleIdentifier` `ai.storyteller.deckcraft`, and its binary prints `deckcraft 0.12.0`, so the bundle matches this source. **Verify against your installed version** (`/Applications/DeckCraft.app/Contents/MacOS/DeckCraft --version`) — the ArtCraft Launcher auto-updates, and command ids, formats and export options move between releases. Deep detail — every command family, shortcut, control method, MCP tool, format option and runtime path — is in `references/commands-and-formats.md`.
+Audit basis: this checkout is tag `v0.13.1`, commit `4ce2944630b04188dee8504c14151994d06c416a` (`git rev-parse HEAD` in the pinned clone). The installed `/Applications/DeckCraft.app` still reports `CFBundleShortVersionString` 0.12.0, `CFBundleIdentifier` `ai.storyteller.deckcraft`, binary `deckcraft 0.12.0` — **the installed bundle lags this tag.** **Verify against your installed version** (`/Applications/DeckCraft.app/Contents/MacOS/DeckCraft --version`) — the ArtCraft Launcher auto-updates, and command ids, formats and export options move between releases. Deep detail — every command family, shortcut, control method, MCP tool, format option and runtime path — is in `references/commands-and-formats.md`.
 
 ## Overview
 
-DeckCraft is a clean-room, open-source (MIT OR Apache-2.0), pure-Rust presentation application targeting Microsoft PowerPoint for Mac parity — and better speed, openness and agent control (README.md; AGENTS.md; `Cargo.toml`). It builds decks with masters, eleven layouts, eight original themes, shapes, text, tables, charts, SmartArt, audio and video; presents them full screen or in a window with transitions and animations; and exchanges PowerPoint `.pptx` plus its own `.deckcraft` (README.md §"What works today"). It is **alpha**: v0.12.0 still claims **84% feature breadth** (P0 92%, P1 82%, P2 55%) and **~55% ready for real work**, both by its own measurement (ROADMAP.md; `docs/target-app-parity.md`; `docs/parity-checklist.md`). The workspace is 24 crates plus three apps (`apps/deckcraft`, `apps/deckcraft-cli`, `apps/deckcraft-web`) on Rust edition 2024 (`Cargo.toml`; `docs/architecture.md`). The UI migrated to egui 0.37 with craft-ui's shared widgets (ComboBox everywhere) this release. Source: GitHub `storytold/deckcraft`.
+DeckCraft is a clean-room, open-source (MIT OR Apache-2.0), pure-Rust presentation application targeting Microsoft PowerPoint for Mac parity — and better speed, openness and agent control (README.md; AGENTS.md; `Cargo.toml`). It builds decks with masters, eleven layouts, eight original themes, shapes, text, tables, charts, SmartArt, audio and video; presents them full screen or in a window with transitions and animations; and exchanges PowerPoint `.pptx` plus its own `.deckcraft` (README.md §"What works today"). It is **alpha**: the parity docs still claim **84% feature breadth** (P0 92%, P1 82%, P2 55%) and **~55% ready for real work**, both by the project's own measurement (ROADMAP.md; `docs/target-app-parity.md`; `docs/parity-checklist.md`). The workspace is 24 crates plus three apps (`apps/deckcraft`, `apps/deckcraft-cli`, `apps/deckcraft-web`) on Rust edition 2024 (`Cargo.toml`; `docs/architecture.md`). The UI runs on egui 0.37 with craft-ui's shared widgets (ComboBox everywhere). Source: GitHub `storytold/deckcraft`.
+
+v0.13.0–0.13.1 is a **fix/UX wave with no registry change** (328 command ids, 51 UI commands, 25 MCP tools, 12 CLI subcommands, 26 control methods — all re-counted unchanged): **Format ▸ Fill gains a Slide background fill** (shapes and text boxes only, groups keep their fill), **Format Shape Effects shows drawn Shadow/Glow/Soft-Edges preset tiles** and a shadow Size slider, **Darken and Desaturate use PowerPoint's preset ids/HSL shift and 14 effects take its default durations**, the **Add Animation menu scrolls**, Duplicate names copies counting group members, **Slide Show ▸ Set Up Slide Show can keep the mouse cursor visible**, the **Presenter View's next-slide preview renders off the UI thread**, going back reverses the left slide's transition, PDF export gives transparent pixels the backdrop colour, spell check skips words over 100 characters and suggests corrections for all-caps words, **variable fonts' named instances answer to their Windows family names**, charts honour `tickLblPos: none`, and several commands (file.export, file.render, slide.colorAt, animation.clear, design.applyIdea/ideas, transition commands) now reject an invalid slide index instead of silently acting on the selection. **MCP/CLI confinement: `--automation-read-root` / `--automation-write-root` may now be repeated** (multiple roots each); a 16 MiB request-frame cap was added to the MCP server.
 
 Everything user-visible is a **command with an id**, and `Session::execute` is the single dispatch path shared by the ribbon, keyboard, CLI, control channel and MCP (`crates/engine/src/lib.rs`; `crates/engine/src/cmd/`).
 
@@ -27,9 +29,9 @@ Everything user-visible is a **command with an id**, and `Session::execute` is t
 
 ### Automation surface at a glance
 
-| Surface | Count at v0.12.0 | Change vs the v0.11.1 skill |
+| Surface | Count at v0.13.1 | Change vs the v0.12.0 skill |
 |---|---|---|
-| Engine commands (`CommandSpec`) | **328**, ids unique | **+2** — `format.languageAll`, `slide.selectRange` |
+| Engine commands (`CommandSpec`) | **328**, ids unique | unchanged (3 ids re-wrapped to multiline `cmd!` calls; no id added or removed) |
 | Engine shortcuts | **57** (one real collision: `Cmd+Shift+V`) | unchanged |
 | UI-only commands (`UI_COMMANDS`) | **51**, 15 with shortcuts | **+1** |
 | CLI subcommands | **12** (`info render render-transition convert run commands describe app mcp bench links version`) | unchanged |
@@ -41,7 +43,7 @@ Everything user-visible is a **command with an id**, and `Session::execute` is t
 | Charts / SmartArt / starters / icons / text warps | **28** chart types (7 `chartEx` + `RegionMap`) / **45** layouts, 9 styles, 17 colour sets / **6** starter decks / **70** Lucide 1.56.0 icons / **40** warps | unchanged |
 | Pattern fills | **48**-preset gallery (54 DrawingML names known) | unchanged (module moved to `crates/ui-egui/src/panels/fillui.rs` in the shared-layout refactor) |
 
-Every count was recomputed from this tag's code, never copied: commands from the `cmd!(` blocks in `crates/engine/src/cmd/` (328 at this tag; diffed against a fetched `v0.11.1` ref), control methods from the dispatch arms in `crates/ui-egui/src/control.rs`, MCP tools from `crates/mcp/src/tools.rs`, UI commands from `crates/ui-egui/src/lib.rs` `UI_COMMANDS`, CLI from `apps/deckcraft-cli/src/help.rs`. Transitions/animations/themes/layouts/presets/charts/SmartArt/starters/icons/warps carried from the v0.11.1 audit whose methods are recorded there — the release changed none of them (the wave is fixes, refactors and the two new commands).
+Every count was recomputed from this tag's code on 2026-11-01, never copied: commands from the `cmd!(` blocks in `crates/engine/src/cmd/` (188 distinct ids in macro form at both v0.12.0 and v0.13.1 — the full 328 total includes the other spec macros; diffed against a fetched `v0.12.0` ref), control methods from the dispatch arms in `crates/ui-egui/src/control.rs`, MCP tools from `crates/mcp/src/tools.rs`, UI commands from `crates/ui-egui/src/lib.rs` `UI_COMMANDS` (51, re-counted), CLI from `apps/deckcraft-cli/src/help.rs` (12, re-counted). Transitions/animations/themes/layouts/presets/charts/SmartArt/starters/icons/warps carried from the earlier audits — this wave changed none of them (the wave is fixes and UX).
 
 **What changed since v0.11.1** (326 commands): `format.languageAll` sets the **proofing language for the whole presentation** (PR #1118) and `slide.selectRange` backs **Ctrl+Shift+click range selection** in the Slides panel and the slide sorter (PR #1107). Feature work this line: **Reuse Slides now lets you choose which slides of the other file to insert** (PR #1109); **Preferences chooses inches or centimetres** for the Format pane, the ribbon's size boxes, the Slide Size dialog and the ruler (PR #1336); **Ctrl+wheel zooms the slide around the pointer** in Show (PR #1331); RTF outline round-trip fixes (Word RTF outlines skip list bullets and keep each item's indent, non-breaking hyphens survive, saving keeps every paragraph of a slide title, signed hex escapes ignored); PDF export **keeps only web and mail links** and **reuses equal slide backdrops** (faster export); a video with an unsupported codec now says only its audio plays; speech-bubble wedge and Notched Right arrow geometry match presetShapeDefinitions; pasted shapes get the next automatic name; media decoders are hardened against resource amplification. **Startup update prompt with direct self-updating** (craft-update); Windows installs per-user by default. No command, MCP tool, control method, CLI subcommand, transition, animation or theme was removed.
 
@@ -152,7 +154,7 @@ GUI flags: `--control PORT`, `--sample`, `--show`, `--help`, `--version`, and fi
 | `run [--in FILE \| --sample] [--cmd ID[=JSON]]... [--save OUT] [--export OUT [--export-params JSON]] [--print]` | Run commands, then save/export; stops and saves nothing on the first error |
 | `commands [FILTER]` / `describe COMMAND` | List ids/params; explain one |
 | `app [--port PORT] COMMAND [JSON]` / `--method METHOD [JSON]` | One request to a running `deckcraft --control` (default port 7979) |
-| `mcp [--connect PORT] [--sample] [--automation-read-root DIR] [--automation-write-root DIR]` | MCP server on stdio |
+| `mcp [--connect PORT] [--sample] [--automation-read-root DIR]… [--automation-write-root DIR]…` | MCP server on stdio; root flags repeatable since v0.13.0 |
 | `bench (FILE \| --sample) [--runs N] [--json]` | Time open/draw/save/PPTX reopen/PDF export and peak memory |
 
 Examples:
@@ -198,7 +200,7 @@ Use `ui.inspect` first to learn window/canvas/slide rects, the active tool, dial
 {"mcpServers":{"deckcraft":{"command":"deckcraft-cli",
   "args":["mcp","--automation-read-root","work/deck","--automation-write-root","work/deck/out"]}}}
 ```
-Paths outside the roots are refused with ordinary tool errors; a root left out grants none of its access, `--flag=DIR` works, giving the same flag twice is an error, and roots cannot be combined with `--connect`.
+Paths outside the roots are refused with ordinary tool errors; a root left out grants none of its access, `--flag=DIR` works, **each flag may be repeated (multiple roots per kind) since v0.13.0**, and roots cannot be combined with `--connect`.
 
 ### Environment and logs
 - Settings/logs: `~/Library/Application Support/DeckCraft/` (`ui.json`, `prefs.json`, `logs/deckcraft.log`, rotated, capped at 16 MiB); recovery: `…/DeckCraft/Recovery/`.
@@ -255,7 +257,7 @@ Alpha software with active auto-updates: verify every deliverable, keep a native
 
 ## Sources & evidence
 
-- **Repo:** https://github.com/storytold/deckcraft — tag `v0.12.0`, commit `29f0f7772c47aa2bfb74fcbb0c4d3b1503300849` (`git rev-parse HEAD`), inspected **2026-10-29**.
+- **Repo:** https://github.com/storytold/deckcraft — tag `v0.13.1`, commit `4ce2944630b04188dee8504c14151994d06c416a` (`git rev-parse HEAD`), inspected **2026-11-01**; the v0.12.0 ref was fetched for set diffs.
 - **Installed bundle:** `/Applications/DeckCraft.app`, `CFBundleIdentifier` `ai.storyteller.deckcraft`, version `0.12.0`; `--version` prints `deckcraft 0.12.0`; universal x86_64+arm64, Developer ID signed, notarization ticket stapled.
 - **Key files read:** `README.md`; `Cargo.toml`; `docs/{architecture,gaps,file-format-parity,animation-parity,mcp,control-protocol}.md`; `apps/deckcraft/src/main.rs`; `apps/deckcraft-cli/src/{main,help}.rs`; `crates/engine/src/lib.rs`, `crates/engine/src/cmd/` (counts), `crates/model/src/anim.rs`, `crates/geom/src/preset.rs`, `crates/format/src/{lib,rtf}.rs`, `crates/pptx/src/lib.rs`, `crates/pdf/src/lib.rs`, `crates/render/src/{images,pattern}.rs`, `crates/metafile/src/emfplus.rs`, `crates/media/src/lib.rs`, `crates/mcp/src/tools.rs`, `crates/ui-egui/src/{lib,control,dialogs,panels/fillui,sorter,show}.rs`.
 - **Shared libraries (not cloned):** the craft-libs crates (`craft-media`, `craft-pdf`, …) are pinned to one revision, `92d392cf…`, in `Cargo.toml` this release. Shared-library behaviour beyond the pin is not audited here.

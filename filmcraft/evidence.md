@@ -1,8 +1,14 @@
-# FilmCraft — evidence ledger (tag v0.14.0)
+# FilmCraft — evidence ledger (tag v0.15.0)
 
-Audit basis: this checkout is tag **`v0.14.0`**, commit **`a2d8e9ce269aba9c399e36262522e11456df6fbf`**
-(shallow clone at the release tag). Inspection date **2026-10-29**. Installed
-`/Applications/FilmCraft.app` prints `filmcraft 0.14.0`; the GUI was never launched.
+Audit basis: this checkout is tag **`v0.15.0`**, commit **`94ceaa91a58e3e18ebe5676c10befa56759c9ceb`**
+(shallow clone at the release tag). Inspection date **2026-11-01**. Installed
+`/Applications/FilmCraft.app` still prints `filmcraft 0.14.0` (the bundle lags the tag); the GUI was never launched.
+
+v0.15.0 delta (re-diffed old tag → new tag): no command/CLI/control/MCP surface change; explicit
+validated clip targets for destructive commands, `timeline.place` time-parameter validation,
+`effects.apply` stack-append + audio-only refusal, GIF binary transparency on export
+(`crates/export/src/format.rs:299`), coarse-unit muxer frame-lookup fix, File ▸ Export ▸ Captions…
+dialog wrapping `captions.export`, `--control` startup-failure reporting (#3436).
 
 ## 1. Capability claims → evidence → tier
 

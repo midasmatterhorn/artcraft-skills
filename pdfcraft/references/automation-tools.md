@@ -1,7 +1,7 @@
 # PdfCraft automation tool table (names, titles, hints)
 
 Generated from `crates/automation/src/tools.rs` (`tools()`) at tag `v0.15.0`,
-commit `75360d1d7db06fed974f48c914d4c04132757187`, date 2026-10-29. **179 tools** — the same set as
+commit `24bb85308e4b65404fc908506ade6341a29999d7`, date 2026-11-01. **182 tools** (v0.15.0 had 179; +`doc_backdrops`, +`bookmark_from_text_styles`, +`text_styles`) — previously the same set as
 v0.14.0 (153 inline + 26 multi-line `t(` entries; none added, removed or renamed). The order below is
 the order `tools()` returns.
 

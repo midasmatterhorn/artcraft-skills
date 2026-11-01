@@ -1,15 +1,22 @@
-# WordCraft — evidence ledger (tag v0.12.0)
+# WordCraft — evidence ledger (tag v0.13.2)
 
-Audit basis: this checkout is tag **`v0.12.0`**, commit **`3de6ff95af86c19d67030cd96dba15cd6a45a25e`**
-("Release 0.12.0", 2026-10-28; shallow clone plus a fetched `v0.11.0` ref for set diffs). Inspection
-date **2026-10-29**. Installed `/Applications/WordCraft.app` prints `wordcraft 0.12.0 (3de6ff95)`;
-the GUI was never launched.
+Audit basis: this checkout is tag **`v0.13.2`**, commit **`2be33e6dc9c246a57995b131ee85491ce81de328`**
+("Release 0.13.2", 2026-10-31; shallow clone; the v0.12.0 ref is fetched for set diffs). Inspection
+date **2026-11-01**. Installed `/Applications/WordCraft.app` still prints `wordcraft 0.12.0 (3de6ff95)`
+(bundle lags the tag); the GUI was never launched.
+
+v0.12.0 → v0.13.2 delta: automation surface unchanged (commands 648 = 648, MCP tools, control
+methods, CLI byte-identical in `crates/mcp/`, `crates/ui-egui/src/control.rs`, `crates/engine/src/cmd.rs`).
+Feature wave: table copy/cut + Table Properties follows selection, mailings label sheets "generate all",
+field formats `\* DollarText`/`\* Hex`/`\* ArabicDash`, heading outline levels without `w:outlineLvl`,
+fallback face for Chart/SmartArt glyphs, TC hanzi Taiwan standard, Format Painter double-click,
+DOCX/RTF/HTML/Markdown/LaTeX/PDF-export hardening. `craft-i18n.rev` 9205108c → 92d392cf.
 
 ## 1. Capability claims → evidence → tier
 
 | # | Claim | Evidence (repo-relative) | Tier |
 |---|---|---|---|
-| 1 | 648 `CommandSpec::new(` sites (was 643) | `grep -rho 'CommandSpec::new(' crates/ apps/ \| wc -l` = 648; v0.11.0 = 643 (baseline) | implemented |
+| 1 | 648 `CommandSpec::new(` sites (unchanged since v0.12.0) | `grep -rho 'CommandSpec::new(' crates/engine/src/cmd/ \| sort -u \| wc -l` = 648 at both tags | implemented |
 | 2 | Multi-document: one native window per document; File ▸ New adds; View ▸ New Window; per-doc recovery | `crates/ui-egui/src/windows.rs:1` ("One native window per open document"); PRs #4388–#4391 | implemented |
 | 3 | Doc addressing: every MCP tool takes `"doc"`; control `engine.execute`/`document.inspect`/`ui.render` take `doc`; `file.closeDocument {doc}` | `crates/mcp/src/tools.rs:54,216`; `crates/ui-egui/src/control.rs:16`; new id `file.closeDocument` | implemented |
 | 4 | 17 MCP tools (+`list_documents`) | `crates/mcp/src/tools.rs` — 17 `tool(` calls; name list read | implemented |

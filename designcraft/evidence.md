@@ -1,6 +1,6 @@
-# DesignCraft — evidence ledger (tag v0.14.0)
+# DesignCraft — evidence ledger (tag v0.15.2)
 
-Audit basis: this checkout is tag **`v0.14.0`**, commit **`7da69c16ce221f46e8f27cb41e0c88167c8be416`**
+Audit basis: this checkout is tag **`v0.15.2`**, commit **`7e70203206531f0fde1dd5feb2b7d94768842ebc`**
 ("Release 0.14.0", 2026-10-28; shallow clone plus a fetched `v0.13.0` ref for set diffs). Inspection
 date **2026-10-29**. Installed `/Applications/DesignCraft.app` prints `designcraft 0.14.0`; the GUI
 was never launched.
@@ -28,9 +28,9 @@ was never launched.
 | 17 | Placed-PDF layer choices applied on export; IDML graphic-layer options retained, not rendered | `crates/engine/src/cmd/pdflayers.rs`; `crates/pdf/src/optional_content.rs`; `docs/graphic-layer-options.md` | implemented / partial |
 | 18 | No ExtendScript/UXP, no plug-in model, no AI, no PDF font repair | `docs/gaps.md` §§22, 23, 28 | not implemented (verified absent) |
 
-## 2. Automation-surface counts: v0.13.0 → v0.14.0
+## 2. Automation-surface counts: v0.13.0 → v0.15.2
 
-| Surface | v0.13.0 | v0.14.0 (measured) | Change |
+| Surface | v0.13.0 | v0.15.2 (measured) | Change |
 |---|---:|---:|---|
 | Engine `cmd!` ids | 537 | **542** | +5 (four named above; one const-built) |
 | UI commands | 172 | **176** | +4 (id-set diff clean) |
@@ -57,7 +57,7 @@ was never launched.
 ## 5. Verification commands (read-only)
 
 ```sh
-git -C <clone> rev-parse HEAD                                   # 7da69c16ce221f46e8f27cb41e0c88167c8be416
+git -C <clone> rev-parse HEAD                                   # 7e70203206531f0fde1dd5feb2b7d94768842ebc
 git grep -o 'cmd!' HEAD -- crates/engine/src | wc -l            # 542
 git grep -o 'cmd!' v0.13.0 -- crates/engine/src | wc -l         # 537
 awk '/pub const UI_COMMANDS/,/^];/' crates/ui-egui/src/menus/ui_commands.rs | grep -oE '"[a-z]+\.[a-zA-Z]+"' | sort -u | wc -l   # 169 unique (176 entries with const-built rows)

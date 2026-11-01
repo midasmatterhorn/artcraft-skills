@@ -1,6 +1,6 @@
-# DeckCraft — evidence ledger (tag v0.12.0)
+# DeckCraft — evidence ledger (tag v0.13.1)
 
-Audit basis: this checkout is tag **`v0.12.0`**, commit **`29f0f7772c47aa2bfb74fcbb0c4d3b1503300849`**
+Audit basis: this checkout is tag **`v0.13.1`**, commit **`4ce2944630b04188dee8504c14151994d06c416a`**
 (shallow clone plus a fetched `v0.11.1` ref for set diffs). Inspection date **2026-10-29**. Installed
 `/Applications/DeckCraft.app` prints `deckcraft 0.12.0`; the GUI was never launched.
 
@@ -20,9 +20,9 @@ Audit basis: this checkout is tag **`v0.12.0`**, commit **`29f0f7772c47aa2bfb74f
 | 10 | Craft-libs crates at one rev | `Cargo.toml` (craft-media, craft-pdf → `92d392cf…`, was `f0ad6c1e`/`9f75d3dc`) | implemented |
 | 11 | No `.ppt`/`.odp`/macros/password/MP4 export; PDF raster artwork; SVG not drawn | `docs/gaps.md`; `crates/engine/src/cmd/file.rs`; `crates/render/src/images.rs` | not implemented (verified absent) |
 
-## 2. Automation-surface counts: v0.11.1 → v0.12.0
+## 2. Automation-surface counts: v0.12.0 → v0.13.1 (all unchanged)
 
-| Surface | v0.11.1 | v0.12.0 (measured) | Change |
+| Surface | v0.11.1 | v0.12.0 → v0.13.1 (measured) | Change |
 |---|---:|---:|---|
 | Engine commands | 326 | **328** | +`format.languageAll`, +`slide.selectRange` |
 | MCP tools | 25 | **25** | unchanged |
@@ -30,11 +30,11 @@ Audit basis: this checkout is tag **`v0.12.0`**, commit **`29f0f7772c47aa2bfb74f
 | UI commands | 50 | **51** | +1 |
 | CLI subcommands | 12 | **12** | unchanged |
 | Transitions / animations / themes / layouts / presets / charts / SmartArt / starters / icons / warps | 49 / 107 / 8×4 / 11+Custom / 183 / 28 / 45-9-17 / 6 / 70 / 40 | **same** | unchanged (wave is fixes; the v0.11.1 audit's methods cover these) |
-| Craft-libs pins | per-crate revs | **one rev `92d392cf…`** | unified |
+| Craft-libs pins | per-crate revs | **`92d392cf…`; `craft-update` moved to `04aa1703…` in v0.13.1** | craft-update moved |
 
 ## 3. Uncertain / not verified
 
-- The +1 UI command id was not named (row count only); the live registry is authoritative.
+- The +1 UI command id was not named in the v0.12.0 audit (row count only); the live registry is authoritative. The v0.13.1 re-count found 51 UI commands again.
 - GUI behaviour not launched; registry + docs + packaging are the evidence.
 - PPTX fidelity on real corporate decks remains unmeasured by the project (`docs/gaps.md`).
 
@@ -49,7 +49,7 @@ Audit basis: this checkout is tag **`v0.12.0`**, commit **`29f0f7772c47aa2bfb74f
 ## 5. Verification commands (read-only)
 
 ```sh
-git -C <clone> rev-parse HEAD                                   # 29f0f7772c47aa2bfb74fcbb0c4d3b1503300849
+git -C <clone> rev-parse HEAD                                   # 4ce2944630b04188dee8504c14151994d06c416a
 grep -rho 'cmd!' crates/engine/src/ | wc -l                     # 328
 git grep -o 'cmd!' v0.11.1 -- crates/engine/src | wc -l         # 326
 grep -cE '^\s+tool\(' crates/mcp/src/tools.rs                   # 25
