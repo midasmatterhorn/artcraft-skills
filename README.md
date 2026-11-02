@@ -1,6 +1,6 @@
 # ArtCraft Agent Skills
 
-**Fifteen evidence-verified agent skills — plain `SKILL.md` files following the [agentskills.io](https://agentskills.io) standard — that teach AI coding agents to drive the [ArtCraft](https://getartcraft.com) creative suite. Built for Claude Code, OpenAI Codex & ChatGPT desktop, OpenCode, Devin, CommandCode, ZCode, Google Antigravity and Gemini CLI.**
+**Sixteen evidence-verified agent skills — plain `SKILL.md` files following the [agentskills.io](https://agentskills.io) standard — that teach AI coding agents to drive the [ArtCraft](https://getartcraft.com) creative suite. Built for Claude Code, OpenAI Codex & ChatGPT desktop, OpenCode, Devin, CommandCode, ZCode, Google Antigravity and Gemini CLI.**
 
 <p align="center">
   <img src="assets/app-logos-marquee.svg" alt="The sixteen apps scrolling past: PhotoCraft, LightCraft, VectorCraft, FigCraft, DesignCraft, WordCraft, DeckCraft, GridCraft, PdfCraft, EffectCraft, FilmCraft, SoundCraft, CADCraft, Craft Anything, SolidCraft and TextureCraft" width="100%">
