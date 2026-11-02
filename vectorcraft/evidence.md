@@ -1,14 +1,17 @@
-# VectorCraft — evidence ledger (tag v0.19.0)
+# VectorCraft — evidence ledger (tag v0.20.0)
 
-Audit basis: this checkout is tag **`v0.19.0`**, commit **`bcebabe3f8c23a376ac68e9e6726590af278f7bb`** ("Release
-0.19.0", 2026-10-31, shallow clone). Inspection date **2026-11-01**. Installed `/Applications/VectorCraft.app` still reports 0.18.0
-(`CFBundleIdentifier ai.storyteller.vectorcraft`), binary prints `vectorcraft 0.18.0` (bundle lags the tag); the GUI was never launched.
+Audit basis: this checkout is tag **`v0.20.0`**, commit **`5628de96f866185d8eb289b167b89691f213c0c3`** ("Release
+0.20.0", 2026-11-01, shallow clone; the v0.19.0 ref was fetched for id diffs). Inspection date **2026-11-02**. Installed `/Applications/VectorCraft.app` matches the tag
+(`CFBundleIdentifier ai.storyteller.vectorcraft`), binary prints `vectorcraft 0.20.0`; the GUI was never launched.
 
 v0.18.0 → v0.19.0 delta: registry set unchanged (2 ids re-wrapped multiline; 25 control methods re-counted);
 Add-ons Arrange Tools, Smooth slider section smoothing, Optical kerning, JPEG 2000 import, Export for Screens
 single-PDF, Intertwine by id/nearest, Eyedropper Shift-click pattern/mesh sample, Symbols/Brushes delete
 confirm + Alt-click, PDF/EPS pattern-tile flattening, Batch data-set naming, Objects on Path options.
 No `references/` directory.
+
+
+v0.19.0 → v0.20.0 delta: **registry +20 ids, zero removed** (multiline non-test extract 861 → 881): addon.arrange.{grid,groupOverlapping,randomizeOpacity,replace,size,sort,swap}, addon.cleanup.joinText, addon.color.{nearestSwatch,applyNearestSwatch}, addon.document.{exportAllOpen,saveTimestampedCopy,symbolsFromLayers}, addon.pathtools.{expandDashes,divideDashes}, symbol.{exitEditing,instance.reset,instance.setAppearance,unused}, view.capsLock. MCP tool set unchanged (headless doc-string: document.exportForScreens +`includeArtboardFill`). Prior v0.18.0 → v0.19.0 audit: registry unchanged, control 25, MCP unchanged.
 
 ## 1. Capability claims → evidence → tier
 
@@ -75,7 +78,7 @@ No `references/` directory.
 ## 5. Verification commands (read-only)
 
 ```sh
-git -C <clone> rev-parse HEAD                                   # bcebabe3f8c23a376ac68e9e6726590af278f7bb
+git -C <clone> rev-parse HEAD                                   # 5628de96f866185d8eb289b167b89691f213c0c3
 grep -rho 'cmd!' crates/engine/src/ | wc -l                     # 801
 awk '/pub (static|const) UI_COMMANDS/,/^];/' crates/ui-egui/src/menus/ui_commands.rs | grep -cE '^\s+(UiCommand|\()'   # 374
 grep -cE '^\s+"[a-z_]+",$' crates/mcp/src/tools/definitions.rs  # 31 (multi-line tool names)

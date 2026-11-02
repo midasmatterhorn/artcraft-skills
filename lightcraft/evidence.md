@@ -1,9 +1,17 @@
-# LightCraft — evidence ledger (tag v0.16.0)
+# LightCraft — evidence ledger (tag v0.17.0)
 
-Audit basis: this checkout is tag **`v0.16.0`**, commit **`cdf00cc84bf87f544d6dbc40e3bc0456641661a9`** (shallow clone
-holding exactly this commit). Inspection date **2026-11-01**. Installed `/Applications/LightCraft.app`:
-`CFBundleShortVersionString` 0.15.0, binary prints `lightcraft 0.15.0` — **the installed bundle lags this tag**;
+Audit basis: this checkout is tag **`v0.17.0`**, commit **`5a09d075306291a1522d5e8bb0710774f3733594`** ("Release 0.17.0", 2026-11-01; the v0.16.0 ref was fetched for id diffs; shallow clone
+holding exactly this commit). Inspection date **2026-11-02**. Installed `/Applications/LightCraft.app`
+matches the tag (`CFBundleShortVersionString` 0.17.0, binary prints `lightcraft 0.17.0`);
 bundle id `ai.storyteller.lightcraft`; the GUI was never launched. No `references/` directory.
+
+v0.16.0 → v0.17.0 delta: **+4 command ids, zero removed** (multiline non-test extract 375 → 379):
+`keyword.setShortcut`, `keyword.shortcut`, `keyword.toggleShortcut`, `photo.clearLabel`. MCP tool set,
+CLI subcommands (10), control methods, 9 bundled camera profiles (`crates/engine/src/camera_profiles.rs`
+BUNDLED, byte-identical between tags) and the develop slider specs unchanged (controls.rs diff is
+formatting/parse guards only). Wave = "Integration r3" (178 PRs) + an accessibility pass + Auto Import
+concurrency (#3409), ≥2x-source Develop exports (#3281), faster person look-alikes (#3286),
+folder-rename protection (#3276), crop-ratio box (#3235), EXIF/HTTP hardening.
 
 The v0.15.0 → v0.16.0 wave is a large community-integration release (~250 merged PRs) with **no command-registry
 change**: Space-hold pan over tools, Alt/Option-drag clipping/sharpening previews, AHD demosaic blending, faster

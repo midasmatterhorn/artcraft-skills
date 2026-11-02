@@ -1,6 +1,6 @@
 # FilmCraft file formats — what the code actually reads and writes
 
-Version: repo tag **v0.15.0**, commit `94ceaa91a58e3e18ebe5676c10befa56759c9ceb` (inspected 2026-11-01). Carried from v0.14.0 unless marked **New in 0.15.0**.
+Version: repo tag **v0.16.0**, commit `77adc30a756bea17441199caff45a24415ba9753` (inspected 2026-11-02). Carried from v0.14.0 unless marked **New in 0.15.0**; the v0.16.0 wave (244-PR integration round) changed no import/export table row.
 Every list below is read out of the code, not the marketing docs. Where a doc contradicts the code, the
 contradiction is named and the code wins. New since v0.13.0: **uncompressed QuickTime video decodes**
 (raw 24-bit RGB, 2vuy, v210), PNG Sequence writes RGB files when alpha is off, OTIO export bounds

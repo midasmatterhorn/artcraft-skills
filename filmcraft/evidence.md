@@ -1,8 +1,9 @@
-# FilmCraft — evidence ledger (tag v0.15.0)
+# FilmCraft — evidence ledger (tag v0.16.0)
 
-Audit basis: this checkout is tag **`v0.15.0`**, commit **`94ceaa91a58e3e18ebe5676c10befa56759c9ceb`**
-(shallow clone at the release tag). Inspection date **2026-11-01**. Installed
-`/Applications/FilmCraft.app` still prints `filmcraft 0.14.0` (the bundle lags the tag); the GUI was never launched.
+Audit basis: this checkout is tag **`v0.16.0`**, commit **`77adc30a756bea17441199caff45a24415ba9753`** ("Release 0.16.0", 2026-11-01; the v0.15.0 ref was fetched for id diffs; installed bundle matches at 0.16.0). Inspection date **2026-11-02**.
+
+v0.15.0 → v0.16.0 delta: **+4 engine command ids, zero removed** (multiline non-test extract 226 → 230): `colors.addCustom`, `colors.updateCustom`, `colors.removeCustom` (Three-Way Color Corrector #3695 — the previous audit's "post-release main-only" note is obsolete), `markers.delete` (#3585). MCP 17 tools / control 19 methods / CLI unchanged (control.rs diff is reply plumbing only). Wave = "Integration: backlog round r1" (244 PRs) with the highlights listed in SKILL.md's delta paragraph.
+Prior wave (v0.15.0): installed `/Applications/FilmCraft.app` then still printed `filmcraft 0.14.0`; the GUI was never launched.
 
 v0.15.0 delta (re-diffed old tag → new tag): no command/CLI/control/MCP surface change; explicit
 validated clip targets for destructive commands, `timeline.place` time-parameter validation,

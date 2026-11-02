@@ -1,9 +1,10 @@
 # FigCraft automation surfaces — operational detail
 
-Load this when a job is bigger than a couple of command calls. Everything here is from the v0.13.1
-tree (commit `76f520ffaaab73fcacf14dfaf30f29272ec178cb`, tag `v0.13.1`, 2026-10-31), re-measured at
-that tag; the v0.12.1 audit's shapes were re-checked unchanged (MCP tools, control methods; CLI now
-clap-parsed with +`connect publish`). Repo-relative paths only; no machine paths are named.
+Load this when a job is bigger than a couple of command calls. Everything here is from the v0.14.0
+tree (commit `5fc2840d9089e0b21056b57c4dff9f795e38a4e3`, tag `v0.14.0`, 2026-11-01), re-measured at
+that tag; the v0.14.0 diff touched no CLI, MCP, control-channel or locale files, so every shape
+below carries over from the v0.13.1 re-measure (MCP tools, control methods; CLI clap-parsed with
++`connect publish`). Repo-relative paths only; no machine paths are named.
 
 ## 1. Three ways in, one command registry
 

@@ -1,12 +1,17 @@
 # DeckCraft — commands, shortcuts, control methods, MCP tools and file formats (agent reference)
 
-**Pin:** tag `v0.13.1`, commit `4ce2944630b04188dee8504c14151994d06c416a` — the code shipped in
-DeckCraft 0.13.x. **Verified:** 2026-11-01 against a read-only clone at this tag; all counts from the v0.12.0 audit re-checked unchanged at v0.13.1. All citations are
+**Pin:** tag `v0.14.1`, commit `ee39ff67816d0039143ec7c98ea604cefe0cd2e5` — the code shipped in
+DeckCraft 0.14.x. **Verified:** 2026-11-02 against a read-only clone at this tag; the v0.13.1 ref was
+fetched for diffs. All citations are
 repo-relative (`path` or `path:symbol`). Counts were re-parsed from the registries at this tag, not
-carried over. The v0.11.1→v0.12.0 delta: **326 → 328 engine commands** (+`format.languageAll`,
-+`slide.selectRange`), MCP tools 25 and the control dispatch set unchanged; Reuse Slides gained a
-slide chooser, proofing language can be set for the whole presentation, Preferences chooses
-inches/centimetres, and the parameter-validation and media-decoder hardening wave landed.
+carried over. The v0.13.1→v0.14.1 delta: **328 → 329 engine commands** (+`slide.actions`, inspect
+family 4 → 5), **MCP `insert_chart` gained optional `x`/`y`/`w`/`h`** (tool set unchanged at 25),
+`animation.add`/`animation.set` take custom motion-path points, and the control dispatch set, UI
+commands and CLI are unchanged. The v0.11.1→v0.12.0 delta: **326 → 328 engine commands**
+(+`format.languageAll`, +`slide.selectRange`), MCP tools 25 and the control dispatch set unchanged;
+Reuse Slides gained a slide chooser, proofing language can be set for the whole presentation,
+Preferences chooses inches/centimetres, and the parameter-validation and media-decoder hardening
+wave landed.
 
 ---
 
@@ -83,8 +88,7 @@ artistic, zoom, compress. That order breaks shortcut ties. `Session::execute` is
 path for the UI, keyboard, CLI, control channel and MCP (`crates/engine/src/lib.rs:609`),
 panic-guarded by `crates/engine/src/guard.rs`.
 
-**Total: 328 commands** (was 326 = 233 ordinary + 56 `noundo` + 37 `query` at v0.11.1; the two new
-commands are `format.languageAll` and `slide.selectRange`); all ids unique.
+**Total: 329 commands** (326 at v0.11.1 = 233 ordinary + 56 `noundo` + 37 `query`; later +`format.languageAll`, +`slide.selectRange`, +`slide.actions`); all ids unique.
 
 | Family module (under `crates/engine/src/cmd/`) | Commands | Covers |
 |---|---:|---|
@@ -111,7 +115,7 @@ commands are `format.languageAll` and `slide.selectRange`); all ids unique.
 | table | 21 | rows/columns, merge/split, distribute, widths/heights, borders, styles, cell fill/margins/align, range selection, draw/erase line |
 | find | 2 | Find, Replace |
 | review | 23 | comments, spelling, thesaurus, dictionary, accessibility, revisions (accept/**reject**/end), compare, slide show start/end/setup(**speaker/browsed/kiosk**)/custom show |
-| inspect | 4 | `document.inspect`, `slide.inspect`, `shape.inspect`, `commands.list` |
+| inspect | 5 | `document.inspect`, `slide.inspect`, `slide.actions` (read-only action settings, new at v0.14.1), `shape.inspect`, `commands.list` |
 | media | 8 | play/pause/toggle/stop, seek, info, poster frame, GIF play |
 | artistic | 1 | Artistic Effects |
 | zoom | 1 | Insert ▸ Zoom (linked summary/section/slide pictures) |
@@ -262,7 +266,7 @@ connected mode only (`APP_ONLY`).
 | `add_text_box` | | `insert.textBox` + `text.exit` + `edit.select` |
 | `set_text` | | `text.set` |
 | `insert_picture` | | `insert.picture` (path or base64) |
-| `insert_table` / `insert_chart` | | `insert.table` / `insert.chart` |
+| `insert_table` / `insert_chart` | chart also takes optional `x`/`y`/`w`/`h` (v0.14.1) | `insert.table` / `insert.chart` |
 | `select` / `pointer` | | `edit.select` / `ui.pointer` |
 | `select_tool` / `key` / `type_text` | | `ui.tool.select` / `ui.key` / `ui.text` |
 | `screenshot` | RO, app | `ui.screenshot` as an image block |

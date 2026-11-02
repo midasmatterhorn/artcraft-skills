@@ -1,6 +1,8 @@
 # EffectCraft — evidence ledger (tag v0.19.0)
 
-Audit basis: this checkout is tag **`v0.19.0`**, commit **`afa3c938f6d7f2fd8688e9cd6f58dba0c606b1b4`** ("Release 0.19.0", 2026-10-31; inspection 2026-11-01; installed bundle still 0.18.0)
+Audit basis: this checkout is tag **`v0.20.0`**, commit **`720c67117ea232ef01631a368bb617012f4c63d6`** ("Release 0.20.0", 2026-11-01; inspection 2026-11-02; the v0.19.0 ref was fetched for id diffs; installed bundle matches at 0.20.0)
+
+v0.19.0 → v0.20.0 delta: **+1 command** — `comp.deleteAllMarkers` (#2169; `(cmd|query)!` multiline non-test id extract 680 → 681, nothing removed) and **+1 interface language** — `sv` (#1541; 17 → 18 in `crates/ui-egui/src/i18n.rs`). Effects: generated `docs/effects.md` says **308 effects / 2987 params / 280 GPU at both v0.19.0 and v0.20.0** — the previous ledger's "307 effects / 3032 params" did not match its own pinned tag; the test-enforced generated doc wins. MCP 36 tools, control 24 methods, CLI 12 subcommands, UI_COMMANDS 111: zero diff files. Behaviour: disk cache drops pre-adjustment-blend frames (#2666), tools-bar flyout cycling (#2684), all-four workspace menu (#2690), AE-named 3D views in Japanese + comp camera label (#2691), channel-button colours (#2692), Fast Previews placement (#2694), floating-Timeline drops (#2700), web tab title (#2710), floating-panel ≡ menu (#2711), Expression Reference target exists (#2712), `frame_position` rate guard (#2693).
 (shallow clone plus a fetched `v0.17.0` ref for set diffs). Inspection date **2026-10-29**. Installed
 `/Applications/EffectCraft.app` prints `effectcraft 0.18.0`; the GUI was never launched.
 
@@ -9,7 +11,7 @@ Audit basis: this checkout is tag **`v0.19.0`**, commit **`afa3c938f6d7f2fd8688e
 | # | Claim | Evidence (repo-relative) | Tier |
 |---|---|---|---|
 | 1 | Registry unchanged except +`text.deleteSurrounding` | id-set diff between the tags (563 → 564 unique literal ids; nothing removed); `cmd!`/`query!` call sites 697 → 678 (refactor consolidated macro sites) | implemented |
-| 2 | 307 effects / 3032 params / 280 GPU / 21 categories / 0 partial | `docs/effects.md:6-10` (generated, test-enforced by `effects_doc_is_current`) | implemented |
+| 2 | 308 effects / 2987 params / 280 GPU / 21 categories / 0 partial | `docs/effects.md:6-10` (generated, test-enforced by `effects_doc_is_current`; identical at v0.19.0 and v0.20.0) | implemented |
 | 3 | 36 MCP tools (27 headless + 9 bridge-only) | `crates/automation/src/tools.rs` `static TOOLS`: 36 `ToolDef {`, 9 `bridge_only: true` — identical to v0.17.0 | implemented |
 | 4 | 24 control methods | `crates/ui-egui/src/control.rs` — same count and set as v0.17.0 | implemented |
 | 5 | 111 UI-only ids | `crates/ui-egui/src/menus/commands.rs` (`UI_COMMANDS`) — carried count, table moved by the refactor | implemented |
@@ -51,7 +53,7 @@ output-name collision fixes; automation tool catalogue re-diffed in `crates/auto
 
 | Doc statement | Code reality |
 |---|---|
-| README/docs "306 effects" | 307 (test-enforced generated doc) |
+| README/docs "306 effects" | 308 (test-enforced generated doc) |
 | `docs/target-app-parity.md` "411 commands" | registry far larger; `effectcraft-cli commands` is authoritative |
 
 ## 5. Verification commands (read-only)

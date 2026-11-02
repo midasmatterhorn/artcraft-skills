@@ -4,7 +4,7 @@ description: >-
   DeckCraft is the ArtCraft open-source, clean-room PowerPoint-compatible presentation app for
   macOS (also Windows, Linux, FreeBSD and the web): slides, masters and layouts, shapes, 3-D,
   text, tables, charts, SmartArt, media, transitions, animations, slide shows, and `.deckcraft`,
-  `.pptx`/`.potx`/`.ppsx`, outline text, Markdown and `.rtf`, PDF/PNG/JPEG/GIF files — driven by 328
+  `.pptx`/`.potx`/`.ppsx`, outline text, Markdown and `.rtf`, PDF/PNG/JPEG/GIF files — driven by 329
   scriptable commands, a 12-subcommand CLI, a JSON control channel and a 25-tool MCP
   server. Trigger this skill whenever the user mentions DeckCraft, `.deckcraft`, `deckcraft-cli`,
   asks what DeckCraft can or cannot do, which formats or shortcuts it supports, wants to build,
@@ -15,7 +15,9 @@ description: >-
   not use it for Microsoft PowerPoint itself.
 ---
 
-Audit basis: this checkout is tag `v0.13.1`, commit `4ce2944630b04188dee8504c14151994d06c416a` (`git rev-parse HEAD` in the pinned clone). The installed `/Applications/DeckCraft.app` still reports `CFBundleShortVersionString` 0.12.0, `CFBundleIdentifier` `ai.storyteller.deckcraft`, binary `deckcraft 0.12.0` — **the installed bundle lags this tag.** **Verify against your installed version** (`/Applications/DeckCraft.app/Contents/MacOS/DeckCraft --version`) — the ArtCraft Launcher auto-updates, and command ids, formats and export options move between releases. Deep detail — every command family, shortcut, control method, MCP tool, format option and runtime path — is in `references/commands-and-formats.md`.
+Audit basis: this checkout is tag `v0.14.1`, commit `ee39ff67816d0039143ec7c98ea604cefe0cd2e5` (`git rev-parse HEAD` in the pinned clone; the v0.13.1 ref was fetched for id diffs). The installed `/Applications/DeckCraft.app` matches this tag (`CFBundleIdentifier` `ai.storyteller.deckcraft`, binary `deckcraft 0.14.1`). **Verify against your installed version** (`/Applications/DeckCraft.app/Contents/MacOS/DeckCraft --version`) — the ArtCraft Launcher auto-updates, and command ids, formats and export options move between releases.
+
+v0.13.1 → v0.14.1 adds **`slide.actions`** (read-only inspection of a slide's action settings, PR #1574 — **328 → 329 engine commands**, the inspect family 4 → 5) and changes no other id. **MCP `insert_chart` takes optional `x`/`y`/`w`/`h`** (#1583; tool set unchanged at 25). **`animation.add`/`animation.set` take the points of a custom motion path** (#1584). Behaviour: slideshow click targets follow animated shapes (#1521); print previews use private directories (#1519); transition commands reject an invalid index instead of acting on the selection (#1577); `format.highlight` rejects an invalid colour instead of clearing it (#1587); bullet Follow Text settings are preserved (#1589); PPTX keeps inset line alignment (#1590) and gradient flip mode (#1591); custom geometry parses uppercase exponents (#1594); **layout/master placeholder formatting reaches slides** (#1490); codec configuration records reject picture slices (#1514); Ogg damage recovery is bounded (#1582); explicit line miter limits are preserved (#1585); text no longer breaks a word after `?`, `!`, `}` or `+`, so URLs wrap as in PowerPoint (#924). Deep detail — every command family, shortcut, control method, MCP tool, format option and runtime path — is in `references/commands-and-formats.md`.
 
 ## Overview
 
@@ -29,9 +31,9 @@ Everything user-visible is a **command with an id**, and `Session::execute` is t
 
 ### Automation surface at a glance
 
-| Surface | Count at v0.13.1 | Change vs the v0.12.0 skill |
+| Surface | Count at v0.14.1 | Change vs the v0.13.1 skill |
 |---|---|---|
-| Engine commands (`CommandSpec`) | **328**, ids unique | unchanged (3 ids re-wrapped to multiline `cmd!` calls; no id added or removed) |
+| Engine commands (`CommandSpec`) | **329**, ids unique | **+1** (+`slide.actions`; inspect family 4 → 5) |
 | Engine shortcuts | **57** (one real collision: `Cmd+Shift+V`) | unchanged |
 | UI-only commands (`UI_COMMANDS`) | **51**, 15 with shortcuts | **+1** |
 | CLI subcommands | **12** (`info render render-transition convert run commands describe app mcp bench links version`) | unchanged |
@@ -43,7 +45,7 @@ Everything user-visible is a **command with an id**, and `Session::execute` is t
 | Charts / SmartArt / starters / icons / text warps | **28** chart types (7 `chartEx` + `RegionMap`) / **45** layouts, 9 styles, 17 colour sets / **6** starter decks / **70** Lucide 1.56.0 icons / **40** warps | unchanged |
 | Pattern fills | **48**-preset gallery (54 DrawingML names known) | unchanged (module moved to `crates/ui-egui/src/panels/fillui.rs` in the shared-layout refactor) |
 
-Every count was recomputed from this tag's code on 2026-11-01, never copied: commands from the `cmd!(` blocks in `crates/engine/src/cmd/` (188 distinct ids in macro form at both v0.12.0 and v0.13.1 — the full 328 total includes the other spec macros; diffed against a fetched `v0.12.0` ref), control methods from the dispatch arms in `crates/ui-egui/src/control.rs`, MCP tools from `crates/mcp/src/tools.rs`, UI commands from `crates/ui-egui/src/lib.rs` `UI_COMMANDS` (51, re-counted), CLI from `apps/deckcraft-cli/src/help.rs` (12, re-counted). Transitions/animations/themes/layouts/presets/charts/SmartArt/starters/icons/warps carried from the earlier audits — this wave changed none of them (the wave is fixes and UX).
+Every count was recomputed from this tag's code on 2026-11-02, never copied: commands from the `cmd!(` blocks in `crates/engine/src/cmd/` (the full 329 total; diffed against a fetched `v0.13.1` ref — exactly one new id, `slide.actions`), control methods from the dispatch arms in `crates/ui-egui/src/control.rs` (zero diff files), MCP tools from `crates/mcp/src/tools.rs` (25; only `insert_chart`'s parameter schema changed), UI commands from `crates/ui-egui/src/lib.rs` `UI_COMMANDS` (51, zero diff files), CLI from `apps/deckcraft-cli/src/help.rs` (12, zero diff files). Transitions/animations/themes/layouts/presets/charts/SmartArt/starters/icons/warps carried from the earlier audits — this wave changed none of them (the wave is fixes, one query command, and MCP/animation parameter extensions).
 
 **What changed since v0.11.1** (326 commands): `format.languageAll` sets the **proofing language for the whole presentation** (PR #1118) and `slide.selectRange` backs **Ctrl+Shift+click range selection** in the Slides panel and the slide sorter (PR #1107). Feature work this line: **Reuse Slides now lets you choose which slides of the other file to insert** (PR #1109); **Preferences chooses inches or centimetres** for the Format pane, the ribbon's size boxes, the Slide Size dialog and the ruler (PR #1336); **Ctrl+wheel zooms the slide around the pointer** in Show (PR #1331); RTF outline round-trip fixes (Word RTF outlines skip list bullets and keep each item's indent, non-breaking hyphens survive, saving keeps every paragraph of a slide title, signed hex escapes ignored); PDF export **keeps only web and mail links** and **reuses equal slide backdrops** (faster export); a video with an unsupported codec now says only its audio plays; speech-bubble wedge and Notched Right arrow geometry match presetShapeDefinitions; pasted shapes get the next automatic name; media decoders are hardened against resource amplification. **Startup update prompt with direct self-updating** (craft-update); Windows installs per-user by default. No command, MCP tool, control method, CLI subcommand, transition, animation or theme was removed.
 
@@ -90,7 +92,7 @@ The MCP surface is 25 tools: `list_commands`, `run_command`, `batch`, `new_prese
 - **Known PPTX round-trip losses:** media playback options and animation rewind are not written back (#74, #77); a combo chart's secondary value axis is read but not written when the chart is rebuilt; editing a chart's data drops its embedded workbook (an unchanged chart keeps it); imported SmartArt is redrawn with DeckCraft's simpler layouts; relationship-bearing SmartArt/OLE kept only as XML loses drawing and data parts (#203).
 - **Unsupported input:** legacy `.ppt`/`.pot`/`.pps`, OpenDocument `.odp` and `.pptm`/`.potm`/`.ppsm` are not read (macros are neither preserved nor run); password-protected decks fail with a clear error and there is no password protection on save.
 - **A Finder-open `.ppsx` still does not start its show.** Only the command-line path checks for `.ppsx`; the file-association path documented in `docs/file-format-parity.md` is unverified for the Finder route.
-- **Internal docs still lag the code.** `docs/control-protocol.md` says a 16 MiB request line (code: 256 MiB); `docs/animation-parity.md` says 14 exit effects (code: 23); `docs/gaps.md` understates SmartArt; `docs/architecture.md` says 320 commands (code: 328). Trust the code and `deckcraft-cli commands`/`describe`.
+- **Internal docs still lag the code.** `docs/control-protocol.md` says a 16 MiB request line (code: 256 MiB); `docs/animation-parity.md` says 14 exit effects (code: 23); `docs/gaps.md` understates SmartArt; `docs/architecture.md` says 320 commands (code: 329). Trust the code and `deckcraft-cli commands`/`describe`.
 
 ### Pictures and media
 - **SVG is not rendered.** `insert.picture` accepts `image/svg+xml`, but no decoder draws it, so an inserted SVG shows nothing and a PPTX that stores a PNG fallback beside its SVG shows that fallback.
@@ -257,9 +259,9 @@ Alpha software with active auto-updates: verify every deliverable, keep a native
 
 ## Sources & evidence
 
-- **Repo:** https://github.com/storytold/deckcraft — tag `v0.13.1`, commit `4ce2944630b04188dee8504c14151994d06c416a` (`git rev-parse HEAD`), inspected **2026-11-01**; the v0.12.0 ref was fetched for set diffs.
-- **Installed bundle:** `/Applications/DeckCraft.app`, `CFBundleIdentifier` `ai.storyteller.deckcraft`, version `0.12.0`; `--version` prints `deckcraft 0.12.0`; universal x86_64+arm64, Developer ID signed, notarization ticket stapled.
+- **Repo:** https://github.com/storytold/deckcraft — tag `v0.14.1`, commit `ee39ff67816d0039143ec7c98ea604cefe0cd2e5` (`git rev-parse HEAD`), inspected **2026-11-02**; the v0.13.1 ref was fetched for set diffs.
+- **Installed bundle:** `/Applications/DeckCraft.app`, `CFBundleIdentifier` `ai.storyteller.deckcraft`, version `0.14.1`; `--version` prints `deckcraft 0.14.1`; universal x86_64+arm64, Developer ID signed, notarization ticket stapled.
 - **Key files read:** `README.md`; `Cargo.toml`; `docs/{architecture,gaps,file-format-parity,animation-parity,mcp,control-protocol}.md`; `apps/deckcraft/src/main.rs`; `apps/deckcraft-cli/src/{main,help}.rs`; `crates/engine/src/lib.rs`, `crates/engine/src/cmd/` (counts), `crates/model/src/anim.rs`, `crates/geom/src/preset.rs`, `crates/format/src/{lib,rtf}.rs`, `crates/pptx/src/lib.rs`, `crates/pdf/src/lib.rs`, `crates/render/src/{images,pattern}.rs`, `crates/metafile/src/emfplus.rs`, `crates/media/src/lib.rs`, `crates/mcp/src/tools.rs`, `crates/ui-egui/src/{lib,control,dialogs,panels/fillui,sorter,show}.rs`.
-- **Shared libraries (not cloned):** the craft-libs crates (`craft-media`, `craft-pdf`, …) are pinned to one revision, `92d392cf…`, in `Cargo.toml` this release. Shared-library behaviour beyond the pin is not audited here.
-- **Docs that are stale at this tag (code wins):** `docs/control-protocol.md` (16 MiB vs the code's 256 MiB); `docs/animation-parity.md` (14 exits vs 23); `docs/gaps.md` (SmartArt counts); `docs/architecture.md` (320 commands vs 328); `ROADMAP.md` ("226 commands").
+- **Shared libraries (not cloned):** the craft-libs crates (`craft-media`, `craft-pdf`, …) are pinned to one revision, `c5a1cbfb…`, in `Cargo.toml` this release (moved from `92d392cf…`). Shared-library behaviour beyond the pin is not audited here.
+- **Docs that are stale at this tag (code wins):** `docs/control-protocol.md` (16 MiB vs the code's 256 MiB); `docs/animation-parity.md` (14 exits vs 23); `docs/gaps.md` (SmartArt counts); `docs/architecture.md` (320 commands vs 329); `ROADMAP.md` ("226 commands").
 - **Not independently verified:** PowerPoint's acceptance of exported `.pptx`/`.ppsx` without repair on real decks, render fidelity against PowerPoint, runtime command execution, `deckcraft-cli` execution (not installed on this machine), and any GUI behaviour. Claims here are code and document inspection plus bundle metadata and `--version` checks; no GUI was launched and no deck was rendered.

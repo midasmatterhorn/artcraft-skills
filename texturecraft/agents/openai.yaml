@@ -1,0 +1,3 @@
+interface:
+  display_name: "TextureCraft"
+  short_description: "Drive TextureCraft, the Substance-Painter-style Rust 3D texture painter (paint, bake, export PBR sets)"

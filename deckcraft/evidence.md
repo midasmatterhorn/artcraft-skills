@@ -1,14 +1,26 @@
-# DeckCraft — evidence ledger (tag v0.13.1)
+# DeckCraft — evidence ledger (tag v0.14.1)
 
-Audit basis: this checkout is tag **`v0.13.1`**, commit **`4ce2944630b04188dee8504c14151994d06c416a`**
-(shallow clone plus a fetched `v0.11.1` ref for set diffs). Inspection date **2026-10-29**. Installed
-`/Applications/DeckCraft.app` prints `deckcraft 0.12.0`; the GUI was never launched.
+Audit basis: this checkout is tag **`v0.14.1`**, commit **`ee39ff67816d0039143ec7c98ea604cefe0cd2e5`**
+(shallow clone plus a fetched `v0.13.1` ref for set diffs). Inspection date **2026-11-02**. Installed
+`/Applications/DeckCraft.app` prints `deckcraft 0.14.1` (bundle matches the tag); the GUI was never
+launched.
+
+v0.13.1 → v0.14.1 delta: **+1 engine command** — `slide.actions` (read-only slide action inspection,
+PR #1574; `cmd!(` count 328 → 329, id diff between tags shows exactly this addition, none removed;
+inspect family 4 → 5 cmd! sites). **MCP `insert_chart` takes optional x/y/w/h** (#1583; tool set
+unchanged at 25 — `tools.rs` otherwise unchanged). `animation.add`/`animation.set` take custom
+motion-path points (#1584). Control dispatch, UI_COMMANDS and CLI: zero diff files. Other changes are
+behaviour/parity fixes (transition index validation #1577, format.highlight colour validation #1587,
+bullet Follow Text #1589, PPTX inset alignment #1590 / gradient flip #1591, geometry exponent parse
+#1594, layout/master placeholder inheritance #1490, codec-config picture-slice rejection #1514, Ogg
+recovery bounds #1582, miter limits #1585, URL-friendly line breaking #924, private print-preview
+dirs #1519, animated-shape click targets #1521).
 
 ## 1. Capability claims → evidence → tier
 
 | # | Claim | Evidence (repo-relative) | Tier |
 |---|---|---|---|
-| 1 | 328 engine `cmd!` blocks (was 326) | `grep -rho 'cmd!' crates/engine/src/ \| wc -l` = 328; `git grep -o 'cmd!' v0.11.1` = 326 | implemented |
+| 1 | 329 engine `cmd!` blocks (328 at v0.13.1) | `grep -rho 'cmd!' crates/engine/src/ \| wc -l` = 329; `git grep -o 'cmd!' v0.13.1` = 328; the +1 is `slide.actions` | implemented |
 | 2 | +`format.languageAll`, +`slide.selectRange`; nothing removed | id-string diff between the tags: exactly these two new ids | implemented |
 | 3 | 25 MCP tools, set identical | `crates/mcp/src/tools.rs` — 25 `tool(` calls; name list read and matched to the baseline's 25 | implemented |
 | 4 | Control dispatch set unchanged (26 names) | arm-string diff `v0.11.1` vs HEAD: 0 added, 0 removed | implemented |
@@ -44,13 +56,13 @@ Audit basis: this checkout is tag **`v0.13.1`**, commit **`4ce2944630b04188dee85
 |---|---|
 | `docs/control-protocol.md` "16 MiB request line" | 256 MiB in code |
 | `docs/animation-parity.md` "14 exit effects" | 23 |
-| `docs/architecture.md` "320 commands" | 328 |
+| `docs/architecture.md` "320 commands" | 329 |
 
 ## 5. Verification commands (read-only)
 
 ```sh
-git -C <clone> rev-parse HEAD                                   # 4ce2944630b04188dee8504c14151994d06c416a
-grep -rho 'cmd!' crates/engine/src/ | wc -l                     # 328
+git -C <clone> rev-parse HEAD                                   # ee39ff67816d0039143ec7c98ea604cefe0cd2e5
+grep -rho 'cmd!' crates/engine/src/ | wc -l                     # 329
 git grep -o 'cmd!' v0.11.1 -- crates/engine/src | wc -l         # 326
 grep -cE '^\s+tool\(' crates/mcp/src/tools.rs                   # 25
 awk '/pub (static|const) UI_COMMANDS/,/^\];/' crates/ui-egui/src/lib.rs | grep -cE '^\s+\('   # 51

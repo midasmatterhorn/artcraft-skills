@@ -15,10 +15,21 @@ description: >
   not Figma and runs no Figma plugins.
 ---
 
-Audit basis: this checkout is tag `v0.13.1`, commit `76f520ffaaab73fcacf14dfaf30f29272ec178cb`
-("Release 0.13.1", released 2026-10-31). The installed `/Applications/FigCraft.app` still reports
-version `0.12.1` and prints `FigCraft 0.12.1 (ef9721c5…)` — **the installed bundle lags this tag.**
-**Verify against your installed version** before relying on behaviour added in 0.13.x.
+Audit basis: this checkout is tag `v0.14.0`, commit `5fc2840d9089e0b21056b57c4dff9f795e38a4e3`
+("Release 0.14.0", released 2026-11-01). The installed `/Applications/FigCraft.app` matches this
+tag and prints `FigCraft 0.14.0 (5fc2840d…)`.
+**Verify against your installed version** — the ArtCraft Launcher auto-updates, so a newer build
+may differ; re-check the counts below against your build (every count here was measured from code).
+
+v0.13.1 → v0.14.0 wave, re-diffed from the tags: a **code-export fix batch** — huge finite numbers
+no longer print `inf` in exported code, CSS `font-family` values escape backslashes and line
+breaks, **paint opacity is applied to CSS gradient stops**, and **each variable gets its own CSS
+custom property** (no collisions); **relative line-height/letter-spacing edits with a unit suffix
+add to the current value** instead of replacing it; number fields keep huge finite values finite
+when stepping; comment thread parsing rejects `+` in ids; Unix builds pick fonts through
+`craft-font-catalog`; the update check gained the shared check-result dialog. **The automation
+surface is unchanged**: 481 `spec!(` sites in the command directory, **zero id changes** (id-set
+diff is empty), and no CLI, MCP, control-channel or locale files were touched.
 
 v0.12.1 → v0.13.1 wave, re-diffed from the tags: **FigJam `.jam` files open, as boards** (#1586); **SVG import reads `color()`/`color-mix()`** (#1550); the **browser build uses the fonts installed on this computer** (Local Font Access, #1051) and can **publish to a server** (Share ▸ Online, #917); **comment mentions** — `comment.list` filters by a mentioned name, `comment.people` lists mentions, `comment.next`/`comment.prompt` drive them (#1415, #1591) — and share links gained a **comment-only access level** (#1525); **colour variables can be calculated from others**, faded or mixed per mode (#1280), with Penpot tokens and CSS export never naming a calculation they leave out; **effects: stacked layer blurs keep the margin they reach together** and the SVG export chains blurs and shadows; **plugin panels gained sliders, hover styles and images** (#1637/#1634/#1639); `.fig` **elbowed and curved connectors without a saved path are routed** (#1649) and connector labels are kept (#1659); Grid **auto-placement** on an occupancy bitmap (#1593); a **server team list** (`team_files`) shows in Home ▸ Online with tokenless team links; `doc.list` gives file **names, not paths** (#1117); a batch keeps **one undo snapshot** (#1099); the **CLI is now clap-parsed (RFC-0012) with shell completions and man pages** (#1396) and gained **`connect publish`** for code-connect mappings (#1643). New engine ids: +`comment.prompt`, +`file.fontReport` (net, over reformatted registrations); locales 22 → 24 (+`ar`, +`bs`). Deep
 operational detail — the full CLI, control-channel and MCP tables, live-session commands and the
@@ -36,9 +47,9 @@ proprietary tools, while the measured table says ~53% ready, ~85% feature breadt
 core-editor breadth (`ROADMAP.md`, `docs/target-app-parity.md` › Headline). It runs on macOS,
 Windows, Linux, FreeBSD and in the browser via WebAssembly (the browser page now exposes a
 `window.figcraft` control channel); source is GitHub `storytold/figcraft`, MIT OR Apache-2.0. Every
-user-visible action is a command in one registry — **616 `spec!` registration sites across the
-command namespaces** (some ids are const-built; count your build with `figcraft-cli commands
---json`), covering **212/212 catalogued menu items** (`crates/engine/src/cmd.rs` `spec!` macro,
+user-visible action is a command in one registry — **630 `spec!` registration sites across the
+engine** (481 of them in the command directory; some ids are const-built; count your build with
+`figcraft-cli commands --json`), covering **212/212 catalogued menu items** (`crates/engine/src/cmd.rs` `spec!` macro,
 `crates/engine/src/catalog.rs`, `docs/parity-checklist.md`) — dispatched identically by the UI,
 CLI, control channel and MCP server.
 
@@ -427,11 +438,17 @@ FigCraft is alpha; treat every automated run as untrusted until checked:
 
 ## Sources & evidence
 
-- Repo: https://github.com/storytold/figcraft — inspected at tag **v0.13.1**, commit
-  **76f520ffaaab73fcacf14dfaf30f29272ec178cb** ("Release 0.13.1", 2026-10-31); the installed app
-  still reports 0.12.1 (bundle lags the tag). Date inspected: 2026-11-01; the v0.12.1 ref was
-  fetched for set diffs.
-- Delta v0.12.1 → v0.13.1, re-measured rather than copied: **481** `spec!(` registration sites in
+- Repo: https://github.com/storytold/figcraft — inspected at tag **v0.14.0**, commit
+  **5fc2840d9089e0b21056b57c4dff9f795e38a4e3** ("Release 0.14.0", 2026-11-01); the installed app
+  matches the tag (`FigCraft 0.14.0 (5fc2840d…)`). Date inspected: 2026-11-02; the v0.13.1 and
+  v0.12.1 refs were fetched for set diffs.
+- Delta v0.13.1 → v0.14.0, re-measured rather than copied: **481** `spec!(` registration sites in
+  `crates/engine/src/cmd/` — **unchanged**, and the command-id set diff is empty; MCP, control,
+  CLI and locale files untouched in the diff (zero changed files under those trees; the MCP
+  `TOOL_NAMES` const is byte-identical at both tags); engine delta is 6 files, all fixes (code
+  export, comment thread-id parsing, number fields). Engine-wide `spec!(` count 630 (was 616 at
+  the v0.11.2
+  audit). Prior deltas: v0.12.1 → v0.13.1, **481** `spec!(` registration sites in
   `crates/engine/src/cmd/` (was 473 at v0.12.1; some ids const-built — the live count is
   `figcraft-cli commands --json`); net new ids +`comment.prompt`, +`file.fontReport`; **10** CLI
   subcommands (was 9; +`connect publish`, clap-parsed); **24** locale catalogs (was 22); MCP tools,

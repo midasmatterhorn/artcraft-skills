@@ -1,14 +1,15 @@
 # AGENTS.md — ArtCraft Skills archive
 
 You are a coding agent. This folder is the persistence archive of the
-[artcraft-skills](https://github.com/midasmatterhorn/artcraft-skills) project: 15
-evidence-verified skills for the ArtCraft desktop apps (13 storytold apps plus Craft Anything's
-rebuild workbench and Tangency Labs' SolidCraft parametric CAD). If the user asks you to
+[artcraft-skills](https://github.com/midasmatterhorn/artcraft-skills) project: 16
+evidence-verified skills for the ArtCraft desktop apps (14 storytold apps — the 13 craft apps plus
+Craft Anything's rebuild workbench and TextureCraft's 3D texture painting — and Tangency Labs'
+SolidCraft parametric CAD). If the user asks you to
 install, update, or verify these skills, do it for the agent **you** are running as.
 
 ## Install (pick your target)
 
-From the packaged release in this folder — the 15 skill folders sit at the zip root
+From the packaged release in this folder — the 16 skill folders sit at the zip root
 (pick the newest `artcraft-skills-v*.zip`):
 
 ```sh
@@ -47,9 +48,9 @@ bash install.sh              # default → ~/.agents/skills/  (add --claude, --o
 
 ## Verify
 
-All 15 skill directories must exist under the chosen target — `cadcraft`, `craft-anything`,
+All 16 skill directories must exist under the chosen target — `cadcraft`, `craft-anything`,
 `deckcraft`, `designcraft`, `effectcraft`, `figcraft`, `filmcraft`, `gridcraft`, `lightcraft`,
-`pdfcraft`, `photocraft`, `solidcraft`, `soundcraft`, `vectorcraft`, `wordcraft` — each containing
+`pdfcraft`, `photocraft`, `solidcraft`, `soundcraft`, `texturecraft`, `vectorcraft`, `wordcraft` — each containing
 `SKILL.md` and `agents/openai.yaml`. Print the target directory you used, then tell the
 user to restart their agent session so the skills are discovered.
 
@@ -109,6 +110,7 @@ Authentication differs per app — check the app's SKILL.md before connecting:
 - **CADCraft**: every request needs `"token": "<session token>"`, read from `cadcraft-control-<port>.token` (`%LOCALAPPDATA%` on Windows; `$XDG_RUNTIME_DIR`, else `~/.cache` elsewhere) — the app prints the path at startup.
 - **FilmCraft**: the listener only opens when `FILMCRAFT_CONTROL_TOKEN` holds 64 hex characters at launch; every request carries the same `"token"`.
 - **GridCraft**: the first line of a connection must authenticate with the app's token — pass `--control-token <token>` or `GRIDCRAFT_CONTROL_TOKEN` at launch, or read the auto-generated token file whose path the app prints to stderr (`gridcraft-cli` reads it automatically); a connection that does not authenticate, or later sends a bad line, is closed.
+- **TextureCraft**: every connection's first request must authenticate — `{"id":0,"method":"auth","params":{"token":"…"}}` with `TEXTURECRAFT_CONTROL_TOKEN` (16 characters or more) or the fresh random token the app writes to `texturecraft-control-<port>.token` in the temp directory and prints to stderr; anything else as the first request is refused.
 - **All other apps**: loopback-only, unauthenticated — enable only while in use.
 
 Send UTF-8 **without a BOM**: the control servers treat a BOM-prefixed first line as

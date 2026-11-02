@@ -1,6 +1,6 @@
 # FilmCraft CLI, control channel and MCP — reference
 
-Transcribed from the **v0.15.0** source, commit `94ceaa91a58e3e18ebe5676c10befa56759c9ceb` (inspected 2026-11-01); the v0.15.0 wave added no command, CLI flag, control method or MCP tool.
+Transcribed from the **v0.16.0** source, commit `77adc30a756bea17441199caff45a24415ba9753` (inspected 2026-11-02); the v0.15.0 wave added no command, CLI flag, control method or MCP tool, and the v0.16.0 wave added no CLI flag, control method or MCP tool either (its +4 engine commands — `colors.addCustom`/`updateCustom`/`removeCustom`, `markers.delete` — ride `engine.execute`).
 Every flag, tool and method below exists in the code; where a value comes from a doc rather than code, the
 path is given. Changes since v0.13.0 are marked **New in 0.14.0** — this wave added no command, CLI
 subcommand, MCP tool or control method; it changed behaviours (`effects.apply` answers applied

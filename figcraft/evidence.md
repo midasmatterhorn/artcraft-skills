@@ -1,10 +1,17 @@
-# FigCraft — evidence ledger (tag v0.13.1)
+# FigCraft — evidence ledger (tag v0.14.0)
 
-Audit basis: this checkout is tag **`v0.13.1`**, commit **`76f520ffaaab73fcacf14dfaf30f29272ec178cb`**
-("Release 0.13.1", shallow clone). Inspection date **2026-11-01**. Installed `/Applications/FigCraft.app`
-still reports 0.12.1 (bundle lags the tag); the GUI was never launched.
+Audit basis: this checkout is tag **`v0.14.0`**, commit **`5fc2840d9089e0b21056b57c4dff9f795e38a4e3`**
+("Release 0.14.0", shallow clone). Inspection date **2026-11-02**. Installed `/Applications/FigCraft.app`
+matches the tag and prints `FigCraft 0.14.0 (5fc2840d…)`; the GUI was never launched.
 
-v0.12.1 → v0.13.1 delta: spec! sites 473 → 481 (+`comment.prompt`, `file.fontReport` net new;
+v0.13.1 → v0.14.0 delta: **automation surface unchanged** — spec! sites 481 → 481 in the command
+directory (engine-wide 630), command-id set diff empty, MCP/control/CLI/locale files untouched in
+the diff. Code fixes only: code export (no `inf` for huge finite values, CSS font-family
+escaping, paint opacity on CSS gradient stops, unique CSS custom properties per variable),
+relative line-height/letter-spacing unit-suffix edits add to the current value, comment thread-id
+parsing rejects `+`, Unix fonts via craft-font-catalog, shared check-result update dialog.
+
+Prior v0.12.1 → v0.13.1 delta: spec! sites 473 → 481 (+`comment.prompt`, `file.fontReport` net new;
 several registrations re-wrapped multiline), CLI 9 → 10 verbs (+`connect publish`, clap-parsed,
 shell completions + man pages), locales 22 → 24 (+ar, +bs), MCP tools 18 / control methods 17
 unchanged, FigJam `.jam` boards, comment mentions, variable colour calculations, server team list.
@@ -76,7 +83,7 @@ update prompt.
 ## 5. Verification commands (read-only)
 
 ```sh
-git -C <clone> rev-parse HEAD                                   # 76f520ffaaab73fcacf14dfaf30f29272ec178cb
+git -C <clone> rev-parse HEAD                                   # 5fc2840d9089e0b21056b57c4dff9f795e38a4e3
 grep -rho 'spec!(' crates/engine/src/ | wc -l                   # 616
 grep -E '212' docs/parity-checklist.md | head -1                # 212 / 212 menu items
 awk 'NR>=160 && NR<345' crates/engine/src/keymap.rs | grep -cE '^\s+k\('   # 159

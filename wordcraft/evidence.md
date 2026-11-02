@@ -1,16 +1,29 @@
-# WordCraft — evidence ledger (tag v0.13.2)
+# WordCraft — evidence ledger (tag v0.14.0)
 
-Audit basis: this checkout is tag **`v0.13.2`**, commit **`2be33e6dc9c246a57995b131ee85491ce81de328`**
-("Release 0.13.2", 2026-10-31; shallow clone; the v0.12.0 ref is fetched for set diffs). Inspection
-date **2026-11-01**. Installed `/Applications/WordCraft.app` still prints `wordcraft 0.12.0 (3de6ff95)`
-(bundle lags the tag); the GUI was never launched.
+Audit basis: this checkout is tag **`v0.14.0`**, commit **`5cd53f184aab11def13b7fced18727159b9bc96a`**
+("Release 0.14.0", 2026-11-01; shallow clone; the v0.13.2 ref is fetched for set diffs). Inspection
+date **2026-11-02**. Installed `/Applications/WordCraft.app` matches the tag and prints
+`wordcraft 0.14.0 (5cd53f18)`; the GUI was never launched.
 
-v0.12.0 → v0.13.2 delta: automation surface unchanged (commands 648 = 648, MCP tools, control
+v0.13.2 → v0.14.0 delta: automation surface unchanged — 648 `CommandSpec::new(` sites at both tags
+(crates+apps), `crates/mcp/src/tools.rs` (17 tools), `crates/ui-egui/src/control.rs` and the command
+registry byte-identical (only their test files changed); `.key(` shortcut specs 167 = 167;
+`craft-i18n.rev` = `9205108c…` at both tags. Feature wave: proofing unified into one Hunspell engine
+with a language table (per-language suggest copies deleted; #4191) + affix flag aliases, single-byte
+flags, ICONV, IGNORE, KEEPCASE (#4575); View ▸ Macros dialog (run/delete/record, #4426); CJK
+characters count as words (#4629); print PDF omits link annotations (#4817); Alt,F keytips (#4981);
+widow-control heading carry (#4991); HTML empty comments (#5040); CSV separator detection (#5042);
+ToC PAGEREF fields (#5097); DOCX undefined style → Normal (#5104).
+⚠️ Corrections: the previous ledger's verify block printed the v0.12.0 sha (3de6ff95) as the tag
+commit — the v0.13.2 audit basis sha is 2be33e6; and its delta line claimed `craft-i18n.rev`
+9205108c → 92d392cf, but the file reads 9205108c at both v0.13.2 and v0.14.0 (tag trees win).
+
+Prior v0.12.0 → v0.13.2 delta: automation surface unchanged (commands 648 = 648, MCP tools, control
 methods, CLI byte-identical in `crates/mcp/`, `crates/ui-egui/src/control.rs`, `crates/engine/src/cmd.rs`).
 Feature wave: table copy/cut + Table Properties follows selection, mailings label sheets "generate all",
 field formats `\* DollarText`/`\* Hex`/`\* ArabicDash`, heading outline levels without `w:outlineLvl`,
 fallback face for Chart/SmartArt glyphs, TC hanzi Taiwan standard, Format Painter double-click,
-DOCX/RTF/HTML/Markdown/LaTeX/PDF-export hardening. `craft-i18n.rev` 9205108c → 92d392cf.
+DOCX/RTF/HTML/Markdown/LaTeX/PDF-export hardening.
 
 ## 1. Capability claims → evidence → tier
 
@@ -68,8 +81,9 @@ DOCX/RTF/HTML/Markdown/LaTeX/PDF-export hardening. `craft-i18n.rev` 9205108c →
 ## 5. Verification commands (read-only)
 
 ```sh
-git -C <clone> rev-parse HEAD                                   # 3de6ff95af86c19d67030cd96dba15cd6a45a25e
+git -C <clone> rev-parse HEAD                                   # 5cd53f184aab11def13b7fced18727159b9bc96a
 grep -rho 'CommandSpec::new(' crates/ apps/ | wc -l             # 648
+head -1 craft-i18n.rev                                          # 9205108c… (both tags)
 sed -n '5p' docs/parity-checklist.md                            # 505 of 520
 grep -cE '^\s+tool\($|^\s+tool\("' crates/mcp/src/tools.rs      # 17
 grep -rhoE '"[a-z]+\.[a-zA-Z]+"' crates/ui-egui/src/control/handler.rs | sort -u | wc -l  # 21

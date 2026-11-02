@@ -17,7 +17,9 @@ description: >-
 
 # Craft Anything
 
-**Audit basis:** this checkout is tag `v0.1.0`, commit `c316051c9e01e1bf9863f3c802a805179afa4663` ("Release 0.1.0", 2026-10-31; shallow clone of the release tag). The installed `/Applications/Craft Anything.app` reports `CFBundleShortVersionString` 0.1.0 (bundle id `ai.storyteller.craft-anything`) and its binary prints `craft-anything 0.1.0`, so the bundle matches this source; the GUI was never launched. Every number below was measured from this tree, not copied from the README (the README's "284 tools" predates the generated tool list; see the counts section).
+**Audit basis:** this checkout is tag `v0.2.0`, commit `b09b99aaa7985ebbc3d0fef467c4b688d4727cc1` ("Release 0.2.0", 2026-11-01; shallow clone of the release tag). The installed `/Applications/Craft Anything.app` reports `CFBundleShortVersionString` 0.2.0 (bundle id `ai.storyteller.craft-anything`) and its binary prints `craft-anything 0.2.0`, so the bundle matches this source; the GUI was never launched. Every number below was measured from this tree, not copied from the README (the README's "284 tools" predates the generated tool list; see the counts section).
+
+v0.1.0 → v0.2.0: the **engine tool surface is unchanged** (298 tools / 17 toolsets, `docs/tools.md` byte-identical). The wave is in the **agent/AI layer**: an **OpenCode adapter** (`crates/ai/src/cli_agents/adapters/opencode.rs` — invokes `opencode run`, without `run` OpenCode reads its first argument as a folder to open), npm-installed coding agents start on Windows, local model servers (LM Studio et al.) accept the tools because boolean sub-schemas are sent as objects, failed agent runs are explained with a keepable log (`failure_log.rs`), the build activity feed shows what the build is doing now and how long it has been quiet (`rebuild/activity.rs`), **"Try again" resumes where a build stopped** (`crates/engine/src/journal.rs`), deadlocks are stopped as they form with a lock watchdog, crashing programs are named by their error instead of the last stack line, CJK scripts render in release builds (fonts and licences ship), a builder writing `/app/…` paths builds the app instead of being refused, `doctor` calls a local AI server reachable only when it answers with its models (and no longer offers another program squatting on the model-server port), agent checks that only probed the version say so, and the coding agent's cost is labelled an estimate. Claude Code remains the first-class, verified builder; Codex and OpenCode adapters exist but are unverified.
 
 ## Overview
 
@@ -48,11 +50,11 @@ Craft Anything is "See how any website, app or game works, then have AI build yo
 ### Project folder and file formats (all versioned, migration steps on open)
 
 - New projects go to `Documents/Craft Anything` (Settings → General) unless `--project-folder`. Layout: `craft.json` (request, target, status, history), `capture/`, `app/` (the generated project), `checks/`, `investigation.cany/` (evidence ledger), `inbox/` (open questions) (`README.md` "Get started").
-- `docs/file-formats.md` is the version table: `craft.json` `MANIFEST_VERSION` 1 (newer = read-only, saving refused), `config.toml` `SETTINGS_VERSION` 2, `investigation.cany/project.toml` `FORMAT_VERSION` 1 (newer refused with "update Craft Anything"), plus versioned `transcript.json`, `usage.json`, `questions.json`, `pinned/<n>/pin.json`, `feed.json`, `mechanics.json` and `standin.json`. **A newer file is never downgraded or overwritten.**
+- Version constants in code: `craft.json` `MANIFEST_VERSION` **2** (`crates/engine/src/workspace.rs`), `config.toml` `SETTINGS_VERSION` **3** (`crates/engine/src/settings.rs`), `investigation.cany/project.toml` `FORMAT_VERSION` **1** (`crates/engine/src/project.rs`) — each with a compile-time assertion that the migration-step list has one step per version. Newer files: `craft.json` = read-only, saving refused; `project.toml` = refused with "update Craft Anything"; plus versioned `transcript.json`, `usage.json`, `questions.json`, `pinned/<n>/pin.json`, `feed.json`, `mechanics.json` and `standin.json`. **A newer file is never downgraded or overwritten.** ⚠️ **Repo-doc drift:** `docs/file-formats.md`'s table still says manifest 1 / settings 2 — it lags the constants (measured in code at v0.1.0 and v0.2.0 alike); trust the constants.
 
 ## Known limitations and not-implemented
 
-Do not assign these at v0.1.0:
+Do not assign these at v0.2.0:
 
 - **Building with API keys and other coding agents is built but not yet run live**; only Claude Code is verified (`README.md` Status).
 - **Behaviour checks for apps and games are partial**; website checks are the mature path.
@@ -92,13 +94,13 @@ Do not assign these at v0.1.0:
 2. **Cite evidence ids** for every claim about the original; absence is not proof.
 3. **Version your project folders** (copy the whole folder; every file carries a version and a newer file refuses saves).
 4. **One project per run**: never edit a project folder while a rebuild is active; `--resume` exists for continuation.
-5. **Update between projects**: this skill is pinned to v0.1.0; re-run `doctor` after updates.
+5. **Update between projects**: this skill is pinned to v0.2.0; re-run `doctor` after updates.
 
 ## Sources & evidence
 
-- Repo: https://github.com/storytold/craft-anything — inspected at tag **v0.1.0**, commit `c316051c9e01e1bf9863f3c802a805179afa4663` ("Release 0.1.0", 2026-10-31), inspection date **2026-11-01**. Apache-2.0 and MIT (`LICENSE-APACHE`/`LICENSE-MIT`).
-- Installed `/Applications/Craft Anything.app`: `CFBundleShortVersionString` 0.1.0, `CFBundleIdentifier` `ai.storyteller.craft-anything`, binary prints `craft-anything 0.1.0`; the bundle contains only `craft-anything`, no CLI.
+- Repo: https://github.com/storytold/craft-anything — inspected at tag **v0.2.0**, commit `b09b99aaa7985ebbc3d0fef467c4b688d4727cc1` ("Release 0.2.0", 2026-11-01), inspection date **2026-11-02**; the v0.1.0 ref was fetched for set diffs. Apache-2.0 and MIT (`LICENSE-APACHE`/`LICENSE-MIT`).
+- Installed `/Applications/Craft Anything.app`: `CFBundleShortVersionString` 0.2.0, `CFBundleIdentifier` `ai.storyteller.craft-anything`, binary prints `craft-anything 0.2.0`; the bundle contains only `craft-anything`, no CLI.
 - Read: `README.md`, `Cargo.toml`, `docs/{tools,STATUS,tool-status,claude-code,file-formats,pitfalls,extending,tool-ids}.md`, `apps/craft-anything-cli/src/{main,rebuild_cmd,setup_cmd,ai_cmd}.rs`, `crates/engine/src/{tool_list,registry,project,settings,self_test,plugins}.rs`, `crates/engine/src/tools/` (list), `crates/engine/src/versioned.rs`, `crates/mcp/src/{lib,prompts}.rs`, `crates/engines/src/` (list), `crates/formats/src/` (list), `crates/ai/`, `crates/setup/`.
-- Counts recomputed from source: **298 engine tools in 17 toolsets** (`docs/tools.md` generated list, item count 298; `MIN_TOOLS = 271`), 6 MCP prompts, 13 CLI subcommands + tool pass-through, 12 versioned file tables in `docs/file-formats.md`, `MANIFEST_VERSION`/`FORMAT_VERSION`/`SETTINGS_VERSION` = 1/1/2.
+- Counts recomputed from source at v0.2.0 (all unchanged from v0.1.0): **298 engine tools in 17 toolsets** (`docs/tools.md` generated list, item count 298; `MIN_TOOLS = 271`), 6 MCP prompts, 13 CLI subcommands + tool pass-through, 11 versioned-file rows in `docs/file-formats.md`; version constants from code: `MANIFEST_VERSION`/`FORMAT_VERSION`/`SETTINGS_VERSION` = 2/1/3 (⚠️ `docs/file-formats.md`'s table still shows 1/2/1 — stale repo doc).
 - Workspace: 13 crates (`ai`, `analysis`, `disasm`, `engine`, `engines`, `evidence`, `formats`, `js`, `mcp`, `platform`, `setup`, `testkit`, `ui-egui`) + 3 apps (desktop, CLI, web).
 - Evidence table: `evidence.md` next to this file.

@@ -2,7 +2,7 @@
 
 All paths are repo-relative to https://github.com/storytold/designcraft.
 
-Verified at tag v0.15.2, commit `7e70203206531f0fde1dd5feb2b7d94768842ebc`, 2026-11-01; the automation surface is byte-identical to v0.14.0 (re-diffed).
+Verified at tag v0.16.0, commit `1fe8885bda7451263879cfbb256b9a3d46c411bf`, 2026-11-01; the automation surface is byte-identical to v0.14.0 (re-diffed).
 Installed `/Applications/DesignCraft.app` reports `0.14.0` and the same build commit.
 
 ## 1. CLI (`designcraft-cli`)

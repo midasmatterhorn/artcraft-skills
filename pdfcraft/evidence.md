@@ -1,6 +1,8 @@
-# PdfCraft — evidence ledger (tag v0.16.1)
+# PdfCraft — evidence ledger (tag v0.17.0)
 
-Audit basis: this checkout is tag **`v0.16.1`**, commit **`24bb85308e4b65404fc908506ade6341a29999d7`** ("Release 0.16.1", 2026-10-31; inspection 2026-11-01; installed bundle still 0.15.0)
+Audit basis: this checkout is tag **`v0.17.0`**, commit **`7d78f3e14474b978be014715e0cc64895d77025a`** ("Release 0.17.0", 2026-11-01; inspection 2026-11-02; the v0.16.1 ref was fetched for set diffs; installed bundle matches at 0.17.0)
+
+v0.16.1 → v0.17.0 delta: **+1 automation tool** — `text_script` (superscript/subscript over `edit.edit_text`; name-set extract 182 → 183, zero removed; the regenerated `references/automation-tools.md` table is parsed from the tag's `tools()`), engine commands byte-identical (`crates/engine/src/commands.rs`, 0 diff lines), control methods unchanged (one doc-comment hunk adds the `show_page_edge_shadows` `ui.set` key), languages 34 = 34, `pdfcraft-cli` zero diff files. Features: full rewrite of unsigned files on save after page deletion (#4279), bundled-asset licensing validation (#2212), `--two-paged` GUI flag (#1433), page-edge shadows setting (#2088), Acrobat UI parity for image editing/text formatting (#2155), XFA draw anchor rotation (#5624), create/optimize mask guard (#5620), JBIG2 i32 guard (#5673), Preferences recent-files count (#5675).
 (shallow clone plus a fetched `v0.14.0` ref for set diffs). Inspection date **2026-10-29**. Installed
 `/Applications/PdfCraft.app` prints `pdfcraft 0.15.0`; the GUI was never launched.
 
@@ -8,7 +10,7 @@ Audit basis: this checkout is tag **`v0.16.1`**, commit **`24bb85308e4b65404fc90
 
 | # | Claim | Evidence (repo-relative) | Tier |
 |---|---|---|---|
-| 1 | 182 automation tools (+3 over v0.15.0) | `crates/automation/src/tools.rs`: 154 inline `t("name"` + 28 `^\s+t\($` multi-line entries = 182; +`doc_backdrops`, +`bookmark_from_text_styles`, +`text_styles` | implemented |
+| 1 | 183 automation tools (+1 over v0.16.1) | `crates/automation/src/tools.rs`: name-set extract 183 (157 inline + 28 multi-line raw `t(` occurrences); +`text_script` | implemented |
 | 2 | 205 registry commands, set unchanged | `crates/engine/src/commands.rs:165` `COMMANDS` — 205 `c(` entries; id diff vs `v0.14.0` = 0/0 | implemented |
 | 3 | 17 UI control methods unchanged | `crates/ui-egui/src/control/requests.rs` method strings (17) | implemented |
 | 4 | 35 interface languages (+Persian) | `crates/ui-egui/src/i18n/` — 34 `.tsv` catalogs incl. `fa.tsv` + English; PR #4558 | implemented |
@@ -28,7 +30,7 @@ Audit basis: this checkout is tag **`v0.16.1`**, commit **`24bb85308e4b65404fc90
 
 | Surface | v0.14.0 | v0.15.0 (measured) | Change |
 |---|---:|---:|---|
-| Automation tools | 179 | **182** | +`doc_backdrops`, `bookmark_from_text_styles`, `text_styles` |
+| Automation tools | 179 | **183** | +`doc_backdrops`, `bookmark_from_text_styles`, `text_styles` (0.16.0); +`text_script` (0.17.0) |
 | Registry commands | 205 | **205** | unchanged (id diff clean) |
 | Control methods | 17 | **17** | unchanged |
 | CLI subcommands | 14 + `check-one` | **same** | unchanged |
@@ -53,7 +55,7 @@ Audit basis: this checkout is tag **`v0.16.1`**, commit **`24bb85308e4b65404fc90
 ## 5. Verification commands (read-only)
 
 ```sh
-git -C <clone> rev-parse HEAD                                   # 24bb85308e4b65404fc908506ade6341a29999d7
+git -C <clone> rev-parse HEAD                                   # 7d78f3e14474b978be014715e0cc64895d77025a
 grep -oE '\bt\("[a-z_][a-z0-9_.]*"' crates/automation/src/tools.rs | sort -u | wc -l   # 153
 grep -cE '^\s+t\($' crates/automation/src/tools.rs              # 28  (154 + 28 = 182)
 grep -cE '^\s+c\("|^\s+c\($' crates/engine/src/commands.rs      # 205

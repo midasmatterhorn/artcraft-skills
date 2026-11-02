@@ -1,6 +1,8 @@
 # GridCraft — evidence ledger (tag v0.14.2)
 
-Audit basis: this checkout is tag **`v0.14.2`**, commit **`55850841d39f030fb42f0a07e54903decea7b067`**
+Audit basis: this checkout is tag **`v0.15.0`**, commit **`30b210b4ef03b30616923465efa70766cefba379`** ("Release 0.15.0", 2026-11-01; the v0.14.2 ref was fetched for id diffs). Inspection date **2026-11-02**. Installed `/Applications/GridCraft.app` matches the tag and prints `GridCraft 0.15.0`.
+
+v0.14.2 → v0.15.0 delta: **no registry change** — 363 non-test `(cmd|spec)!` ids at both tags, zero added/removed; MCP tools 22 = 22 (`tools.rs` changed only for `write_range`: `parse` passthrough + doc); CLI subcommands, control dispatch, UI commands, 19 languages unchanged. Compatibility wave: .xls cell formatting + font family/charset (#2495/#3052), xlsx `_xlfn.` prefixes STOCKHISTORY/TRANSLATE/DETECTLANGUAGE (#2793), workbook view settings kept (#3062), Google Sheets DUMMYFUNCTION unwrap (#3075), per-column CSV date-order detection (#3043), YEARFRAC/MOD/NUMBERVALUE/PERCENTRANK Excel edge cases (#2657/#2979/#2980), `range.setValues` parse:false + converted report (#3042/#2255), locked-cell edit refusal (#3040), per-window ribbon tab (#3041), Alt,H,B keytips (#3077), Esc in file view (#3050), Intel wgpu shader skip (#3039), Dock-quit asking window (#3083), Merge & Center split-button label (#3024). ⚠️ The generated `docs/parity-checklist.md` reads **276/292 (94.5%) and is byte-identical at v0.14.2 and v0.15.0** — the previous ledger's 275/291 did not match its own pinned tag.
 (shallow clone plus a fetched `v0.12.1` ref for set diffs). Inspection date **2026-10-29**. Installed
 `/Applications/GridCraft.app` still prints `GridCraft 0.13.0` (bundle lags the tag); the GUI was never launched.
 
@@ -18,7 +20,7 @@ MCP tools, control methods, CLI subcommands, catalog coverage: unchanged (re-cou
 | 2 | One native window per workbook window; `view.newWindow` shares the workbook; `view.arrangeAll` tiles; drafts stay per workbook | `crates/engine/src/cmd/extra.rs:167-169` (`view.newWindow` spec: "opens another window on the active workbook (the same workbook: saving from either window saves it)"; `view.arrangeAll` present); PRs #2616–#2619 | implemented |
 | 3 | **Control channel requires a token**: first line must authenticate; bad connections closed; token from `--control-token`/`GRIDCRAFT_CONTROL_TOKEN` or an auto-written user-only token file whose path is printed to stderr (`gridcraft-cli` reads it) | `apps/gridcraft/src/control_server.rs:4-5,26-42` (`make_token`, `control_auth`); PR #783 | implemented |
 | 4 | 22 MCP tools (+`list_windows`), set otherwise unchanged | `crates/mcp/src/tools.rs` — 22 `tool(` calls; name-set diff vs `v0.12.1` = +`list_windows` only | implemented |
-| 5 | 275/291 catalog ids (94.5%) unchanged; 19 languages unchanged | `docs/parity-checklist.md`; `ls crates/ui-egui/src/i18n/` = 19 | implemented metric |
+| 5 | 276/292 catalog ids (94.5%); 19 languages unchanged | `docs/parity-checklist.md` (byte-identical v0.14.2→v0.15.0; prev. ledger said 275/291 — stale); `ls crates/ui-egui/src/i18n/` = 19 | implemented metric |
 | 6 | Open a saved workbook without recalculating | PR #2512 | implemented |
 | 7 | AutoSum row total to the right; Options ▸ Formulas Max Iterations/Max Change; Chart Type stacked/100% stacked in Format Chart Area | PRs #2561, #2493, #2605 | implemented |
 | 8 | SheetId kept across XLSX rewrite; faster XLSX save; skipped-drawing warnings; note/comment thread kept; sparklines removed with row/col | PRs #2513, #2749, #2555, #2515, #2551 | implemented |
@@ -36,7 +38,7 @@ MCP tools, control methods, CLI subcommands, catalog coverage: unchanged (re-cou
 | MCP tools | 21 | **22** | +`list_windows` |
 | Control methods | 31 documented + aliases | **same set** | **now token-authenticated** |
 | CLI subcommands | 11 | **11** | unchanged |
-| Catalog coverage | 275/291 | **275/291** | unchanged |
+| Catalog coverage | 275/291 | **276/292** (generated file says this at v0.13.0+; the v1.0.7 ledger's "275/291 at v0.14.2" was stale) | +1/+1 |
 | UI-only command ids | 15 | **same shape** | unchanged |
 | Shortcut bindings | 70 | **70** | unchanged (no new shortcuts this wave) |
 | Languages | 19 | **19** | unchanged |
@@ -62,10 +64,10 @@ MCP tools, control methods, CLI subcommands, catalog coverage: unchanged (re-cou
 ## 5. Verification commands (read-only)
 
 ```sh
-git -C <clone> rev-parse HEAD                                   # 55850841d39f030fb42f0a07e54903decea7b067
+git -C <clone> rev-parse HEAD                                   # 30b210b4ef03b30616923465efa70766cefba379
 grep -rho 'cmd!' crates/engine/src/ | wc -l                     # 354
 grep -cE '^\s+tool\(' crates/mcp/src/tools.rs                   # 22
 sed -n '4,5p;26,42p' apps/gridcraft/src/control_server.rs       # token auth + make_token
-grep -oE '275 / 291|94\.5%' docs/parity-checklist.md | head -2
+grep -oE '276 / 292|94\.5%' docs/parity-checklist.md | head -2
 ls crates/ui-egui/src/i18n/ | wc -l                             # 19
 ```

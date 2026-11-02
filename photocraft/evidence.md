@@ -1,12 +1,10 @@
-# PhotoCraft — evidence ledger (tag v0.18.0)
+# PhotoCraft — evidence ledger (tag v0.19.0)
 
-Audit basis: this checkout is tag **`v0.18.0`**, commit **`8a87a457abb43ac344deeb3fdb67541b91a72ff1`** ("Release 0.18.0", 2026-10-31; inspection 2026-11-01; installed bundle still 0.17.0;
-the clone is shallow and holds exactly this commit, so tag-to-tag diffs were unavailable and every delta below was
-re-measured here and compared against the previous skill (v0.16.0) and the repo's own revision histories). Inspection
-date **2026-10-29**. Installed `/Applications/PhotoCraft.app` = 0.17.0 (`CFBundleShortVersionString` — current this
-wave, not stale), bundle id `ai.storyteller.photocraft`, min macOS 11.0; binary prints
-`photocraft 0.17.0 (b8c3f3aa8, 2026-10-28)`; the GUI was never launched. No `references/` directory ships — SKILL.md
-carries the body, this file carries the per-claim evidence.
+Audit basis: this checkout is tag **`v0.19.0`**, commit **`2df9f807702a935184041355a86405380bda8274`** ("Release 0.19.0", 2026-11-01; inspection 2026-11-02; the v0.18.0 ref was fetched for diffs; installed bundle matches at 0.19.0; the GUI was never launched, but the bundled `photocraft-cli` ran read-only).
+
+v0.18.0 → v0.19.0 delta: **engine registry gains the `smart_svg_cmds` family** (edit embedded vectors with original-format save-back through VectorCraft, PR #8571; `cmd.rs` wires `smart_svg_cmds::specs()`) and `edit.clear` is reworked inline; MCP (26 tools), control (28 methods), CLI (8 subcommands + help) and headless serve (19 methods): **zero diff files**. **Live registry: 953 commands** — measured with `photocraft-cli commands | wc -l` on the installed bundle that matches this tag. Locale catalogs 26 = 26 (the notes' Finnish/Norwegian Bokmål PRs were already in v0.18.0's set — verified against both tag trees). Features: PSD font metadata survives text edits (#6169), Move-tool huge-layer drag without per-frame copies (#6985), .atn steps switch documents (#7621) + export hardening (#8371), Pattern Fill in Layer Panel Footer (#7716), advanced-selection shortcuts (#8015), paragraph overflow port (#8311), TIFF >2^30 px row-group decode (#8536), multi-layer transform handles (#8623), Fill/Stroke popover + full Color Picker (#8725), colour-channel-set editing (#9274), live picker previews (#9757), brush-state survival (#10288), 18-PR integration batch (#10145).
+Prior audits are retained below; the v0.19.0 numbers above are the current basis. No `references/` directory
+ships — SKILL.md carries the body, this file carries the per-claim evidence.
 
 ## 1. Capability claims → evidence → tier
 
@@ -94,7 +92,7 @@ Every row was re-measured from this checkout.
 ## 5. Verification commands (read-only, reproduce the counts)
 
 ```sh
-git -C <clone> rev-parse HEAD                         # 8a87a457abb43ac344deeb3fdb67541b91a72ff1
+git -C <clone> rev-parse HEAD                         # 2df9f807702a935184041355a86405380bda8274
 grep -n 'const ALL: \[Tool' crates/ui-egui/src/state/tool.rs        # [Tool; 68]
 sed -n '5p' docs/parity-checklist.md                                # 631 of 631 menu items live
 grep -c '#\[tool(' crates/automation/src/server.rs                  # 26 MCP tools

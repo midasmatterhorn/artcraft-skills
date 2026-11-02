@@ -16,7 +16,9 @@ description: >-
 
 # EffectCraft
 
-Audit basis: this checkout is tag `v0.19.0`, commit `afa3c938f6d7f2fd8688e9cd6f58dba0c606b1b4` ("Release 0.19.0", 2026-10-31). The installed `/Applications/EffectCraft.app` still reports version `0.18.0` and prints `effectcraft 0.18.0` — **the installed bundle lags this tag.** **Verify against your installed version** before relying on behaviour added in 0.19.x. No `references/` directory ships with this skill: every claim is cited inline to the repository.
+Audit basis: this checkout is tag `v0.20.0`, commit `720c67117ea232ef01631a368bb617012f4c63d6` ("Release 0.20.0", 2026-11-01; the v0.19.0 ref was fetched for id diffs). The installed `/Applications/EffectCraft.app` matches this tag and prints `effectcraft 0.20.0`. **Verify against your installed version** — the ArtCraft Launcher auto-updates. No `references/` directory ships with this skill: every claim is cited inline to the repository.
+
+v0.19.0 → v0.20.0 adds **`comp.deleteAllMarkers`** (Delete All Markers for composition markers, PR #2169 — the engine command registry goes **680 → 681** ids in this audit's multiline non-test extract; nothing removed) and the **Swedish (sv) interface translation** (18 languages, #1541). Behaviour: the **disk cache drops frames rendered before adjustment layers blended in their mode** (#2666, extending 0.19.0's adjustment-blend invalidation); the **Tools bar's Alt/Option-click cycles the flyout tool slot** (#2684); **the Workspace menu offers all four options, as After Effects does** (#2690); the 3D views take After Effects' names in the Japanese catalog and the comp says which camera (#2691); the channel button keeps After Effects' red/green/blue colours (#2692); Fast Previews sits beside the resolution control (#2694); a file dropped on a floating Timeline joins that composition (#2700); the web tab title follows the open document (#2710); a floating panel's ≡ menu draws in its own window (#2711); Help ▸ Expression Reference opens a page that exists (#2712); and `frame_position` no longer panics on a zero or negative frame rate (#2693). MCP (36 tools), control (24 methods), CLI (12 subcommands) and UI commands (111) are unchanged — zero diff files under those trees.
 
 ## Overview
 
@@ -44,7 +46,7 @@ v0.18.0 was a maintenance release: the effect registry stood at 307 effects and 
 
 ### Effects, text, shapes, masks
 
-- **307 registered effects, 3032 parameters, 280 GPU-capable, all 32-bit float, 21 categories, 0 marked partial**, plus 9 Layer Styles with Global Light (`docs/effects.md`, generated from `crates/effects/src/catalog.rs` and checked by the `effects_doc_is_current` test). The README's "306" is one behind the registry. Effects are addressed by id (`ec.<category>.<name>`) or display name.
+- **308 registered effects, 2987 parameters, 280 GPU-capable, all 32-bit float, 21 categories, 0 marked partial**, plus 9 Layer Styles with Global Light (`docs/effects.md`, generated from `crates/effects/src/catalog.rs` and checked by the `effects_doc_is_current` test — identical at v0.19.0 and v0.20.0; the previous audit's 307/3032 did not match its own pinned tag). Effects are addressed by id (`ec.<category>.<name>`) or display name.
 - **54 built-in animation presets** (8 text animators, 23 backgrounds, 23 transitions) and `.ecpreset` save/apply.
 - **Text, shapes and masks**: point/paragraph text with style runs, variable fonts, text animators; shape operators (trim, repeater, round corners, offset, zig zag, twist, wiggle, merge, gradient stroke); masks with **7 modes**, feather, expansion, vertex editing and Mask Interpolation. **New:** `text.deleteSurrounding` deletes characters around the caret (the only registry addition this release).
 
@@ -124,7 +126,7 @@ Render Settings/Output Modules cover quality, resolution, time span (**Work Area
 - **FBX/DPX/PDF caveats**: FBX is 7.x only, with no animation, skinning, cameras or lights; DPX/Cineon log values are shown as stored; PDF/AI/EPS import lacks JPX/JBIG2 and Illustrator procset EPS.
 - **Scripting gaps**: no `.jsxbin`, no Startup/Shutdown script folders, no script shortcuts, no Legacy ExtendScript engine mode, no BridgeTalk.
 - **The macOS `.app` contains no CLI** — get the universal `effectcraft-cli` from its separate release zip or build it. **The control channel has no authentication**, binds `127.0.0.1`, serves at most 16 connections, times out at 60 s and rejects lines over 4 MiB.
-- **Docs drift — trust code/runtime.** Several docs still say 306 effects and 411 commands; the registries say 307/3032 and 672+1 ids. `docs/gaps.md` gap 3's "no PR CI gate" is stale.
+- **Docs drift — trust code/runtime.** Several docs still say 306 effects and 411 commands; the registries say 308/2987 and 681 ids (this audit's multiline non-test extract). `docs/gaps.md` gap 3's "no PR CI gate" is stale.
 - **`.prproj` is not read or written** — convert to FCP7 XML in Premiere first.
 
 ## How to operate
@@ -272,7 +274,7 @@ Alpha-software discipline; run this for every delegated task.
 
 ## Sources & evidence
 
-- Repository: `https://github.com/storytold/effectcraft`; inspected tag `v0.19.0`, commit `afa3c938f6d7f2fd8688e9cd6f58dba0c606b1b4` (`git rev-parse HEAD`, 2026-11-01); the v0.18.0 ref was fetched for set diffs. Fast-moving alpha — verify against your installed version (the installed bundle is still 0.18.0).
-- Installed app at this pin: version 0.18.0, bundle `ai.storyteller.effectcraft`; `Contents/MacOS` holds only the app binary (no CLI). No GUI was launched; only `--version` was run.
+- Repository: `https://github.com/storytold/effectcraft`; inspected tag `v0.20.0`, commit `720c67117ea232ef01631a368bb617012f4c63d6` (`git rev-parse HEAD`, 2026-11-02); the v0.19.0 ref was fetched for id diffs. Fast-moving alpha — verify against your installed version (the installed bundle matches this tag at 0.20.0).
+- Installed app at this pin: version 0.20.0, bundle `ai.storyteller.effectcraft`; `Contents/MacOS` holds only the app binary (no CLI). No GUI was launched; only `--version` was run.
 - Read: `README.md`, `Cargo.toml`, `docs/` (`agents`, `mcp`, `control-protocol`, `architecture`, `file-format-parity`, `gaps`, `effects`, `effects-parity`, `fidelity/README`, `footage`, `plugins`, `scripting-parity`, `web`); `apps/effectcraft-cli/src/main.rs`, `apps/effectcraft/src/{main,control_server}.rs`; `crates/project/src/{lib,render_queue,styles,limits}.rs`; `crates/engine/src/cmd.rs` (registry) and `crates/engine/src/cmd/`; `crates/{media,interchange,lottie,expr,keyframe,plugin,automation,script}/src`; `crates/effects/src/{lib,catalog}.rs`; `crates/color/src/blend.rs`; `crates/ui-egui/src/{control,commands,dock,menus}.rs`. Counts were re-measured from code and diffed against a fetched `v0.17.0` ref; no build, test or render was run.
 - Delta method: `cmd!`/`query!` call sites 697 (v0.17.0) → 678 (v0.18.0) after the shared-module refactor; unique literal ids 563 → 564 (+`text.deleteSurrounding`, nothing removed); `static TOOLS` `ToolDef` entries 36 → 36; `docs/effects.md` 307/3032 unchanged (test-enforced).

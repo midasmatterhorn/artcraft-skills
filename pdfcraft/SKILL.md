@@ -3,7 +3,9 @@ name: pdfcraft
 description: PdfCraft is the ArtCraft PDF workbench, a clean-room Acrobat Pro reimplementation for macOS, Windows, Linux, FreeBSD and the web. Use this skill whenever the user mentions PdfCraft or pdfcraft-cli, asks what it can do, which file formats or shortcuts it supports, or asks to read, render, search, organize, combine, split, rotate, annotate, fill, calculate, sign, redact, OCR, compare, print, protect, layer, measure or convert a PDF; when preparing assets or inputs for it; when driving it headlessly through the CLI, the MCP server or the UI control channel; or when verifying, repairing or troubleshooting its output — even if the app is not named (for example "merge these PDFs", "make this scan searchable", "fix this form's calculation order", "redact this contract", "convert this PDF to Word").
 ---
 
-Audit basis: this checkout is tag `v0.16.1`, commit `24bb85308e4b65404fc908506ade6341a29999d7` ("Release 0.16.1", 2026-10-31). The installed `/Applications/PdfCraft.app` still reports version `0.15.0` (bundle id `ai.storyteller.pdfcraft`, minimum macOS 11.0) — **the installed bundle lags this tag.** **Verify against your installed version.** Deep detail: `references/automation-tools.md` lists all 182 automation tools at this tag.
+Audit basis: this checkout is tag `v0.17.0`, commit `7d78f3e14474b978be014715e0cc64895d77025a` ("Release 0.17.0", 2026-11-01; the v0.16.1 ref was fetched for set diffs). The installed `/Applications/PdfCraft.app` matches this tag (bundle id `ai.storyteller.pdfcraft`, minimum macOS 11.0). **Verify against your installed version.** Deep detail: `references/automation-tools.md` lists all 183 automation tools at this tag.
+
+v0.16.1 → v0.17.0 adds **one automation tool, `text_script`** (superscript/subscript over `edit.edit_text`, with Unicode forms, mixed-text normalisation and refusal when nothing would change — **182 → 183 tools**, nothing removed) and changes no engine command (`crates/engine/src/commands.rs` byte-identical between tags). Feature highlights: **saving after deleting pages rewrites an unsigned file in full** (#4279); **automated licensing validation for bundled assets** (#2212); **`--two-paged` CLI flag** (#1433); **an optional page-edge shadows setting** (#2088); **Acrobat UI parity for image editing and text formatting** (#2155); an XFA draw placed by position turns about its anchor (#5624); create/optimize refuse a mask of other proportions instead of hanging (#5620); JBIG2 arithmetic no longer panics near the end of an i32 (#5673); and **Preferences sets how many recent files to keep** (#5572/#5675).
 
 ## Overview
 
@@ -19,23 +21,23 @@ Unless a bullet says **partial**, the path is wired into the UI and/or the CLI a
 
 ### Automation surface at a glance
 
-| Surface | Count at v0.16.1 | Change vs the v0.15.0 skill |
+| Surface | Count at v0.17.0 | Change vs the v0.16.1 skill |
 |---|---|---|
-| Automation tools (`crates/automation/src/tools.rs`) | **182** (154 inline + 28 multi-line `t(` entries) | **+3** — `doc_backdrops`, `bookmark_from_text_styles`, `text_styles` |
+| Automation tools (`crates/automation/src/tools.rs`) | **183** (name-set extract; 157 inline + 28 multi-line `t(` raw) | **+1** — `text_script` |
 | Command registry (`crates/engine/src/commands.rs:165` `COMMANDS`) | **205** | unchanged set (205 `c(` ids at both tags, id diff: 0 added, 0 removed) |
 | Tools mapped to a command (`ToolDef::command`) | 71 | unchanged |
 | CLI subcommands (`apps/pdfcraft-cli/src/main.rs`) | **14 documented**, plus internal `check-one` | unchanged; 25 `--flag` names |
 | UI control methods (`crates/ui-egui/src/control/requests.rs`) | **17** | unchanged |
 | Interface languages (`crates/ui-egui/src/i18n/`) | **35** (English + 34 catalogs; **Persian `fa` added**) | +1 |
 | All tools catalogue (`crates/engine/src/catalog.rs`) | 150 items, 24 groups, 5 categories; planned badges remain a plan | unchanged |
-| MCP tools | the same **182**, or 17 entries under `--compact` (15 core + `tool_search` + `tool_call`) | +3 |
+| MCP tools | the same **183**, or 17 entries under `--compact` (15 core + `tool_search` + `tool_call`) | +1 |
 | MCP resources | 4 URI templates + 2 list resources | unchanged; 16 MiB request-line cap |
 | Convertible input extensions (`CONVERTIBLE`, `crates/create/src/lib.rs`) | **12** | unchanged |
 | Office export targets (`OfficeFormat::from_extension`, `crates/engine/src/compare.rs`) | **4** kinds / 5 extensions | unchanged |
 | Form-data extensions (`crates/xfdf/src/lib.rs`) | **8** → 6 formats | unchanged |
 | Page-image export formats | **3** (png, jpeg, tiff; `pdfcraft-cli render` also writes `.pam`) | unchanged; **exported on worker threads (~80% less wall time)** |
 
-`pdfcraft-cli tools` is the live capability contract; the full name/title/hint table is in `references/automation-tools.md`. Every tool has a JSON Schema, read-only or destructive hints and an optional registry command id. Repo docs lag badly: several still say "141 automation tools" and "184 registered commands" (real: 182 / 205).
+`pdfcraft-cli tools` is the live capability contract; the full name/title/hint table is in `references/automation-tools.md`. Every tool has a JSON Schema, read-only or destructive hints and an optional registry command id. Repo docs lag badly: several still say "141 automation tools" and "184 registered commands" (real: 183 tools / 205 registered commands).
 
 ### Reading, navigation and text
 - Tiled CPU rendering with single, continuous, two-up and two-page layouts, rotation, full screen, Read mode, light/dark/system themes and per-tab history. Optional gapless page display and an independent thumbnail slider.
@@ -207,9 +209,9 @@ Alpha-software discipline for every session:
 
 ## Sources & evidence
 
-- Repo: https://github.com/storytold/pdfcraft · tag `v0.15.0` · inspected commit `75360d1d7db06fed974f48c914d4c04132757187` ("Release 0.15.0", 2026-10-28); date of inspection 2026-10-29. The checkout is a shallow clone pinned to the release tag (plus a fetched `v0.14.0` ref for set diffs); it was not modified or built.
-- Installed app: `/Applications/PdfCraft.app` 0.15.0, bundle id `ai.storyteller.pdfcraft`, minimum macOS 11.0; binary `--version` → `pdfcraft 0.15.0`. The macOS bundle contains only `PdfCraft`, not `pdfcraft-cli`.
-- Counts were machine-derived from code at this tag and diffed against the fetched v0.14.0 files: tools 179 → 179 (153 inline + 26 multi-line `t(` entries), commands 205 → 205 (id diff clean), control methods 17 → 17, languages 34 → 35 (+`fa`), CLI 14+`check-one` unchanged.
+- Repo: https://github.com/storytold/pdfcraft · tag `v0.17.0` · inspected commit `7d78f3e14474b978be014715e0cc64895d77025a` ("Release 0.17.0", 2026-11-01); date of inspection 2026-11-02. The checkout is a shallow clone pinned to the release tag (plus a fetched `v0.16.1` ref for set diffs); it was not modified or built.
+- Installed app: `/Applications/PdfCraft.app` 0.17.0, bundle id `ai.storyteller.pdfcraft`, minimum macOS 11.0; binary `--version` → `pdfcraft 0.17.0`. The macOS bundle contains only `PdfCraft`, not `pdfcraft-cli`.
+- Counts were machine-derived from code at this tag and diffed against the fetched v0.16.1 files: tools 182 → 183 (+`text_script`), engine commands byte-identical (`crates/engine/src/commands.rs`, 0 diff lines), control methods unchanged (only a doc-comment hunk: `ui.set` gained the `show_page_edge_shadows` key + `ui.state` report), languages 34 = 34, `pdfcraft-cli` zero diff files (the `--two-paged` flag is a GUI launch flag in `apps/pdfcraft`).
 - Key files read: `README.md`, `Cargo.toml`, `docs/gaps.md`, `docs/mcp.md`, `apps/pdfcraft/src/main.rs`, `apps/pdfcraft-cli/src/main.rs`, `crates/automation/src/tools.rs`, `crates/engine/src/commands.rs`, `crates/engine/src/compare.rs`, `crates/ui-egui/src/control/requests.rs`, `crates/ui-egui/src/i18n/`, `crates/ui-egui/src/panels/pages.rs`, `crates/render/src/raster/{,work_queue}.rs`, `crates/xfa/src/{lib,layout}.rs`, `crates/redact/src/`, `crates/xfdf/src/lib.rs`, `crates/forms/`, `crates/sign/`, `crates/ocr/`, `crates/print/src/lib.rs`, `crates/create/src/lib.rs`, `crates/cos/src/{budget,writer}.rs`.
 - Shared libraries consulted: `storytold/craft-libs` crates pinned across three revisions this release (`e11f9d9a…` for craft-menu, plus `6d518fc7…`/`a517b384…` — `Cargo.toml`); craft-menu provides the native macOS menus.
 - Companion files: `evidence.md` (claim → evidence → tier table) and `references/automation-tools.md` (all 179 tool names, titles, hints and command mappings).
