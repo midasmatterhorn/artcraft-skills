@@ -1,15 +1,15 @@
 # AGENTS.md — ArtCraft Skills archive
 
 You are a coding agent. This folder is the persistence archive of the
-[artcraft-skills](https://github.com/midasmatterhorn/artcraft-skills) project: 16
-evidence-verified skills for the ArtCraft desktop apps (14 storytold apps — the 13 craft apps plus
-Craft Anything's rebuild workbench and TextureCraft's 3D texture painting — and Tangency Labs'
-SolidCraft parametric CAD). If the user asks you to
+[artcraft-skills](https://github.com/midasmatterhorn/artcraft-skills) project: 17
+evidence-verified skills for the ArtCraft desktop apps (15 storytold apps — the 13 craft apps plus
+Craft Anything's rebuild workbench, TextureCraft's 3D texture painting and MaterialCraft's
+node-based procedural materials — and Tangency Labs' SolidCraft parametric CAD). If the user asks you to
 install, update, or verify these skills, do it for the agent **you** are running as.
 
 ## Install (pick your target)
 
-From the packaged release in this folder — the 16 skill folders sit at the zip root
+From the packaged release in this folder — the 17 skill folders sit at the zip root
 (pick the newest `artcraft-skills-v*.zip`):
 
 ```sh
@@ -48,9 +48,10 @@ bash install.sh              # default → ~/.agents/skills/  (add --claude, --o
 
 ## Verify
 
-All 16 skill directories must exist under the chosen target — `cadcraft`, `craft-anything`,
+All 17 skill directories must exist under the chosen target — `cadcraft`, `craft-anything`,
 `deckcraft`, `designcraft`, `effectcraft`, `figcraft`, `filmcraft`, `gridcraft`, `lightcraft`,
-`pdfcraft`, `photocraft`, `solidcraft`, `soundcraft`, `texturecraft`, `vectorcraft`, `wordcraft` — each containing
+`materialcraft`, `pdfcraft`, `photocraft`, `solidcraft`, `soundcraft`, `texturecraft`,
+`vectorcraft`, `wordcraft` — each containing
 `SKILL.md` and `agents/openai.yaml`. Print the target directory you used, then tell the
 user to restart their agent session so the skills are discovered.
 
