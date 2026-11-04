@@ -1,10 +1,10 @@
-# FigCraft — evidence ledger (tag v0.14.0)
+# FigCraft — evidence ledger (tag v0.15.0)
 
-Audit basis: this checkout is tag **`v0.14.0`**, commit **`5fc2840d9089e0b21056b57c4dff9f795e38a4e3`**
+Audit basis: this checkout is tag **`v0.15.0`**, commit **`02c38a6d959f0afd82e44d9d67d396266e6ab4a3`**
 ("Release 0.14.0", shallow clone). Inspection date **2026-11-02**. Installed `/Applications/FigCraft.app`
-matches the tag and prints `FigCraft 0.14.0 (5fc2840d…)`; the GUI was never launched.
+matches the tag and prints `FigCraft 0.14.0 (02c38a6d…)`; the GUI was never launched.
 
-v0.13.1 → v0.14.0 delta: **automation surface unchanged** — spec! sites 481 → 481 in the command
+v0.13.1 → v0.15.0 delta: **automation surface unchanged** — spec! sites 481 → 481 in the command
 directory (engine-wide 630), command-id set diff empty, MCP/control/CLI/locale files untouched in
 the diff. Code fixes only: code export (no `inf` for huge finite values, CSS font-family
 escaping, paint opacity on CSS gradient stops, unique CSS custom properties per variable),
@@ -83,7 +83,7 @@ update prompt.
 ## 5. Verification commands (read-only)
 
 ```sh
-git -C <clone> rev-parse HEAD                                   # 5fc2840d9089e0b21056b57c4dff9f795e38a4e3
+git -C <clone> rev-parse HEAD                                   # 02c38a6d959f0afd82e44d9d67d396266e6ab4a3
 grep -rho 'spec!(' crates/engine/src/ | wc -l                   # 616
 grep -E '212' docs/parity-checklist.md | head -1                # 212 / 212 menu items
 awk 'NR>=160 && NR<345' crates/engine/src/keymap.rs | grep -cE '^\s+k\('   # 159
@@ -94,3 +94,10 @@ ls crates/ui-egui/locales/ | wc -l                              # 22
 grep -n 'API_VERSION' crates/plugin/src/manifest.rs             # u32 = 4
 ls crates/engine/src/dev/codegen/                               # arkui compose css html swift
 ```
+
+
+## Round 2026-11-04 (refresh)
+
+- Pinned to `v0.15.0` = `02c38a6d959f0afd82e44d9d67d396266e6ab4a3` (installed `FigCraft 0.15.0 (02c38a6d959f0afd82e44d9d67d396266e6ab4a3)`).
+- CLI 9 → **10** verbs, MCP 18 → **19** tools, control 17 → **18** methods.
+- Id sets were diffed between the two tags with the same extraction method as the claims above; counts here are the new ones.

@@ -1,11 +1,11 @@
-# LightCraft — evidence ledger (tag v0.17.0)
+# LightCraft — evidence ledger (tag v0.18.0)
 
-Audit basis: this checkout is tag **`v0.17.0`**, commit **`5a09d075306291a1522d5e8bb0710774f3733594`** ("Release 0.17.0", 2026-11-01; the v0.16.0 ref was fetched for id diffs; shallow clone
+Audit basis: this checkout is tag **`v0.18.0`**, commit **`32d569ad5d19a6b55cf8d5c077127faa0f44a83b`** ("Release 0.17.0", 2026-11-01; the v0.16.0 ref was fetched for id diffs; shallow clone
 holding exactly this commit). Inspection date **2026-11-02**. Installed `/Applications/LightCraft.app`
 matches the tag (`CFBundleShortVersionString` 0.17.0, binary prints `lightcraft 0.17.0`);
 bundle id `ai.storyteller.lightcraft`; the GUI was never launched. No `references/` directory.
 
-v0.16.0 → v0.17.0 delta: **+4 command ids, zero removed** (multiline non-test extract 375 → 379):
+v0.16.0 → v0.18.0 delta: **+4 command ids, zero removed** (multiline non-test extract 375 → 379):
 `keyword.setShortcut`, `keyword.shortcut`, `keyword.toggleShortcut`, `photo.clearLabel`. MCP tool set,
 CLI subcommands (10), control methods, 9 bundled camera profiles (`crates/engine/src/camera_profiles.rs`
 BUNDLED, byte-identical between tags) and the develop slider specs unchanged (controls.rs diff is
@@ -53,7 +53,7 @@ kernel builds with OOM fallback, and launch-time library selection fixes.
 
 | Surface | v0.14.0 | v0.15.0 (measured) | Change |
 |---|---:|---:|---|
-| Engine command specs | 375 | **375** | unchanged; registry file moved `cmd/mod.rs` → `cmd.rs` (39 wiring sites, was 37) |
+| Engine command specs | 375 | **375** | unchanged; registry file moved `cmd.rs` → `cmd.rs` (39 wiring sites, was 37) |
 | UI commands | 190 | **191** | +`app.checkForUpdates` (update prompt); nothing removed |
 | Language commands | 18 | **18** | unchanged |
 | Total live commands | 583 | **584** | 375 + 209 |
@@ -102,3 +102,10 @@ awk '/pub enum ExportFormat/,/^}/' crates/engine/src/export/options.rs | grep -c
 grep -cE '^\s+"[a-z]+\.[a-zA-Z.]+" => ' crates/develop/src/controls.rs   # 122 named controls
 awk -F'\t' 'NR>2 {v[$5]++} END {for (k in v) print k, v[k]}' docs/raw/coverage.tsv  # 202/37/656/551
 ```
+
+
+## Round 2026-11-04 (refresh)
+
+- Pinned to `v0.18.0` = `32d569ad5d19a6b55cf8d5c077127faa0f44a83b` (installed `lightcraft 0.18.0`).
+- Re-measured the command registry at **380** `cmd!` specs (the previous skill carried a contradictory 375/379).
+- Id sets were diffed between the two tags with the same extraction method as the claims above; counts here are the new ones.

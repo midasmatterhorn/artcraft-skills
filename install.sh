@@ -12,7 +12,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 dest="${HOME}/.agents/skills"
-skills="photocraft lightcraft vectorcraft figcraft designcraft wordcraft deckcraft gridcraft pdfcraft effectcraft filmcraft soundcraft cadcraft craft-anything solidcraft"
+skills="photocraft lightcraft vectorcraft figcraft designcraft wordcraft deckcraft gridcraft pdfcraft effectcraft filmcraft soundcraft cadcraft craft-anything solidcraft texturecraft materialcraft"
 force=false
 for arg in "$@"; do
   case "$arg" in
@@ -28,7 +28,7 @@ done
 mkdir -p "$dest"
 installed=0; skipped=0
 for s in $skills; do
-  case "$s" in ''|*[!a-z]*) echo "refusing bad skill name: $s" >&2; exit 1;; esac
+  case "$s" in ''|*[!a-z-]*|[-]*|*[-]) echo "refusing bad skill name: $s" >&2; exit 1;; esac
   if [ -e "$dest/$s" ] && [ "$force" = false ]; then
     echo "skip  $s (already installed — use --force to overwrite)"
     skipped=$((skipped+1))

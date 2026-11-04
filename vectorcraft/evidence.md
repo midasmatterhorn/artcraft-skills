@@ -1,6 +1,6 @@
-# VectorCraft — evidence ledger (tag v0.20.0)
+# VectorCraft — evidence ledger (tag v0.21.0)
 
-Audit basis: this checkout is tag **`v0.20.0`**, commit **`5628de96f866185d8eb289b167b89691f213c0c3`** ("Release
+Audit basis: this checkout is tag **`v0.21.0`**, commit **`11862f61198c8f62c0b22b6c9a331cc5950ac98d`** ("Release
 0.20.0", 2026-11-01, shallow clone; the v0.19.0 ref was fetched for id diffs). Inspection date **2026-11-02**. Installed `/Applications/VectorCraft.app` matches the tag
 (`CFBundleIdentifier ai.storyteller.vectorcraft`), binary prints `vectorcraft 0.20.0`; the GUI was never launched.
 
@@ -11,7 +11,7 @@ confirm + Alt-click, PDF/EPS pattern-tile flattening, Batch data-set naming, Obj
 No `references/` directory.
 
 
-v0.19.0 → v0.20.0 delta: **registry +20 ids, zero removed** (multiline non-test extract 861 → 881): addon.arrange.{grid,groupOverlapping,randomizeOpacity,replace,size,sort,swap}, addon.cleanup.joinText, addon.color.{nearestSwatch,applyNearestSwatch}, addon.document.{exportAllOpen,saveTimestampedCopy,symbolsFromLayers}, addon.pathtools.{expandDashes,divideDashes}, symbol.{exitEditing,instance.reset,instance.setAppearance,unused}, view.capsLock. MCP tool set unchanged (headless doc-string: document.exportForScreens +`includeArtboardFill`). Prior v0.18.0 → v0.19.0 audit: registry unchanged, control 25, MCP unchanged.
+v0.19.0 → v0.21.0 delta: **registry +20 ids, zero removed** (multiline non-test extract 861 → 881): addon.arrange.{grid,groupOverlapping,randomizeOpacity,replace,size,sort,swap}, addon.cleanup.joinText, addon.color.{nearestSwatch,applyNearestSwatch}, addon.document.{exportAllOpen,saveTimestampedCopy,symbolsFromLayers}, addon.pathtools.{expandDashes,divideDashes}, symbol.{exitEditing,instance.reset,instance.setAppearance,unused}, view.capsLock. MCP tool set unchanged (headless doc-string: document.exportForScreens +`includeArtboardFill`). Prior v0.18.0 → v0.19.0 audit: registry unchanged, control 25, MCP unchanged.
 
 ## 1. Capability claims → evidence → tier
 
@@ -78,7 +78,7 @@ v0.19.0 → v0.20.0 delta: **registry +20 ids, zero removed** (multiline non-tes
 ## 5. Verification commands (read-only)
 
 ```sh
-git -C <clone> rev-parse HEAD                                   # 5628de96f866185d8eb289b167b89691f213c0c3
+git -C <clone> rev-parse HEAD                                   # 11862f61198c8f62c0b22b6c9a331cc5950ac98d
 grep -rho 'cmd!' crates/engine/src/ | wc -l                     # 801
 awk '/pub (static|const) UI_COMMANDS/,/^];/' crates/ui-egui/src/menus/ui_commands.rs | grep -cE '^\s+(UiCommand|\()'   # 374
 grep -cE '^\s+"[a-z_]+",$' crates/mcp/src/tools/definitions.rs  # 31 (multi-line tool names)
@@ -90,3 +90,10 @@ sed -n '473,505p' crates/engine/src/cmd/fileio/formats.rs | grep -oE '"[a-z0-9]+
 awk '/pub fn effect_catalog/,0' crates/effects/src/catalog.rs | grep -cE '^\s+(g|r)\('      # 86 (+15 warps +12 pathfinder)
 ls crates/ui-egui/src/i18n/ | grep -c tsv                       # 24 (+English)
 ```
+
+
+## Round 2026-11-04 (refresh)
+
+- Pinned to `v0.21.0` = `11862f61198c8f62c0b22b6c9a331cc5950ac98d` (installed `vectorcraft 0.21.0`).
+- Control methods 29 → **30**; format catalogue 24/22 → **27 readable / 25 placeable**; `VERSION` is 6, not 4.
+- Id sets were diffed between the two tags with the same extraction method as the claims above; counts here are the new ones.

@@ -17,9 +17,13 @@ description: >-
 
 # WordCraft
 
-Audit basis: this checkout is tag `v0.14.0`, commit `5cd53f184aab11def13b7fced18727159b9bc96a`. The installed `/Applications/WordCraft.app` matches this tag (bundle id `ai.storyteller.wordcraft`) and its binary prints `wordcraft 0.14.0 (5cd53f18)`. **Verify against your installed version** (`wordcraft --version`, `wordcraft-cli --version`) — the ArtCraft Launcher auto-updates. No `references/` directory ships with this skill: everything below is cited inline to the repo.
+**Audit basis.** Refreshed 2026-11-04 against tag **v0.15.1**, commit **`08afab50b6a1ed19f9af55bb9f74d18f5e17bfa0`** — `git rev-parse HEAD` in the pinned checkout confirms, and the installed `/Applications/WordCraft.app` matches (its binary prints `wordcraft 0.15.1 (08afab50)`). The previous release this skill described was v0.14.0 (`5cd53f1`).
 
-v0.13.2 → v0.14.0, re-diffed from the tags — **the automation surface is unchanged** (648 command ids at both tags; `crates/mcp/src/tools.rs`, `crates/ui-egui/src/control.rs` and the command registry are byte-identical; only their tests changed). What landed: **proofing is one engine** — the per-language suggest copies collapse into a shared Hunspell engine with a language table, fixing three bugs the copies hid (#4191), and affix dictionaries gain flag aliases, single-byte flags, ICONV, IGNORE and KEEPCASE (#4575); **View ▸ Macros** opens a dialog to run, delete and record macros (#4426); **word count counts each Chinese and Japanese character as a word** (#4629); **printing works for documents with links** — the print job's PDF leaves out link annotations (#4817); **keytips: Alt, F shows the Backstage pages' letters; Alt, F, P and Alt, F, V print** (#4981); a kept heading goes over with a three-line paragraph that widow control moves whole (#4991); HTML import treats `<!-->` and `<!--->` as empty comments (#5040); **CSV import detects the separator from the first non-blank line** (#5042); **a table of contents writes its page numbers as PAGEREF fields**, as Word does (#5097); DOCX paragraphs naming an undefined style are formatted as Normal (#5104).
+**v0.14.0 → v0.15.1 delta.** 316 files changed across two releases. The command registry is **652** `CommandSpec::new(` sites at this tag (652 at v0.14.0); the four additions are `proof.installPack`, `proof.packs`, `proof.removePack` and `review.language.preferred`. Feature wave: proofing unified into one Hunspell engine with 75 language packs merged into craft-proof, Read Aloud citations looked up by binary search, TIFF double-compression refusal in Pictures, and font name-table reads cut to 128 characters.
+
+**Verify against your installed version** — the ArtCraft Launcher auto-updates, so a newer build may differ; every count quoted here was re-measured at this tag, and code paths that moved were re-cited. The measurement method for each count is in `evidence.md`.
+
+v0.13.2 → v0.14.0, re-diffed from the tags — **the automation surface is unchanged** (652 command ids at both tags; `crates/mcp/src/tools.rs`, `crates/ui-egui/src/control.rs` and the command registry are byte-identical; only their tests changed). What landed: **proofing is one engine** — the per-language suggest copies collapse into a shared Hunspell engine with a language table, fixing three bugs the copies hid (#4191), and affix dictionaries gain flag aliases, single-byte flags, ICONV, IGNORE and KEEPCASE (#4575); **View ▸ Macros** opens a dialog to run, delete and record macros (#4426); **word count counts each Chinese and Japanese character as a word** (#4629); **printing works for documents with links** — the print job's PDF leaves out link annotations (#4817); **keytips: Alt, F shows the Backstage pages' letters; Alt, F, P and Alt, F, V print** (#4981); a kept heading goes over with a three-line paragraph that widow control moves whole (#4991); HTML import treats `<!-->` and `<!--->` as empty comments (#5040); **CSV import detects the separator from the first non-blank line** (#5042); **a table of contents writes its page numbers as PAGEREF fields**, as Word does (#5097); DOCX paragraphs naming an undefined style are formatted as Normal (#5104).
 
 ## Overview
 
@@ -31,18 +35,18 @@ Everything user-visible is a **command with an id**; the ribbon, keyboard, comma
 
 ### Automation surface at a glance
 
-Every number below was re-counted from this tag's code on 2026-11-02 (all unchanged from v0.13.2; `git diff v0.13.2 v0.14.0 -- crates/mcp crates/ui-egui/src/control.rs crates/engine/src/cmd.rs` is empty); the repo's own prose counts are stale (see the note under the table).
+Every number below was re-counted from this tag's code on 2026-11-02 (all unchanged from v0.13.2; `git diff v0.13.2 v0.15.1 -- crates/mcp crates/ui-egui/src/control.rs crates/engine/src/cmd.rs` is empty); the repo's own prose counts are stale (see the note under the table).
 
-| Surface | v0.14.0 | Change since v0.13.2 |
+| Surface | v0.15.1 | Change since v0.13.2 |
 |---|---|---|
-| Engine commands (`CommandSpec::new` with a literal id) | **648** | **0 changed** — 648 ids at both tags |
+| Engine commands (`CommandSpec::new` with a literal id) | **652** | **0 changed** — 652 ids at both tags |
 | Catalog coverage | **505 / 520 (97.1%)** | unchanged; `docs/parity-checklist.md:5` |
 | CLI subcommands | **10** | unchanged (`apps/wordcraft-cli/src/main.rs` `SUBCOMMANDS`) |
 | CLI flags | **21** plus `-h/--help`, `--version` | unchanged |
 | MCP tools | **17** | unchanged (17 tools; `crates/mcp/src/tools.rs` is byte-identical to v0.13.2) |
 | Control-channel methods | **21**, plus command-id fallthrough | unchanged (21; `crates/ui-egui/src/control.rs` is byte-identical to v0.13.2) |
 | Interface languages | **27** | unchanged count; catalogs live in `storytold/craft-i18n` (`craft-i18n.rev` = `9205108c…`, unchanged) |
-| Proofing variants | **15** | unchanged count (`crates/proof/src/lang.rs` untouched); the per-language suggest code is now one shared engine |
+| Proofing variants | **15** | unchanged count (`craft-proof` (craft-libs, rev pinned in `Cargo.toml`) untouched); the per-language suggest code is now one shared engine |
 | Default shortcuts | 167 specs carry a `.key()` | unchanged; docs say 140/158 — stale |
 | Open / save extensions | 19 / 14 | unchanged (`crates/engine/src/io.rs`) |
 
@@ -220,12 +224,12 @@ Alpha software that never crashes by design but is unproven on real-world files:
 3. **Compare structure, not just text**: `inspect`/`document.inspect` shows styles, tables, sections — use it to catch silent loss (the known failure mode is content dropped without a warning; gap #1).
 4. **Keep the user's original untouched**: work on a copy; WordCraft's save replaces the file in place (safely, but in place). Recovery copies exist for the desktop app only, are unencrypted, and the newest edits before a crash can be lost.
 5. **Version and back up** project files per session; update the app only between projects (the launcher auto-updates; the version you script against may change).
-6. **Re-check the command set you script against**: re-read `wordcraft-cli commands --json` on the installed build and look for the ids you call; the repo's documentation counts drift for months (README still says 422 commands vs 648 in code).
+6. **Re-check the command set you script against**: re-read `wordcraft-cli commands --json` on the installed build and look for the ids you call; the repo's documentation counts drift for months (README still says 422 commands vs 652 in code).
 
 ## Sources & evidence
 
-- Repo: https://github.com/storytold/wordcraft (org `storytold`), inspected read-only at **tag `v0.14.0`**, commit **`5cd53f184aab11def13b7fced18727159b9bc96a`** ("Release 0.14.0", 2026-11-01), audited 2026-11-02; the v0.13.2 ref was fetched for set diffs. The installed bundle matches the tag.
+- Repo: https://github.com/storytold/wordcraft (org `storytold`), inspected read-only at **tag `v0.15.1`**, commit **`08afab50b6a1ed19f9af55bb9f74d18f5e17bfa0`** ("Release 0.14.0", 2026-11-01), audited 2026-11-02; the v0.13.2 ref was fetched for set diffs. The installed bundle matches the tag.
 - Installed app `/Applications/WordCraft.app` is still 0.12.0: bundle id `ai.storyteller.wordcraft`, binary prints `wordcraft 0.12.0 (3de6ff95)` — the bundle lags the tag. If your installed version differs, verify against it (`wordcraft --version`, `wordcraft-cli --version`).
 - Key files read: README.md, ROADMAP.md, Cargo.toml, AGENTS.md, craft-i18n.rev, docs/{gaps,file-format-parity,mcp,control-protocol,recovery,zotero,parity-checklist}.md, apps/wordcraft/src/main.rs, apps/wordcraft-cli/src/{main.rs,script.rs,automation_args.rs}, crates/engine/src/{io.rs,catalog.rs,session.rs,file_access.rs}, crates/engine/src/cmd/ (mod, file, tools, user_templates, mailings, view, format, protect, table), crates/docx/src/crypt.rs (agile + Standard), crates/docbin/src/{lib,crypt}.rs, crates/formats/src/{rtf,odt,latex,markdown}.rs, crates/mcp/src/{tools,server,backend}.rs, crates/ui-egui/src/{windows,control,control/handler,dialogs,printing,zotero}.rs, crates/ui-egui/examples/ui_shot.rs, crates/proof/src/lang.rs, crates/control-key/src/lib.rs, crates/zotero/, xtask/src/main.rs.
-- Counts were re-measured from this tag's code on 2026-11-02 (see the table and `evidence.md`); the v0.13.2 → v0.14.0 diff touched none of the counted surfaces (commands, catalog, MCP, control, CLI, proofing variants, languages, formats all unchanged — the proofing unification rewrote engine internals, not the variant table). The capability delta since v0.11.0 recorded in the previous audit (commands 643 → 648, MCP 16 → 17, control 19 → 21, shortcuts 164 → 167) still stands as the last registry change.
+- Counts were re-measured from this tag's code on 2026-11-02 (see the table and `evidence.md`); the v0.13.2 → v0.15.1 diff touched none of the counted surfaces (commands, catalog, MCP, control, CLI, proofing variants, languages, formats all unchanged — the proofing unification rewrote engine internals, not the variant table). The capability delta since v0.11.0 recorded in the previous audit (commands 643 → 652, MCP 16 → 17, control 19 → 21, shortcuts 164 → 167) still stands as the last registry change.
 - Nothing was built or launched; the clone and the v0.11.0 release source were only read, and the installed app was version-checked from its binary. Where the repo contradicts itself (command counts, dialog count, shortcut count, gap #1) the contradiction is stated in place rather than resolved by guesswork.

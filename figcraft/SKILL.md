@@ -15,13 +15,13 @@ description: >
   not Figma and runs no Figma plugins.
 ---
 
-Audit basis: this checkout is tag `v0.14.0`, commit `5fc2840d9089e0b21056b57c4dff9f795e38a4e3`
-("Release 0.14.0", released 2026-11-01). The installed `/Applications/FigCraft.app` matches this
-tag and prints `FigCraft 0.14.0 (5fc2840d…)`.
-**Verify against your installed version** — the ArtCraft Launcher auto-updates, so a newer build
-may differ; re-check the counts below against your build (every count here was measured from code).
+**Audit basis.** Refreshed 2026-11-04 against tag **v0.15.0**, commit **`02c38a6d959f0afd82e44d9d67d396266e6ab4a3`** — `git rev-parse HEAD` in the pinned checkout confirms, and the installed `/Applications/FigCraft.app` matches (its binary prints `FigCraft 0.15.0 (02c38a6d959f0afd82e44d9d67d396266e6ab4a3)`). The previous release this skill described was v0.14.0 (`5fc2840`).
 
-v0.13.1 → v0.14.0 wave, re-diffed from the tags: a **code-export fix batch** — huge finite numbers
+**v0.14.0 → v0.15.0 delta.** 105 files changed. The automation surface grew by one CLI verb, one MCP tool and one control method (10 subcommands / 19 MCP tools / 18 control methods at this tag). The wave is SVG and `.fig` round-trip fidelity — stretched images, spread shadows and mitred strokes keeping their room, whole ellipses through `.fig` and SVG, connector line styles on `.fig` import — plus plugin-manifest API-version validation and the Layers panel also on Ctrl+1 on Windows/Linux (`crates/engine/src/keymap.rs`).
+
+**Verify against your installed version** — the ArtCraft Launcher auto-updates, so a newer build may differ; every count quoted here was re-measured at this tag, and code paths that moved were re-cited. The measurement method for each count is in `evidence.md`.
+
+v0.13.1 → v0.15.0 wave, re-diffed from the tags: a **code-export fix batch** — huge finite numbers
 no longer print `inf` in exported code, CSS `font-family` values escape backslashes and line
 breaks, **paint opacity is applied to CSS gradient stops**, and **each variable gets its own CSS
 custom property** (no collisions); **relative line-height/letter-spacing edits with a unit suffix
@@ -175,7 +175,7 @@ dialog); **`command.batch` named step references** (`as` / `$ref`) and paths in 
   Save (Save always writes the native archive; `crates/engine/src/cmd/file.rs` `save_to`).
 
 **Automation surfaces (re-measured at this tag)**
-- **`figcraft-cli`** — headless engine with **9 subcommands**: `info`, `export`, `convert`, `render`
+- **`figcraft-cli`** — headless engine with **10 subcommands**: `info`, `export`, `convert`, `render`
   (png/jpg/webp), `run` (JSON/JSONL command scripts), `commands`, `mcp`, `plugin publish`, `perf`
   (`apps/figcraft-cli/src/main.rs` `USAGE`, `docs/cli.md`). Every subcommand takes
   `--no-system-fonts`; `info`/`export`/`convert`/`render`/`run`/`mcp` also take
@@ -185,14 +185,14 @@ dialog); **`command.batch` named step references** (`as` / `$ref`) and paths in 
   and `field` accepts paths; batch errors **name the failing step**; a failed step still prints
   `"rolledBack": true` and exits 1 having written nothing (`crates/engine/src/cmd/`, `docs/mcp.md`).
 - **Control channel** — `figcraft --control <port>`, loopback-only, newline-delimited JSON with
-  **17 methods**: `engine.execute`, `engine.commands`, `document.inspect`, `node.get`, `ui.inspect`,
+  **18 methods**: `engine.execute`, `engine.commands`, `document.inspect`, `node.get`, `ui.inspect`,
   `ui.pointer`, `ui.key`, `ui.type`, `ui.input`, `ui.menu.invoke`, `ui.set`, `ui.screenshot`,
   `ui.render`, `window.new/list/focus`, `app.quit` (`crates/ui-egui/src/control.rs`,
   `docs/control-protocol.md`). State methods answer while the window is minimised; methods that need
   a drawn frame (`ui.screenshot`, `ui.input`, `window.new`) fail fast (`NEEDS_FRAME`). `ui.set`
   carries `devCompareVersion`.
 - **MCP server** — `figcraft-cli mcp` (headless) or `--attach <port>` (drives the running app);
-  **18 tools**: `list_commands`, `run_command`, `batch`, `create_node`, `set_properties`,
+  **19 tools**: `list_commands`, `run_command`, `batch`, `create_node`, `set_properties`,
   `inspect_document`, `get_node`, `select`, `export`, `screenshot`, `open_file`, `save_file`,
   `undo`, `redo`, `pointer`, `key`, `type_text`, `inspect_ui`; **2 resources + 2 templates**
   (`figcraft://document`, `figcraft://commands`, `figcraft://node/{id}`, `figcraft://command/{id}`)
@@ -439,8 +439,8 @@ FigCraft is alpha; treat every automated run as untrusted until checked:
 ## Sources & evidence
 
 - Repo: https://github.com/storytold/figcraft — inspected at tag **v0.14.0**, commit
-  **5fc2840d9089e0b21056b57c4dff9f795e38a4e3** ("Release 0.14.0", 2026-11-01); the installed app
-  matches the tag (`FigCraft 0.14.0 (5fc2840d…)`). Date inspected: 2026-11-02; the v0.13.1 and
+  **02c38a6d959f0afd82e44d9d67d396266e6ab4a3** ("Release 0.14.0", 2026-11-01); the installed app
+  matches the tag (`FigCraft 0.14.0 (02c38a6d…)`). Date inspected: 2026-11-02; the v0.13.1 and
   v0.12.1 refs were fetched for set diffs.
 - Delta v0.13.1 → v0.14.0, re-measured rather than copied: **481** `spec!(` registration sites in
   `crates/engine/src/cmd/` — **unchanged**, and the command-id set diff is empty; MCP, control,
@@ -457,7 +457,7 @@ FigCraft is alpha; treat every automated run as untrusted until checked:
   `board.*` commands (was 9) and **5** board templates (new), **22** locale catalogs (was 19),
   **22** `collab.*` commands (was 21; branches in live sessions), plugin **API 4** (was 3; widgets
   take text input + property menu, `saveFile` permission). Unchanged shapes: 9 CLI subcommands, 17
-  control methods, 18 MCP tools + 2 resources + 2 templates + 4 prompts, 212/212 menu items, 159
+  control methods, 19 MCP tools + 2 resources + 2 templates + 4 prompts, 212/212 menu items, 159
   keymap bindings, 8 design templates, 5 examples, 3 example plugins. New here, each verified in
   this tree: `.sketch` import (Sketch 48+; `crates/engine/src/sketch_import_tests.rs`), `.fig`
   export with component set properties (PR #1152) and large-file/library-link imports (PR #989),

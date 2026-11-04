@@ -1,8 +1,8 @@
-# FilmCraft — evidence ledger (tag v0.16.0)
+# FilmCraft — evidence ledger (tag v0.17.0)
 
-Audit basis: this checkout is tag **`v0.16.0`**, commit **`77adc30a756bea17441199caff45a24415ba9753`** ("Release 0.16.0", 2026-11-01; the v0.15.0 ref was fetched for id diffs; installed bundle matches at 0.16.0). Inspection date **2026-11-02**.
+Audit basis: this checkout is tag **`v0.17.0`**, commit **`eb59ec09daaea519c9c8fffa404a594ae50d00e0`** ("Release 0.16.0", 2026-11-01; the v0.15.0 ref was fetched for id diffs; installed bundle matches at 0.16.0). Inspection date **2026-11-02**.
 
-v0.15.0 → v0.16.0 delta: **+4 engine command ids, zero removed** (multiline non-test extract 226 → 230): `colors.addCustom`, `colors.updateCustom`, `colors.removeCustom` (Three-Way Color Corrector #3695 — the previous audit's "post-release main-only" note is obsolete), `markers.delete` (#3585). MCP 17 tools / control 19 methods / CLI unchanged (control.rs diff is reply plumbing only). Wave = "Integration: backlog round r1" (244 PRs) with the highlights listed in SKILL.md's delta paragraph.
+v0.15.0 → v0.17.0 delta: **+4 engine command ids, zero removed** (multiline non-test extract 226 → 230): `colors.addCustom`, `colors.updateCustom`, `colors.removeCustom` (Three-Way Color Corrector #3695 — the previous audit's "post-release main-only" note is obsolete), `markers.delete` (#3585). MCP 17 tools / control 19 methods / CLI unchanged (control.rs diff is reply plumbing only). Wave = "Integration: backlog round r1" (244 PRs) with the highlights listed in SKILL.md's delta paragraph.
 Prior wave (v0.15.0): installed `/Applications/FilmCraft.app` then still printed `filmcraft 0.14.0`; the GUI was never launched.
 
 v0.15.0 delta (re-diffed old tag → new tag): no command/CLI/control/MCP surface change; explicit
@@ -71,3 +71,10 @@ grep -n 'FILMCRAFT_CONTROL_TOKEN' apps/filmcraft/src/args.rs apps/filmcraft/src/
 grep -oE 'rev = "[0-9a-f]{8}' Cargo.toml | sort -u              # one craft-libs rev
 ls crates/ui-egui/src/i18n/*.tsv | wc -l                        # 11 catalogs (+English)
 ```
+
+
+## Round 2026-11-04 (refresh)
+
+- Pinned to `v0.17.0` = `eb59ec09daaea519c9c8fffa404a594ae50d00e0` (installed `filmcraft 0.17.0`).
+- Schema 15 → **17**, languages 12 → **17**, workspaces 9 → **10**, CLI 12 → **13**, control methods 23 → **24**, presets 39 → **42**.
+- Id sets were diffed between the two tags with the same extraction method as the claims above; counts here are the new ones.

@@ -1,8 +1,8 @@
 # EffectCraft — evidence ledger (tag v0.19.0)
 
-Audit basis: this checkout is tag **`v0.20.0`**, commit **`720c67117ea232ef01631a368bb617012f4c63d6`** ("Release 0.20.0", 2026-11-01; inspection 2026-11-02; the v0.19.0 ref was fetched for id diffs; installed bundle matches at 0.20.0)
+Audit basis: this checkout is tag **`v0.21.0`**, commit **`7870b5916ae0749d497d880989683bf2946d6c8b`** ("Release 0.20.0", 2026-11-01; inspection 2026-11-02; the v0.19.0 ref was fetched for id diffs; installed bundle matches at 0.20.0)
 
-v0.19.0 → v0.20.0 delta: **+1 command** — `comp.deleteAllMarkers` (#2169; `(cmd|query)!` multiline non-test id extract 680 → 681, nothing removed) and **+1 interface language** — `sv` (#1541; 17 → 18 in `crates/ui-egui/src/i18n.rs`). Effects: generated `docs/effects.md` says **308 effects / 2987 params / 280 GPU at both v0.19.0 and v0.20.0** — the previous ledger's "307 effects / 3032 params" did not match its own pinned tag; the test-enforced generated doc wins. MCP 36 tools, control 24 methods, CLI 12 subcommands, UI_COMMANDS 111: zero diff files. Behaviour: disk cache drops pre-adjustment-blend frames (#2666), tools-bar flyout cycling (#2684), all-four workspace menu (#2690), AE-named 3D views in Japanese + comp camera label (#2691), channel-button colours (#2692), Fast Previews placement (#2694), floating-Timeline drops (#2700), web tab title (#2710), floating-panel ≡ menu (#2711), Expression Reference target exists (#2712), `frame_position` rate guard (#2693).
+v0.19.0 → v0.21.0 delta: **+1 command** — `comp.deleteAllMarkers` (#2169; `(cmd|query)!` multiline non-test id extract 680 → 681, nothing removed) and **+1 interface language** — `sv` (#1541; 17 → 18 in `crates/ui-egui/src/i18n.rs`). Effects: generated `docs/effects.md` says **308 effects / 2987 params / 280 GPU at both v0.19.0 and v0.21.0** — the previous ledger's "307 effects / 3032 params" did not match its own pinned tag; the test-enforced generated doc wins. MCP 36 tools, control 24 methods, CLI 12 subcommands, UI_COMMANDS 111: zero diff files. Behaviour: disk cache drops pre-adjustment-blend frames (#2666), tools-bar flyout cycling (#2684), all-four workspace menu (#2690), AE-named 3D views in Japanese + comp camera label (#2691), channel-button colours (#2692), Fast Previews placement (#2694), floating-Timeline drops (#2700), web tab title (#2710), floating-panel ≡ menu (#2711), Expression Reference target exists (#2712), `frame_position` rate guard (#2693).
 (shallow clone plus a fetched `v0.17.0` ref for set diffs). Inspection date **2026-10-29**. Installed
 `/Applications/EffectCraft.app` prints `effectcraft 0.18.0`; the GUI was never launched.
 
@@ -11,7 +11,7 @@ v0.19.0 → v0.20.0 delta: **+1 command** — `comp.deleteAllMarkers` (#2169; `(
 | # | Claim | Evidence (repo-relative) | Tier |
 |---|---|---|---|
 | 1 | Registry unchanged except +`text.deleteSurrounding` | id-set diff between the tags (563 → 564 unique literal ids; nothing removed); `cmd!`/`query!` call sites 697 → 678 (refactor consolidated macro sites) | implemented |
-| 2 | 308 effects / 2987 params / 280 GPU / 21 categories / 0 partial | `docs/effects.md:6-10` (generated, test-enforced by `effects_doc_is_current`; identical at v0.19.0 and v0.20.0) | implemented |
+| 2 | 308 effects / 2987 params / 280 GPU / 21 categories / 0 partial | `docs/effects.md:6-10` (generated, test-enforced by `effects_doc_is_current`; identical at v0.19.0 and v0.21.0) | implemented |
 | 3 | 36 MCP tools (27 headless + 9 bridge-only) | `crates/automation/src/tools.rs` `static TOOLS`: 36 `ToolDef {`, 9 `bridge_only: true` — identical to v0.17.0 | implemented |
 | 4 | 24 control methods | `crates/ui-egui/src/control.rs` — same count and set as v0.17.0 | implemented |
 | 5 | 111 UI-only ids | `crates/ui-egui/src/menus/commands.rs` (`UI_COMMANDS`) — carried count, table moved by the refactor | implemented |
@@ -66,3 +66,10 @@ awk '/static TOOLS/,/^];/' crates/automation/src/tools.rs | grep -cE 'ToolDef \{
 grep -c 'bridge_only: true' crates/automation/src/tools.rs      # 9
 sed -n '6,10p' docs/effects.md                                  # 307 / 3032 / 280 / 21 / 0
 ```
+
+
+## Round 2026-11-04 (refresh)
+
+- Pinned to `v0.21.0` = `7870b5916ae0749d497d880989683bf2946d6c8b` (installed `effectcraft 0.21.0`).
+- Effects 307 → **308**; render formats 13 → **14**; 36 MCP tools (9 bridge-only), 24 control methods.
+- Id sets were diffed between the two tags with the same extraction method as the claims above; counts here are the new ones.

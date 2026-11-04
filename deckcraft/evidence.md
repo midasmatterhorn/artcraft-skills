@@ -1,11 +1,11 @@
-# DeckCraft — evidence ledger (tag v0.14.1)
+# DeckCraft — evidence ledger (tag v0.15.0)
 
-Audit basis: this checkout is tag **`v0.14.1`**, commit **`ee39ff67816d0039143ec7c98ea604cefe0cd2e5`**
+Audit basis: this checkout is tag **`v0.15.0`**, commit **`3e178d8f5a59c787a6a53a7ed0f052b3e4a1489f`**
 (shallow clone plus a fetched `v0.13.1` ref for set diffs). Inspection date **2026-11-02**. Installed
 `/Applications/DeckCraft.app` prints `deckcraft 0.14.1` (bundle matches the tag); the GUI was never
 launched.
 
-v0.13.1 → v0.14.1 delta: **+1 engine command** — `slide.actions` (read-only slide action inspection,
+v0.13.1 → v0.15.0 delta: **+1 engine command** — `slide.actions` (read-only slide action inspection,
 PR #1574; `cmd!(` count 328 → 329, id diff between tags shows exactly this addition, none removed;
 inspect family 4 → 5 cmd! sites). **MCP `insert_chart` takes optional x/y/w/h** (#1583; tool set
 unchanged at 25 — `tools.rs` otherwise unchanged). `animation.add`/`animation.set` take custom
@@ -61,10 +61,17 @@ dirs #1519, animated-shape click targets #1521).
 ## 5. Verification commands (read-only)
 
 ```sh
-git -C <clone> rev-parse HEAD                                   # ee39ff67816d0039143ec7c98ea604cefe0cd2e5
+git -C <clone> rev-parse HEAD                                   # 3e178d8f5a59c787a6a53a7ed0f052b3e4a1489f
 grep -rho 'cmd!' crates/engine/src/ | wc -l                     # 329
 git grep -o 'cmd!' v0.11.1 -- crates/engine/src | wc -l         # 326
 grep -cE '^\s+tool\(' crates/mcp/src/tools.rs                   # 25
 awk '/pub (static|const) UI_COMMANDS/,/^\];/' crates/ui-egui/src/lib.rs | grep -cE '^\s+\('   # 51
 grep -oE '"(info|render|render-transition|convert|run|commands|describe|app|mcp|bench|links|version)"' apps/deckcraft-cli/src/help.rs | sort -u | wc -l   # 12
 ```
+
+
+## Round 2026-11-04 (refresh)
+
+- Pinned to `v0.15.0` = `3e178d8f5a59c787a6a53a7ed0f052b3e4a1489f` (installed `deckcraft 0.15.0`).
+- Command ids unchanged (234); 306 `cmd!(` sites; craft-libs pin now `c5a1cbfb…`.
+- Id sets were diffed between the two tags with the same extraction method as the claims above; counts here are the new ones.

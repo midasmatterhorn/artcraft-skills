@@ -1,11 +1,11 @@
-# WordCraft — evidence ledger (tag v0.14.0)
+# WordCraft — evidence ledger (tag v0.15.1)
 
-Audit basis: this checkout is tag **`v0.14.0`**, commit **`5cd53f184aab11def13b7fced18727159b9bc96a`**
+Audit basis: this checkout is tag **`v0.15.1`**, commit **`08afab50b6a1ed19f9af55bb9f74d18f5e17bfa0`**
 ("Release 0.14.0", 2026-11-01; shallow clone; the v0.13.2 ref is fetched for set diffs). Inspection
 date **2026-11-02**. Installed `/Applications/WordCraft.app` matches the tag and prints
-`wordcraft 0.14.0 (5cd53f18)`; the GUI was never launched.
+`wordcraft 0.14.0 (08afab58)`; the GUI was never launched.
 
-v0.13.2 → v0.14.0 delta: automation surface unchanged — 648 `CommandSpec::new(` sites at both tags
+v0.13.2 → v0.15.1 delta: automation surface unchanged — 648 `CommandSpec::new(` sites at both tags
 (crates+apps), `crates/mcp/src/tools.rs` (17 tools), `crates/ui-egui/src/control.rs` and the command
 registry byte-identical (only their test files changed); `.key(` shortcut specs 167 = 167;
 `craft-i18n.rev` = `9205108c…` at both tags. Feature wave: proofing unified into one Hunspell engine
@@ -16,7 +16,7 @@ widow-control heading carry (#4991); HTML empty comments (#5040); CSV separator 
 ToC PAGEREF fields (#5097); DOCX undefined style → Normal (#5104).
 ⚠️ Corrections: the previous ledger's verify block printed the v0.12.0 sha (3de6ff95) as the tag
 commit — the v0.13.2 audit basis sha is 2be33e6; and its delta line claimed `craft-i18n.rev`
-9205108c → 92d392cf, but the file reads 9205108c at both v0.13.2 and v0.14.0 (tag trees win).
+9205108c → 92d392cf, but the file reads 9205108c at both v0.13.2 and v0.15.1 (tag trees win).
 
 Prior v0.12.0 → v0.13.2 delta: automation surface unchanged (commands 648 = 648, MCP tools, control
 methods, CLI byte-identical in `crates/mcp/`, `crates/ui-egui/src/control.rs`, `crates/engine/src/cmd.rs`).
@@ -81,7 +81,7 @@ DOCX/RTF/HTML/Markdown/LaTeX/PDF-export hardening.
 ## 5. Verification commands (read-only)
 
 ```sh
-git -C <clone> rev-parse HEAD                                   # 5cd53f184aab11def13b7fced18727159b9bc96a
+git -C <clone> rev-parse HEAD                                   # 08afab50b6a1ed19f9af55bb9f74d18f5e17bfa0
 grep -rho 'CommandSpec::new(' crates/ apps/ | wc -l             # 648
 head -1 craft-i18n.rev                                          # 9205108c… (both tags)
 sed -n '5p' docs/parity-checklist.md                            # 505 of 520
@@ -91,3 +91,10 @@ grep -n 'decrypt_standard' crates/docx/src/crypt.rs             # Standard encry
 grep -rho '\.key(' crates/engine/src/cmd/ | wc -l               # 167
 head -1 craft-i18n.rev                                          # 9205108c…
 ```
+
+
+## Round 2026-11-04 (refresh)
+
+- Pinned to `v0.15.1` = `08afab50b6a1ed19f9af55bb9f74d18f5e17bfa0` (installed `wordcraft 0.15.1 (08afab50)`).
+- `CommandSpec::new(` sites 648 → **652** (`proof.installPack`, `proof.packs`, `proof.removePack`, `review.language.preferred`).
+- Id sets were diffed between the two tags with the same extraction method as the claims above; counts here are the new ones.

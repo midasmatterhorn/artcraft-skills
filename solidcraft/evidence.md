@@ -1,6 +1,6 @@
-# SolidCraft — evidence ledger (tag v0.29.0)
+# SolidCraft — evidence ledger (tag v0.30.1)
 
-Audit basis: this checkout is tag **`v0.29.0`**, commit **`3a5195b0a0aa359f6ebf10d890c1f887c70144b1`**
+Audit basis: this checkout is tag **`v0.30.1`**, commit **`8e2b0cd60d14b4152b12b8f1fdb2bcfdcd8c52f4`**
 ("Release 0.29.0", 2026-11-01; shallow clone of the release tag). Inspection date **2026-11-01**.
 Installed `/Applications/SolidCraft.app` prints `solidcraft 0.29.0` and ships `solidcraft-cli 0.29.0`
 (bundle id `io.tangencylabs.solidcraft`); the GUI was never launched.
@@ -27,7 +27,7 @@ Installed `/Applications/SolidCraft.app` prints `solidcraft 0.29.0` and ships `s
 
 ## 2. Counts: first audit (no previous skill)
 
-| Surface | v0.29.0 (measured) |
+| Surface | v0.30.1 (measured) |
 |---|---:|
 | Engine commands | 539 (1 planned) |
 | `cmd/` modules | ~210 |
@@ -53,7 +53,7 @@ Installed `/Applications/SolidCraft.app` prints `solidcraft 0.29.0` and ships `s
 ## 4. Verification commands (read-only)
 
 ```sh
-git -C <clone> rev-parse HEAD                                                     # 3a5195b0…
+git -C <clone> rev-parse HEAD                                                     # 8e2b0cd0…
 grep -rhoE 'CommandSpec::new\("[a-z0-9_.]+"' crates/engine/src | sort -u | wc -l   # 539
 grep -rhoE 'planned!\("[a-z0-9_.]+"' crates/engine/src | sort -u                  # surface.fillet
 awk '/pub fn tool_definitions/,/^\}/' crates/mcp/src/tools.rs | grep -cE '^\s+tool\($|^\s+tool\("'  # 20
@@ -61,3 +61,10 @@ grep -n 'DESIGN_EXT' crates/io/src/lib.rs                                       
 grep -cE '^\| \[' skills/README.md                                                # 17 skills
 awk -F'|' 'NR>3 {print $3}' docs/oracle.md | grep -c pass                          # 90 rows (see table)
 ```
+
+
+## Round 2026-11-04 (refresh)
+
+- Pinned to `v0.30.1` = `8e2b0cd60d14b4152b12b8f1fdb2bcfdcd8c52f4` (installed `solidcraft 0.30.1`).
+- Commands 539 → **554** in code (**571** rows in the CI-regenerated `docs/features.md`); MCP 20 → **21** (`compare_picture`).
+- Id sets were diffed between the two tags with the same extraction method as the claims above; counts here are the new ones.

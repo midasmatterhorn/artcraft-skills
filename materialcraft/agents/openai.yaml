@@ -1,0 +1,3 @@
+interface:
+  display_name: "MaterialCraft"
+  short_description: "Drive MaterialCraft, the node-based procedural material designer (tileable PBR graphs, map export, .mcmat)"

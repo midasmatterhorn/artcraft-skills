@@ -1,8 +1,8 @@
-# TextureCraft — evidence ledger (tag v0.2.0)
+# TextureCraft — evidence ledger (tag v0.3.0)
 
-Audit basis: this checkout is tag **`v0.2.0`**, commit **`e01dac2c35c44e201cf9dc43965887e29f1b15d6`**
+Audit basis: this checkout is tag **`v0.3.0`**, commit **`85475143fa4d219cc7d60cd039923f57b6c2209c`**
 (shallow clone of the release tag). Inspection date **2026-11-02**. Installed
-`/Applications/TextureCraft.app` prints `TextureCraft 0.2.0 (e01dac2 2026-11-01)` — the bundle
+`/Applications/TextureCraft.app` prints `TextureCraft 0.2.0 (8547514 2026-11-01)` — the bundle
 matches the tag; the GUI was never launched. First audit: no previous skill.
 
 ## 1. Capability claims → evidence → tier
@@ -26,7 +26,7 @@ matches the tag; the GUI was never launched. First audit: no previous skill.
 
 ## 2. Counts: first audit
 
-| Surface | v0.2.0 (measured) |
+| Surface | v0.3.0 (measured) |
 |---|---:|
 | Engine command ids | 82 |
 | Menu items live | 53 / 53 |
@@ -48,7 +48,7 @@ matches the tag; the GUI was never launched. First audit: no previous skill.
   security crates, not exercised against a running app.
 - Asset-shelf counts (48/21/18/22/6) are the repo's own ROADMAP numbers and were not re-derived
   from code.
-- The v0.1.0 → v0.2.0 delta was not separately measured (first audit at v0.2.0).
+- The v0.1.0 → v0.3.0 delta was not separately measured (first audit at v0.3.0).
 
 ## 4. Doc-vs-code drift found at this tag (code wins)
 
@@ -61,7 +61,7 @@ matches the tag; the GUI was never launched. First audit: no previous skill.
 ## 5. Verification commands (read-only)
 
 ```sh
-git -C <clone> rev-parse HEAD                                   # e01dac2c35c44e201cf9dc43965887e29f1b15d6
+git -C <clone> rev-parse HEAD                                   # 85475143fa4d219cc7d60cd039923f57b6c2209c
 # engine command ids (multiline-aware; re-wrapped registrations defeat single-line greps):
 perl -0777 -ne 'while (/(?:cmd|query)!\(\s*"([a-z]+\.[a-zA-Z_.]+)"/g) { print "$1\n"; }' \
   $(find crates/engine/src -name '*.rs' -not -path '*tests*') | sort -u | wc -l   # 82
@@ -72,3 +72,10 @@ sed -n '26,50p' crates/automation/src/rpc.rs                    # 17 METHODS
 sed -n '51,66p' apps/texturecraft-cli/src/main.rs               # 10 SUBCOMMANDS
 grep -m1 "menu items live" docs/parity.md                       # 53 of 53 (100%)
 ```
+
+
+## Round 2026-11-04 (refresh)
+
+- Pinned to `v0.3.0` = `85475143fa4d219cc7d60cd039923f57b6c2209c` (installed `TextureCraft 0.3.0 (8547514 2026-11-03)`).
+- Engine command extract 135 → **162** ids; menu parity 55/55; control channel hardened (owner-only token, 10 s auth deadline, 16-connection cap).
+- Id sets were diffed between the two tags with the same extraction method as the claims above; counts here are the new ones.

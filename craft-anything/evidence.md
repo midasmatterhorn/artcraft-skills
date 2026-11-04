@@ -1,11 +1,11 @@
-# Craft Anything — evidence ledger (tag v0.2.0)
+# Craft Anything — evidence ledger (tag v0.3.0)
 
-Audit basis: this checkout is tag **`v0.2.0`**, commit **`b09b99aaa7985ebbc3d0fef467c4b688d4727cc1`**
+Audit basis: this checkout is tag **`v0.3.0`**, commit **`e6280b5dc518b9f3266c82d794a4e2f0367d9a53`**
 ("Release 0.2.0", 2026-11-01; shallow clone of the release tag). Inspection date **2026-11-02**; the
 v0.1.0 ref was fetched for set diffs. Installed `/Applications/Craft Anything.app` prints
 `craft-anything 0.2.0` (bundle id `ai.storyteller.craft-anything`); the GUI was never launched.
 
-v0.1.0 → v0.2.0 delta: engine tool surface unchanged — `docs/tools.md` byte-identical
+v0.1.0 → v0.3.0 delta: engine tool surface unchanged — `docs/tools.md` byte-identical
 (298 tools / 17 toolsets; `grep -c '^- '` = 298 both tags), MCP prompts 6, CLI subcommands 13.
 Changes are in the agent/AI layer: OpenCode adapter (`crates/ai/src/cli_agents/adapters/opencode.rs`,
 invokes `opencode run`), failure log (`failure_log.rs`), rebuild activity feed
@@ -22,7 +22,7 @@ rows in that doc count **11** (the old skill said 12).
 
 | # | Claim | Evidence (repo-relative) | Tier |
 |---|---|---|---|
-| 1 | 298 engine tools in 17 toolsets; each an MCP tool + CLI command | `docs/tools.md` (generated, 298 `- ``id`` ` rows, byte-identical v0.1.0 → v0.2.0); `crates/engine/src/tool_list.rs` `MIN_TOOLS = 271` and `report()` | implemented |
+| 1 | 298 engine tools in 17 toolsets; each an MCP tool + CLI command | `docs/tools.md` (generated, 298 `- ``id`` ` rows, byte-identical v0.1.0 → v0.3.0); `crates/engine/src/tool_list.rs` `MIN_TOOLS = 271` and `report()` | implemented |
 | 2 | Toolsets and sizes | `docs/tools.md` section headers: core 34, native 55, apple 14, formats 36, managed 8, android 14, java 6, adb 24, browser 22, javascript 11, runtime 14, frida 9, application 17, database 1, projects 18, setup 9, build 6 | implemented |
 | 3 | README's "284 tools" is stale | README "Agent-ready" vs generated `docs/tools.md` 298 | doc drift |
 | 4 | MCP server: Essentials + enabled toolsets, `--all-tools`, `--inbox` | `apps/craft-anything-cli/src/main.rs` `Command::Mcp`; `crates/mcp/src/lib.rs` `tools_list` | implemented |
@@ -30,17 +30,17 @@ rows in that doc count **11** (the old skill said 12).
 | 6 | CLI subcommands incl. tool pass-through | `apps/craft-anything-cli/src/main.rs` `Command` (13 named + `Tool(Vec<String>)`) | implemented |
 | 7 | `rebuild` flags: rounds default 2, backend, unattended, project-folder, continue-in/resume, deep/clean-room | `apps/craft-anything-cli/src/rebuild_cmd.rs` `RebuildArgs` | implemented |
 | 8 | Clean room vs Deep; deep refuses look-inside in Clean room | `README.md` "Clean room or Deep"; `crates/engine/src/tools/deep.rs`; `crates/engine/src/clean_room.rs` | implemented |
-| 9 | Claude Code first-class builder; Codex and (new at v0.2.0) OpenCode adapters unverified | `README.md` "AI"; `docs/claude-code.md`; `crates/ai/src/cli_agents/adapters/opencode.rs` (`opencode run`) | implemented / partial (codex, opencode) |
+| 9 | Claude Code first-class builder; Codex and (new at v0.3.0) OpenCode adapters unverified | `README.md` "AI"; `docs/claude-code.md`; `crates/ai/src/cli_agents/adapters/opencode.rs` (`opencode run`) | implemented / partial (codex, opencode) |
 | 10 | Versioned project files; newer files never downgraded | `docs/file-formats.md` table (11 rows); `crates/engine/src/versioned.rs` | implemented |
 | 11 | Version constants: manifest 2, settings 3, .cany 1 (code; docs table is stale) | `crates/engine/src/workspace.rs:63`, `crates/engine/src/settings.rs:217`, `crates/engine/src/project.rs:22`; step-list assertions `MANIFEST_STEPS`/`SETTINGS_STEPS`/`FORMAT_STEPS` | implemented |
 | 12 | External engines detected (Ghidra, Cutter, rizin, GDB, Frida, adb, jadx, CDP) | `crates/engines/src/` modules; `doctor` command | implemented |
 | 13 | macOS bundle contains no CLI | `/Applications/Craft Anything.app/Contents/MacOS/` listing | verified absent |
 | 14 | No DRM/login/anti-cheat bypass; responsible-use rule | `README.md` "Responsible use" | policy (by design) |
-| 15 | v0.2.0 agent layer: failure log, activity feed, resume journal, deadlock watchdog | `crates/ai/src/failure_log.rs`; `crates/ai/src/rebuild/activity.rs`; `crates/engine/src/journal.rs` | implemented |
+| 15 | v0.3.0 agent layer: failure log, activity feed, resume journal, deadlock watchdog | `crates/ai/src/failure_log.rs`; `crates/ai/src/rebuild/activity.rs`; `crates/engine/src/journal.rs` | implemented |
 
 ## 2. Counts
 
-| Surface | v0.1.0 (measured) | v0.2.0 (measured) |
+| Surface | v0.1.0 (measured) | v0.3.0 (measured) |
 |---|---:|---:|
 | Engine tools / toolsets | 298 / 17 | 298 / 17 (unchanged) |
 | Tool floor `MIN_TOOLS` | 271 | 271 |
@@ -61,7 +61,7 @@ rows in that doc count **11** (the old skill said 12).
 ## 4. Verification commands (read-only)
 
 ```sh
-git -C <clone> rev-parse HEAD                                  # b09b99aaa7985ebbc3d0fef467c4b688d4727cc1
+git -C <clone> rev-parse HEAD                                  # e6280b5dc518b9f3266c82d794a4e2f0367d9a53
 grep -c '^- `' docs/tools.md                                   # 298
 grep -oE '\(`[a-z]+`, [0-9]+\)' docs/tools.md | wc -l          # 17
 grep -n 'MIN_TOOLS' crates/engine/src/tool_list.rs             # 271
@@ -71,3 +71,10 @@ grep -n 'pub const MANIFEST_VERSION' crates/engine/src/workspace.rs   # 2
 grep -n 'pub const SETTINGS_VERSION' crates/engine/src/settings.rs    # 3
 grep -n 'pub const FORMAT_VERSION' crates/engine/src/project.rs       # 1
 ```
+
+
+## Round 2026-11-04 (refresh)
+
+- Pinned to `v0.3.0` = `e6280b5dc518b9f3266c82d794a4e2f0367d9a53` (installed `craft-anything 0.3.0`).
+- Engine tools 298 → **299** (`projects` 18 → 19). The macOS bundle does ship `craft-anything-cli` — corrected.
+- Id sets were diffed between the two tags with the same extraction method as the claims above; counts here are the new ones.

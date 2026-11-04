@@ -1,8 +1,8 @@
-# PdfCraft — evidence ledger (tag v0.17.0)
+# PdfCraft — evidence ledger (tag v0.18.1)
 
-Audit basis: this checkout is tag **`v0.17.0`**, commit **`7d78f3e14474b978be014715e0cc64895d77025a`** ("Release 0.17.0", 2026-11-01; inspection 2026-11-02; the v0.16.1 ref was fetched for set diffs; installed bundle matches at 0.17.0)
+Audit basis: this checkout is tag **`v0.18.1`**, commit **`8bb0528bed785283452263b0290321ccf95859be`** ("Release 0.17.0", 2026-11-01; inspection 2026-11-02; the v0.16.1 ref was fetched for set diffs; installed bundle matches at 0.17.0)
 
-v0.16.1 → v0.17.0 delta: **+1 automation tool** — `text_script` (superscript/subscript over `edit.edit_text`; name-set extract 182 → 183, zero removed; the regenerated `references/automation-tools.md` table is parsed from the tag's `tools()`), engine commands byte-identical (`crates/engine/src/commands.rs`, 0 diff lines), control methods unchanged (one doc-comment hunk adds the `show_page_edge_shadows` `ui.set` key), languages 34 = 34, `pdfcraft-cli` zero diff files. Features: full rewrite of unsigned files on save after page deletion (#4279), bundled-asset licensing validation (#2212), `--two-paged` GUI flag (#1433), page-edge shadows setting (#2088), Acrobat UI parity for image editing/text formatting (#2155), XFA draw anchor rotation (#5624), create/optimize mask guard (#5620), JBIG2 i32 guard (#5673), Preferences recent-files count (#5675).
+v0.16.1 → v0.18.1 delta: **+1 automation tool** — `text_script` (superscript/subscript over `edit.edit_text`; name-set extract 182 → 183, zero removed; the regenerated `references/automation-tools.md` table is parsed from the tag's `tools()`), engine commands byte-identical (`crates/engine/src/commands.rs`, 0 diff lines), control methods unchanged (one doc-comment hunk adds the `show_page_edge_shadows` `ui.set` key), languages 34 = 34, `pdfcraft-cli` zero diff files. Features: full rewrite of unsigned files on save after page deletion (#4279), bundled-asset licensing validation (#2212), `--two-paged` GUI flag (#1433), page-edge shadows setting (#2088), Acrobat UI parity for image editing/text formatting (#2155), XFA draw anchor rotation (#5624), create/optimize mask guard (#5620), JBIG2 i32 guard (#5673), Preferences recent-files count (#5675).
 (shallow clone plus a fetched `v0.14.0` ref for set diffs). Inspection date **2026-10-29**. Installed
 `/Applications/PdfCraft.app` prints `pdfcraft 0.15.0`; the GUI was never launched.
 
@@ -55,10 +55,17 @@ v0.16.1 → v0.17.0 delta: **+1 automation tool** — `text_script` (superscript
 ## 5. Verification commands (read-only)
 
 ```sh
-git -C <clone> rev-parse HEAD                                   # 7d78f3e14474b978be014715e0cc64895d77025a
+git -C <clone> rev-parse HEAD                                   # 8bb0528bed785283452263b0290321ccf95859be
 grep -oE '\bt\("[a-z_][a-z0-9_.]*"' crates/automation/src/tools.rs | sort -u | wc -l   # 153
 grep -cE '^\s+t\($' crates/automation/src/tools.rs              # 28  (154 + 28 = 182)
 grep -cE '^\s+c\("|^\s+c\($' crates/engine/src/commands.rs      # 205
 grep -oE '"[a-z]+\.[a-zA-Z.]+"' crates/ui-egui/src/control/requests.rs | sort -u | wc -l  # 17
 ls crates/ui-egui/src/i18n/*.tsv | wc -l                        # 34 catalogs (+English = 35)
 ```
+
+
+## Round 2026-11-04 (refresh)
+
+- Pinned to `v0.18.1` = `8bb0528bed785283452263b0290321ccf95859be` (installed `pdfcraft 0.18.1`).
+- Tools 183 → **184** (`doc_bates_multi`); registry commands 205 → **210**.
+- Id sets were diffed between the two tags with the same extraction method as the claims above; counts here are the new ones.

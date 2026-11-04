@@ -1,9 +1,9 @@
-# PhotoCraft — evidence ledger (tag v0.19.0)
+# PhotoCraft — evidence ledger (tag v0.20.1)
 
-Audit basis: this checkout is tag **`v0.19.0`**, commit **`2df9f807702a935184041355a86405380bda8274`** ("Release 0.19.0", 2026-11-01; inspection 2026-11-02; the v0.18.0 ref was fetched for diffs; installed bundle matches at 0.19.0; the GUI was never launched, but the bundled `photocraft-cli` ran read-only).
+Audit basis: this checkout is tag **`v0.20.1`**, commit **`327c4cc82e737a3e0af7c147a477126d77525495`** ("Release 0.19.0", 2026-11-01; inspection 2026-11-02; the v0.18.0 ref was fetched for diffs; installed bundle matches at 0.19.0; the GUI was never launched, but the bundled `photocraft-cli` ran read-only).
 
-v0.18.0 → v0.19.0 delta: **engine registry gains the `smart_svg_cmds` family** (edit embedded vectors with original-format save-back through VectorCraft, PR #8571; `cmd.rs` wires `smart_svg_cmds::specs()`) and `edit.clear` is reworked inline; MCP (26 tools), control (28 methods), CLI (8 subcommands + help) and headless serve (19 methods): **zero diff files**. **Live registry: 953 commands** — measured with `photocraft-cli commands | wc -l` on the installed bundle that matches this tag. Locale catalogs 26 = 26 (the notes' Finnish/Norwegian Bokmål PRs were already in v0.18.0's set — verified against both tag trees). Features: PSD font metadata survives text edits (#6169), Move-tool huge-layer drag without per-frame copies (#6985), .atn steps switch documents (#7621) + export hardening (#8371), Pattern Fill in Layer Panel Footer (#7716), advanced-selection shortcuts (#8015), paragraph overflow port (#8311), TIFF >2^30 px row-group decode (#8536), multi-layer transform handles (#8623), Fill/Stroke popover + full Color Picker (#8725), colour-channel-set editing (#9274), live picker previews (#9757), brush-state survival (#10288), 18-PR integration batch (#10145).
-Prior audits are retained below; the v0.19.0 numbers above are the current basis. No `references/` directory
+v0.18.0 → v0.20.1 delta: **engine registry gains the `smart_svg_cmds` family** (edit embedded vectors with original-format save-back through VectorCraft, PR #8571; `cmd.rs` wires `smart_svg_cmds::specs()`) and `edit.clear` is reworked inline; MCP (26 tools), control (28 methods), CLI (8 subcommands + help) and headless serve (19 methods): **zero diff files**. **Live registry: 953 commands** — measured with `photocraft-cli commands | wc -l` on the installed bundle that matches this tag. Locale catalogs 26 = 26 (the notes' Finnish/Norwegian Bokmål PRs were already in v0.18.0's set — verified against both tag trees). Features: PSD font metadata survives text edits (#6169), Move-tool huge-layer drag without per-frame copies (#6985), .atn steps switch documents (#7621) + export hardening (#8371), Pattern Fill in Layer Panel Footer (#7716), advanced-selection shortcuts (#8015), paragraph overflow port (#8311), TIFF >2^30 px row-group decode (#8536), multi-layer transform handles (#8623), Fill/Stroke popover + full Color Picker (#8725), colour-channel-set editing (#9274), live picker previews (#9757), brush-state survival (#10288), 18-PR integration batch (#10145).
+Prior audits are retained below; the v0.20.1 numbers above are the current basis. No `references/` directory
 ships — SKILL.md carries the body, this file carries the per-claim evidence.
 
 ## 1. Capability claims → evidence → tier
@@ -92,7 +92,7 @@ Every row was re-measured from this checkout.
 ## 5. Verification commands (read-only, reproduce the counts)
 
 ```sh
-git -C <clone> rev-parse HEAD                         # 2df9f807702a935184041355a86405380bda8274
+git -C <clone> rev-parse HEAD                         # 327c4cc82e737a3e0af7c147a477126d77525495
 grep -n 'const ALL: \[Tool' crates/ui-egui/src/state/tool.rs        # [Tool; 68]
 sed -n '5p' docs/parity-checklist.md                                # 631 of 631 menu items live
 grep -c '#\[tool(' crates/automation/src/server.rs                  # 26 MCP tools
@@ -123,3 +123,10 @@ photocraft-cli commands | wc -l                                      # authorita
 Shared libraries were not cloned: `storytold/craft-libs` is pinned in `Cargo.toml` — all craft crates (craft-ui,
 craft-print, craft-docpath, craft-jpeg, craft-update) at rev `92d392cff132eaf53e13afff77f38b5c11b73aa0`; no
 shared-library behaviour is claimed here.
+
+
+## Round 2026-11-04 (refresh)
+
+- Pinned to `v0.20.1` = `327c4cc82e737a3e0af7c147a477126d77525495` (installed `photocraft 0.20.1 (327c4cc82, 2026-11-03)`).
+- 78 engine command ids at both tags; `actions.*` is now 17 ids (`actions.newSet`), and `.atn` I/O gained `actions.record {set}`, `actions.load {encoding}`, `actions.save {skipUnsupported}`.
+- Id sets were diffed between the two tags with the same extraction method as the claims above; counts here are the new ones.

@@ -15,9 +15,13 @@ description: >-
   not use it for Microsoft PowerPoint itself.
 ---
 
-Audit basis: this checkout is tag `v0.14.1`, commit `ee39ff67816d0039143ec7c98ea604cefe0cd2e5` (`git rev-parse HEAD` in the pinned clone; the v0.13.1 ref was fetched for id diffs). The installed `/Applications/DeckCraft.app` matches this tag (`CFBundleIdentifier` `ai.storyteller.deckcraft`, binary `deckcraft 0.14.1`). **Verify against your installed version** (`/Applications/DeckCraft.app/Contents/MacOS/DeckCraft --version`) — the ArtCraft Launcher auto-updates, and command ids, formats and export options move between releases.
+**Audit basis.** Refreshed 2026-11-04 against tag **v0.15.0**, commit **`3e178d8f5a59c787a6a53a7ed0f052b3e4a1489f`** — `git rev-parse HEAD` in the pinned checkout confirms, and the installed `/Applications/DeckCraft.app` matches (its binary prints `deckcraft 0.15.0`). The previous release this skill described was v0.14.1 (`ee39ff6`).
 
-v0.13.1 → v0.14.1 adds **`slide.actions`** (read-only inspection of a slide's action settings, PR #1574 — **328 → 329 engine commands**, the inspect family 4 → 5) and changes no other id. **MCP `insert_chart` takes optional `x`/`y`/`w`/`h`** (#1583; tool set unchanged at 25). **`animation.add`/`animation.set` take the points of a custom motion path** (#1584). Behaviour: slideshow click targets follow animated shapes (#1521); print previews use private directories (#1519); transition commands reject an invalid index instead of acting on the selection (#1577); `format.highlight` rejects an invalid colour instead of clearing it (#1587); bullet Follow Text settings are preserved (#1589); PPTX keeps inset line alignment (#1590) and gradient flip mode (#1591); custom geometry parses uppercase exponents (#1594); **layout/master placeholder formatting reaches slides** (#1490); codec configuration records reject picture slices (#1514); Ogg damage recovery is bounded (#1582); explicit line miter limits are preserved (#1585); text no longer breaks a word after `?`, `!`, `}` or `+`, so URLs wrap as in PowerPoint (#924). Deep detail — every command family, shortcut, control method, MCP tool, format option and runtime path — is in `references/commands-and-formats.md`.
+**v0.14.1 → v0.15.0 delta.** 52 files changed; the command-id set is unchanged (234 ids; 306 `cmd!(` sites). Wave: the WASM presenter view opening in a separate browser window, H.264 temporal direct motion-vector scaling, PPTX tags parts parsed once with a cap on the tags an import copies, and resizing allowed on all selected shapes. `Cargo.toml` now pins craft-libs at `c5a1cbfb5f9049f9270955caffb5bee5997aebf7`.
+
+**Verify against your installed version** — the ArtCraft Launcher auto-updates, so a newer build may differ; every count quoted here was re-measured at this tag, and code paths that moved were re-cited. The measurement method for each count is in `evidence.md`.
+
+v0.13.1 → v0.15.0 adds **`slide.actions`** (read-only inspection of a slide's action settings, PR #1574 — **328 → 329 engine commands**, the inspect family 4 → 5) and changes no other id. **MCP `insert_chart` takes optional `x`/`y`/`w`/`h`** (#1583; tool set unchanged at 25). **`animation.add`/`animation.set` take the points of a custom motion path** (#1584). Behaviour: slideshow click targets follow animated shapes (#1521); print previews use private directories (#1519); transition commands reject an invalid index instead of acting on the selection (#1577); `format.highlight` rejects an invalid colour instead of clearing it (#1587); bullet Follow Text settings are preserved (#1589); PPTX keeps inset line alignment (#1590) and gradient flip mode (#1591); custom geometry parses uppercase exponents (#1594); **layout/master placeholder formatting reaches slides** (#1490); codec configuration records reject picture slices (#1514); Ogg damage recovery is bounded (#1582); explicit line miter limits are preserved (#1585); text no longer breaks a word after `?`, `!`, `}` or `+`, so URLs wrap as in PowerPoint (#924). Deep detail — every command family, shortcut, control method, MCP tool, format option and runtime path — is in `references/commands-and-formats.md`.
 
 ## Overview
 
@@ -31,7 +35,7 @@ Everything user-visible is a **command with an id**, and `Session::execute` is t
 
 ### Automation surface at a glance
 
-| Surface | Count at v0.14.1 | Change vs the v0.13.1 skill |
+| Surface | Count at v0.15.0 | Change vs the v0.13.1 skill |
 |---|---|---|
 | Engine commands (`CommandSpec`) | **329**, ids unique | **+1** (+`slide.actions`; inspect family 4 → 5) |
 | Engine shortcuts | **57** (one real collision: `Cmd+Shift+V`) | unchanged |
@@ -259,7 +263,7 @@ Alpha software with active auto-updates: verify every deliverable, keep a native
 
 ## Sources & evidence
 
-- **Repo:** https://github.com/storytold/deckcraft — tag `v0.14.1`, commit `ee39ff67816d0039143ec7c98ea604cefe0cd2e5` (`git rev-parse HEAD`), inspected **2026-11-02**; the v0.13.1 ref was fetched for set diffs.
+- **Repo:** https://github.com/storytold/deckcraft — tag `v0.15.0`, commit `3e178d8f5a59c787a6a53a7ed0f052b3e4a1489f` (`git rev-parse HEAD`), inspected **2026-11-02**; the v0.13.1 ref was fetched for set diffs.
 - **Installed bundle:** `/Applications/DeckCraft.app`, `CFBundleIdentifier` `ai.storyteller.deckcraft`, version `0.14.1`; `--version` prints `deckcraft 0.14.1`; universal x86_64+arm64, Developer ID signed, notarization ticket stapled.
 - **Key files read:** `README.md`; `Cargo.toml`; `docs/{architecture,gaps,file-format-parity,animation-parity,mcp,control-protocol}.md`; `apps/deckcraft/src/main.rs`; `apps/deckcraft-cli/src/{main,help}.rs`; `crates/engine/src/lib.rs`, `crates/engine/src/cmd/` (counts), `crates/model/src/anim.rs`, `crates/geom/src/preset.rs`, `crates/format/src/{lib,rtf}.rs`, `crates/pptx/src/lib.rs`, `crates/pdf/src/lib.rs`, `crates/render/src/{images,pattern}.rs`, `crates/metafile/src/emfplus.rs`, `crates/media/src/lib.rs`, `crates/mcp/src/tools.rs`, `crates/ui-egui/src/{lib,control,dialogs,panels/fillui,sorter,show}.rs`.
 - **Shared libraries (not cloned):** the craft-libs crates (`craft-media`, `craft-pdf`, …) are pinned to one revision, `c5a1cbfb…`, in `Cargo.toml` this release (moved from `92d392cf…`). Shared-library behaviour beyond the pin is not audited here.

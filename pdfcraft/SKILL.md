@@ -3,9 +3,13 @@ name: pdfcraft
 description: PdfCraft is the ArtCraft PDF workbench, a clean-room Acrobat Pro reimplementation for macOS, Windows, Linux, FreeBSD and the web. Use this skill whenever the user mentions PdfCraft or pdfcraft-cli, asks what it can do, which file formats or shortcuts it supports, or asks to read, render, search, organize, combine, split, rotate, annotate, fill, calculate, sign, redact, OCR, compare, print, protect, layer, measure or convert a PDF; when preparing assets or inputs for it; when driving it headlessly through the CLI, the MCP server or the UI control channel; or when verifying, repairing or troubleshooting its output — even if the app is not named (for example "merge these PDFs", "make this scan searchable", "fix this form's calculation order", "redact this contract", "convert this PDF to Word").
 ---
 
-Audit basis: this checkout is tag `v0.17.0`, commit `7d78f3e14474b978be014715e0cc64895d77025a` ("Release 0.17.0", 2026-11-01; the v0.16.1 ref was fetched for set diffs). The installed `/Applications/PdfCraft.app` matches this tag (bundle id `ai.storyteller.pdfcraft`, minimum macOS 11.0). **Verify against your installed version.** Deep detail: `references/automation-tools.md` lists all 183 automation tools at this tag.
+**Audit basis.** Refreshed 2026-11-04 against tag **v0.18.1**, commit **`8bb0528bed785283452263b0290321ccf95859be`** — `git rev-parse HEAD` in the pinned checkout confirms, and the installed `/Applications/PdfCraft.app` matches (its binary prints `pdfcraft 0.18.1`). The previous release this skill described was v0.17.0 (`7d78f3e`).
 
-v0.16.1 → v0.17.0 adds **one automation tool, `text_script`** (superscript/subscript over `edit.edit_text`, with Unicode forms, mixed-text normalisation and refusal when nothing would change — **182 → 183 tools**, nothing removed) and changes no engine command (`crates/engine/src/commands.rs` byte-identical between tags). Feature highlights: **saving after deleting pages rewrites an unsigned file in full** (#4279); **automated licensing validation for bundled assets** (#2212); **`--two-paged` CLI flag** (#1433); **an optional page-edge shadows setting** (#2088); **Acrobat UI parity for image editing and text formatting** (#2155); an XFA draw placed by position turns about its anchor (#5624); create/optimize refuse a mask of other proportions instead of hanging (#5620); JBIG2 arithmetic no longer panics near the end of an i32 (#5673); and **Preferences sets how many recent files to keep** (#5572/#5675).
+**v0.17.0 → v0.18.1 delta.** 260 files changed. Automation: **184** tools (183 at v0.17.0; the addition is `doc_bates_multi`) and **210** registry commands (205 at v0.17.0). Wave: rewritten form XObjects keeping `/PCAdded`, structure titles following removed descriptions in redaction, a new document's page tree written once, and a wheel lockup at the edge of non-continuous view. The previous skill's "35 languages" claim is dropped: the `.tsv` language catalogs are gone (the `craft-i18n.rev` pin carries them), so no language count is measurable in-tree.
+
+**Verify against your installed version** — the ArtCraft Launcher auto-updates, so a newer build may differ; every count quoted here was re-measured at this tag, and code paths that moved were re-cited. The measurement method for each count is in `evidence.md`.
+
+v0.16.1 → v0.18.1 adds **one automation tool, `text_script`** (superscript/subscript over `edit.edit_text`, with Unicode forms, mixed-text normalisation and refusal when nothing would change — **182 → 184 tools**, nothing removed) and changes no engine command (`crates/engine/src/commands.rs` byte-identical between tags). Feature highlights: **saving after deleting pages rewrites an unsigned file in full** (#4279); **automated licensing validation for bundled assets** (#2212); **`--two-paged` CLI flag** (#1433); **an optional page-edge shadows setting** (#2088); **Acrobat UI parity for image editing and text formatting** (#2155); an XFA draw placed by position turns about its anchor (#5624); create/optimize refuse a mask of other proportions instead of hanging (#5620); JBIG2 arithmetic no longer panics near the end of an i32 (#5673); and **Preferences sets how many recent files to keep** (#5572/#5675).
 
 ## Overview
 
@@ -21,7 +25,7 @@ Unless a bullet says **partial**, the path is wired into the UI and/or the CLI a
 
 ### Automation surface at a glance
 
-| Surface | Count at v0.17.0 | Change vs the v0.16.1 skill |
+| Surface | Count at v0.18.1 | Change vs the v0.16.1 skill |
 |---|---|---|
 | Automation tools (`crates/automation/src/tools.rs`) | **183** (name-set extract; 157 inline + 28 multi-line `t(` raw) | **+1** — `text_script` |
 | Command registry (`crates/engine/src/commands.rs:165` `COMMANDS`) | **205** | unchanged set (205 `c(` ids at both tags, id diff: 0 added, 0 removed) |
@@ -37,7 +41,7 @@ Unless a bullet says **partial**, the path is wired into the UI and/or the CLI a
 | Form-data extensions (`crates/xfdf/src/lib.rs`) | **8** → 6 formats | unchanged |
 | Page-image export formats | **3** (png, jpeg, tiff; `pdfcraft-cli render` also writes `.pam`) | unchanged; **exported on worker threads (~80% less wall time)** |
 
-`pdfcraft-cli tools` is the live capability contract; the full name/title/hint table is in `references/automation-tools.md`. Every tool has a JSON Schema, read-only or destructive hints and an optional registry command id. Repo docs lag badly: several still say "141 automation tools" and "184 registered commands" (real: 183 tools / 205 registered commands).
+`pdfcraft-cli tools` is the live capability contract; the full name/title/hint table is in `references/automation-tools.md`. Every tool has a JSON Schema, read-only or destructive hints and an optional registry command id. Repo docs lag badly: several still say "141 automation tools" and "184 registered commands" (real: 184 tools / 205 registered commands).
 
 ### Reading, navigation and text
 - Tiled CPU rendering with single, continuous, two-up and two-page layouts, rotation, full screen, Read mode, light/dark/system themes and per-tab history. Optional gapless page display and an independent thumbnail slider.
@@ -120,7 +124,7 @@ The repo's ranked shortfall list is `docs/gaps.md`; read it before promising any
 - **Copy- and print-protected documents:** extraction, copy, compare and OCR text output honour permissions; never bypass.
 - **View-only settings do not save:** page gaps, layer visibility and reading colours change the view, not the file.
 - **The All tools catalogue is a plan, not a promise, in both directions.**
-- **Repo docs lag the code:** several still say 141 automation tools / 184 commands (real: 179 / 205). Trust the code and `pdfcraft-cli tools`.
+- **Repo docs lag the code:** several still say 141 automation tools / 184 commands (real: 184 / 210). Trust the code and `pdfcraft-cli tools`.
 
 ## How to operate
 
@@ -179,7 +183,7 @@ Panels: comments, bookmarks, pages (with its new Page tools menu), fields, layer
 ## Working with an AI agent
 
 **Legitimate work.**
-- Prefer the headless tool table over GUI automation. `pdfcraft-cli tools` (or MCP `tools/list`) is the capability contract; `command_list` maps UI commands to tools, and 134 of 205 commands have no tool — check before you promise one.
+- Prefer the headless tool table over GUI automation. `pdfcraft-cli tools` (or MCP `tools/list`) is the capability contract; `command_list` maps UI commands to tools, and 134 of 210 commands have no tool — check before you promise one.
 - Prepare inputs: images and `.txt` for `doc_create`; XFDF/FDF/XML/XDP/CSV for `doc_import_data`; `.p12`/`.pfx` or Keychain/Windows-store identities for signing; openly licensed TTF/OTF for `text_font_import`; document-level attachment files for `attachment_add`.
 - Inspect and repair: `doc_info` exposes warnings, repairs and the initial destination; `doc_revisions` + `doc_open_revision` show what each incremental save appended; `pdfcraft-cli info` tells you which PDF/A or PDF/UA level a file *claims*.
 - Verify with independent observations: `page_render`/`render_preview` for pixels, `text_extract` for text, `doc_audit_redactions` after redaction, `pdfa_verify` after PDF/A conversion, `print_readiness` before printing, and external `qpdf`, `pdftotext`, `pdftoppm`, `pdfsig` or a real viewer where installed. Page-image export now parallelises, so batch renders finish much faster.
@@ -209,7 +213,7 @@ Alpha-software discipline for every session:
 
 ## Sources & evidence
 
-- Repo: https://github.com/storytold/pdfcraft · tag `v0.17.0` · inspected commit `7d78f3e14474b978be014715e0cc64895d77025a` ("Release 0.17.0", 2026-11-01); date of inspection 2026-11-02. The checkout is a shallow clone pinned to the release tag (plus a fetched `v0.16.1` ref for set diffs); it was not modified or built.
+- Repo: https://github.com/storytold/pdfcraft · tag `v0.18.1` · inspected commit `8bb0528bed785283452263b0290321ccf95859be` ("Release 0.17.0", 2026-11-01); date of inspection 2026-11-02. The checkout is a shallow clone pinned to the release tag (plus a fetched `v0.16.1` ref for set diffs); it was not modified or built.
 - Installed app: `/Applications/PdfCraft.app` 0.17.0, bundle id `ai.storyteller.pdfcraft`, minimum macOS 11.0; binary `--version` → `pdfcraft 0.17.0`. The macOS bundle contains only `PdfCraft`, not `pdfcraft-cli`.
 - Counts were machine-derived from code at this tag and diffed against the fetched v0.16.1 files: tools 182 → 183 (+`text_script`), engine commands byte-identical (`crates/engine/src/commands.rs`, 0 diff lines), control methods unchanged (only a doc-comment hunk: `ui.set` gained the `show_page_edge_shadows` key + `ui.state` report), languages 34 = 34, `pdfcraft-cli` zero diff files (the `--two-paged` flag is a GUI launch flag in `apps/pdfcraft`).
 - Key files read: `README.md`, `Cargo.toml`, `docs/gaps.md`, `docs/mcp.md`, `apps/pdfcraft/src/main.rs`, `apps/pdfcraft-cli/src/main.rs`, `crates/automation/src/tools.rs`, `crates/engine/src/commands.rs`, `crates/engine/src/compare.rs`, `crates/ui-egui/src/control/requests.rs`, `crates/ui-egui/src/i18n/`, `crates/ui-egui/src/panels/pages.rs`, `crates/render/src/raster/{,work_queue}.rs`, `crates/xfa/src/{lib,layout}.rs`, `crates/redact/src/`, `crates/xfdf/src/lib.rs`, `crates/forms/`, `crates/sign/`, `crates/ocr/`, `crates/print/src/lib.rs`, `crates/create/src/lib.rs`, `crates/cos/src/{budget,writer}.rs`.
