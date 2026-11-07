@@ -1,15 +1,16 @@
 # AGENTS.md — ArtCraft Skills archive
 
 You are a coding agent. This folder is the persistence archive of the
-[artcraft-skills](https://github.com/midasmatterhorn/artcraft-skills) project: 17
-evidence-verified skills for the ArtCraft desktop apps (15 storytold apps — the 13 craft apps plus
-Craft Anything's rebuild workbench, TextureCraft's 3D texture painting and MaterialCraft's
-node-based procedural materials — and Tangency Labs' SolidCraft parametric CAD). If the user asks you to
+[artcraft-skills](https://github.com/midasmatterhorn/artcraft-skills) project: 18
+evidence-verified skills for the ArtCraft desktop apps (17 storytold apps — the 13 pure-Rust craft
+apps plus ArtCraft Studio's AI image and video workspace, Craft Anything's rebuild workbench,
+TextureCraft's 3D texture painting and MaterialCraft's node-based procedural materials — and
+Tangency Labs' SolidCraft parametric CAD). If the user asks you to
 install, update, or verify these skills, do it for the agent **you** are running as.
 
 ## Install (pick your target)
 
-From the packaged release in this folder — the 17 skill folders sit at the zip root
+From the packaged release in this folder — the 18 skill folders sit at the zip root
 (pick the newest `artcraft-skills-v*.zip`):
 
 ```sh
@@ -48,7 +49,7 @@ bash install.sh              # default → ~/.agents/skills/  (add --claude, --o
 
 ## Verify
 
-All 17 skill directories must exist under the chosen target — `cadcraft`, `craft-anything`,
+All 18 skill directories must exist under the chosen target — `artcraft-studio`, `cadcraft`, `craft-anything`,
 `deckcraft`, `designcraft`, `effectcraft`, `figcraft`, `filmcraft`, `gridcraft`, `lightcraft`,
 `materialcraft`, `pdfcraft`, `photocraft`, `solidcraft`, `soundcraft`, `texturecraft`,
 `vectorcraft`, `wordcraft` — each containing
@@ -66,13 +67,18 @@ so the GPU can look "disabled" until that memory is cleared.
 
 **Try the direct launch first.** `CREATE_NO_WINDOW` only hides a console; it does not move
 the process to another window station. An agent running in the user's logged-on session (a
-terminal, an IDE, a desktop app) can start the GUI itself. The launcher installs apps
-per-user by default (`%LOCALAPPDATA%\Programs\ArtCraft\<App>`); apps installed for all
-users live at `C:\Program Files\ArtCraft\<App>`:
+terminal, an IDE, a desktop app) can start the GUI itself. A fresh MSI install from the
+launcher v0.16.0 is machine-wide — `C:\Program Files\ArtCraft\<App>`, or
+`Program Files (x86)` for a 32-bit build — and Windows asks for elevation once; an app
+already installed for one account (`%LOCALAPPDATA%\Programs\ArtCraft\<App>`) keeps that
+folder and scope when it is updated (`crates/native/src/msi_context.rs::install_scope`):
 
 ```cmd
-cmd.exe /c start "" "%LOCALAPPDATA%\Programs\ArtCraft\<App>\<app>.exe" --control <port>
+cmd.exe /c start "" "%ProgramFiles%\ArtCraft\<App>\<app>.exe" --control <port>
 ```
+
+If the app was installed per-user, point at
+`%LOCALAPPDATA%\Programs\ArtCraft\<App>\<app>.exe` instead.
 
 If no window appears, the agent is in a non-interactive session — a Windows service /
 session 0, or a runner that sandboxed its window station. Nothing started from that session
@@ -81,7 +87,7 @@ can paint on the user's desktop: use the headless CLI/MCP surface instead, or as
 the logged-in user can have Task Scheduler launch the app interactively:
 
 ```cmd
-schtasks /create /tn "ArtCraft-<App>-<port>" /tr "\"%LOCALAPPDATA%\Programs\ArtCraft\<App>\<app>.exe\" --control <port>" /sc once /st <future-time> /it /f
+schtasks /create /tn "ArtCraft-<App>-<port>" /tr "\"%ProgramFiles%\ArtCraft\<App>\<app>.exe\" --control <port>" /sc once /st <future-time> /it /f
 schtasks /run /tn "ArtCraft-<App>-<port>"
 schtasks /delete /tn "ArtCraft-<App>-<port>" /f
 ```
@@ -112,6 +118,7 @@ Authentication differs per app — check the app's SKILL.md before connecting:
 - **FilmCraft**: the listener only opens when `FILMCRAFT_CONTROL_TOKEN` holds 64 hex characters at launch; every request carries the same `"token"`.
 - **GridCraft**: the first line of a connection must authenticate with the app's token — pass `--control-token <token>` or `GRIDCRAFT_CONTROL_TOKEN` at launch, or read the auto-generated token file whose path the app prints to stderr (`gridcraft-cli` reads it automatically); a connection that does not authenticate, or later sends a bad line, is closed.
 - **TextureCraft**: every connection's first request must authenticate — `{"id":0,"method":"auth","params":{"token":"…"}}` with `TEXTURECRAFT_CONTROL_TOKEN` (16 characters or more) or the fresh random token the app writes to `texturecraft-control-<port>.token` in the temp directory and prints to stderr; anything else as the first request is refused.
+- **ArtCraft Studio**: no control channel, CLI or MCP server — it is a Tauri GUI app; the programmatic surface is the API-key-gated Omni HTTP API documented in the `artcraft-studio` skill.
 - **All other apps**: loopback-only, unauthenticated — enable only while in use.
 
 Send UTF-8 **without a BOM**: the control servers treat a BOM-prefixed first line as

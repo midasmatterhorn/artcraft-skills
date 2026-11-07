@@ -1,81 +1,55 @@
 # DeckCraft — commands, shortcuts, control methods, MCP tools and file formats (agent reference)
 
-**Pin:** tag `v0.14.1`, commit `ee39ff67816d0039143ec7c98ea604cefe0cd2e5` — the code shipped in
-DeckCraft 0.14.x. **Verified:** 2026-11-02 against a read-only clone at this tag; the v0.13.1 ref was
-fetched for diffs. All citations are
-repo-relative (`path` or `path:symbol`). Counts were re-parsed from the registries at this tag, not
-carried over. The v0.13.1→v0.14.1 delta: **328 → 329 engine commands** (+`slide.actions`, inspect
-family 4 → 5), **MCP `insert_chart` gained optional `x`/`y`/`w`/`h`** (tool set unchanged at 25),
-`animation.add`/`animation.set` take custom motion-path points, and the control dispatch set, UI
-commands and CLI are unchanged. The v0.11.1→v0.12.0 delta: **326 → 328 engine commands**
-(+`format.languageAll`, +`slide.selectRange`), MCP tools 25 and the control dispatch set unchanged;
-Reuse Slides gained a slide chooser, proofing language can be set for the whole presentation,
-Preferences chooses inches/centimetres, and the parameter-validation and media-decoder hardening
-wave landed.
+**Pin:** tag `v0.16.0`, commit `a3e2254d3de32ed1718f156f070b54a34b949b54` — the code shipped in
+DeckCraft 0.16.0. **Verified:** 2026-11-07 against a read-only clone at this tag; `v0.15.0`
+(`3e178d8f…`) was diffed for every set. All citations are repo-relative (`path` or `path:symbol`).
+Counts were re-parsed from the registries at this tag, not carried over. The v0.15.0→v0.16.0 delta
+moves no id set: 329 engine commands, 57 shortcuts, 52 UI commands, 12 CLI subcommands, 25 control
+methods (+2 aliases), 25 MCP tools, 49 transitions, 107 animations, 8 themes, 11 layouts + `Custom`,
+183 shape presets, 28 chart types, 45/9/17 SmartArt, 6 starters, 70 icons and 40 warps are identical at
+both tags (see §"Where the counts come from"). What changed is behaviour: `file.save` refuses image
+formats, `perPage` is an enum, `view.slideMaster` and table `cells` are validated, `shape.flip` refuses
+SmartArt, `shape.connect` reaches grouped shapes, slide delete prunes custom shows, `slide.reuse` scales
+content, outlines skip footer placeholders, the PDF text layer uses evaluated fields, the native
+manifest is capped at 256 MiB, the save sibling is hidden and write-root checked, the PPTX round trip
+keeps overflow/spacing/`normalizeH`/`thaiDist`/point bullets/RTL/`altLang`/reflections and the media-controls setting,
+the desktop clipboard is the system one again, Transition Preview starts from the previous slide, See
+All Slides opens in the presenter window, and the web build has a `?host=parent` bridge.
 
 ---
 
-## What changed at v0.11.1
+## Where the counts come from (v0.16.0)
 
-Compared with the v0.10.0 skill (commit `b47195feec0f0fe4220d8943ad1c8add5dad8072`):
-
-- **+6 engine commands, 320 → 326.** `crates/engine/src/cmd/points.rs` 7 → 11
-  (`shape.deleteSegment`, `shape.segmentType`, `shape.openPath`, `shape.closePath`: Edit Points
-  segment add/delete, straight/curved segment type and open/close path from the right-click menu);
-  `crates/engine/src/cmd/review.rs` 22 → 23 (`review.reject`: reject one revision or all after
-  Compare); `crates/engine/src/cmd/reuse.rs` 1 → 2 (`slide.reuseList`: pick which slides of the
-  other deck to insert). Kind split 229/55/36 → **233 ordinary / 56 `noundo` / 37 `query`**, still
-  28 command modules with unique ids.
-- **RTF outlines (new format surface).** `crates/format/src/rtf.rs` writes PowerPoint's Outline/RTF
-  save type (`slides_to_rtf`) and reads one back (`sniff_rtf`, `rtf_to_outline`); `rtf` joined
-  `WRITABLE_EXTENSIONS` (`crates/engine/src/cmd/file.rs`), `save_bytes`, `format_for_path`,
-  `file.export`, `file.open` (sniffed by content, so an `.rtf`-named or RTF-bodied file opens as an
-  outline), `slide.fromOutline` payloads, the MCP `export` enum (`crates/mcp/src/tools.rs`) and
-  `deckcraft-cli convert`/`run --save`.
-- **Pattern fills.** A 48-tile gallery (`crates/ui-egui/src/fillui.rs::PATTERN_GALLERY`, labels in
-  `PATTERN_LABELS`, 54 DrawingML names known) over tiles drawn from `crates/render/src/pattern.rs`;
-  `a:pattFill` is read and written for shape and chart series fills (`crates/pptx/src/{read,write}`).
-- **Slide-show type `browsed`.** `show.setup {type: speaker|browsed|kiosk}` now has a real effect:
-  `browsed` runs the show in a window instead of filling the screen
-  (`crates/ui-egui/src/show.rs::show_fills_screen`), and the type round-trips through PPTX
-  (`crates/pptx/src/write/mod.rs`, `crates/pptx/src/read/mod.rs`).
-- **EMF+-only metafiles draw.** `crates/metafile/src/emfplus.rs` plays every MS-EMFPLUS drawing
-  record for a file that carries no plain EMF fallback; dual EMF+ files still draw their EMF half
-  (`crates/metafile/src/emf.rs`).
-- **Chart text colour:** `chart.options {textColor}` (and Font Color on a selected chart) colours
-  title, axes, legend and data labels and writes `c:txPr`, with PowerPoint's 65 %-theme default when
-  unset (`crates/engine/src/cmd/insert.rs`).
-- **Table cell-range selection:** dragging while the caret is in a cell selects a range
-  (`crates/engine/src/lib.rs:157`), and formatting applies to the selected cells.
-- **AutoFormat as you type:** lists (`*`, `-`, `--`, `>`, `<>`, `1.`, `1)`, `I.`, `i.`, `A.`, `a)`,
-  `a)` + space/tab) and superscript ordinals, switchable with
-  `text.autocorrect {lists?, ordinals?}` (`crates/engine/src/cmd/text.rs::autocorrect`,
-  `auto_list_style`).
-- **Columns dialog:** `format.columns` with no `count`/`spacing` opens it; values are 1–16 columns
-  and spacing in points (`crates/engine/src/cmd/format.rs`).
-- **Stricter indices, including `slide.layout`.** At v0.10.0 `slide.layout` treated an invalid
-  `index` as absent; it now rejects a negative or fractional index like `slide.duplicate`,
-  `slide.delete`, `slide.move`, `slide.reset`, `slide.hide`, `slide.notes` and `section.add`
-  (`crates/engine/src/cmd/mod.rs::opt_usize_param`).
-- **Group nesting is capped at 32** (`MAX_GROUP_DEPTH`, `crates/engine/src/cmd/arrange.rs`), the
-  depth PPTX import reads and the canvas draws.
-- **File I/O hardening:** a read needs a regular file of at most 2 GiB; a save canonicalizes the
-  target (writing through a symlink) and keeps its permissions
-  (`crates/engine/src/io.rs::read_file`, `write_file`).
-
-Counts that did **not** change: 57 engine shortcuts, 50 UI commands (15 shortcuts), 12 CLI
-subcommands, 25 control methods (+2 aliases), 25 MCP tools, 49 transition rows, 107 animation
-entries (24/17/23/40/3), 8 themes × 4 variants, 11 layouts + `Custom`, 183 shape presets, 28 chart
-types, 45 SmartArt layouts / 9 styles / 17 colour sets, 6 starter decks, 70 Lucide icons, 40 text
-warps.
+| Surface | Count | Extracted from |
+|---|---:|---|
+| Engine commands | **329** (234 ordinary + 57 `noundo` + 38 `query`) | `cmd!` literals in `crates/engine/src/cmd/*.rs`; ids diffed between tags: +0/−0 |
+| Engine shortcuts | **57** commands, 56 distinct strings | the shortcut argument of each `cmd!`; `Cmd+Shift+V` appears twice |
+| UI-only commands | **52** (15 with shortcuts) | `UI_COMMANDS` in `crates/ui-egui/src/lib.rs` |
+| CLI subcommands | **12** | `SUBCOMMANDS` in `apps/deckcraft-cli/src/help.rs` |
+| Control methods | **25** + aliases `ui.menu.invoke`, `command` | top-level arms of `match req.method.as_str()` in `crates/ui-egui/src/control.rs` |
+| MCP tools | **25** | `tool(` names in `crates/mcp/src/tools.rs` |
+| Transitions | **49** rows (48 + `none`) | `TRANSITIONS` in `crates/model/src/anim.rs` |
+| Animations | **107** (24 entrance, 17 emphasis, 23 exit, 40 path, 3 media) | `ANIMATIONS` in `crates/model/src/anim.rs` |
+| Themes / variants | **8** / 4 each | `builtin_themes`, `theme_variants` in `crates/model/src/theme.rs` |
+| Layouts | **11** + `Custom` | `LayoutType` in `crates/model/src/lib.rs` |
+| Shape presets | **183** in 9 categories | `CATALOG` in `crates/geom/src/preset/catalog.rs` |
+| Chart types | **28** (7 `chartEx` + `RegionMap`) | `ChartType` in `crates/model/src/chart.rs` |
+| SmartArt | **45** layouts, 9 styles, 17 colour sets | `LAYOUTS`/`STYLES`/`COLORS` in `crates/engine/src/cmd/smartart.rs` |
+| Starter decks | **6** | `starters()` in `crates/engine/src/templates.rs` |
+| Lucide icons | **70** (1.56.0) | `ICONS` in `crates/engine/src/icon_data.rs` |
+| Text warps | **40** | `CATALOG` in `crates/geom/src/warp.rs` |
+| Pattern fills | **48** gallery tiles, 54 DrawingML names | `PATTERN_GALLERY`/`PATTERN_LABELS` in `crates/ui-egui/src/panels/fillui.rs` |
+| 3-D presets | 28 cameras offered (62 known), 12 bevels, 12 materials, 15 light rigs | `crates/engine/src/cmd/three_d.rs` |
+| Date/time field formats | **13** | `DATE_FORMATS` in `crates/engine/src/cmd/insert/text_fields.rs` |
+| UI languages | **1** (English only) | no `locales/`, no i18n crate or dependency |
 
 ## Command families
 
 Everything DeckCraft does is a command. A command is a `CommandSpec` with id, label, ribbon/menu
 place, optional shortcut, a parameter doc, an enabled check and a run function
-(`crates/engine/src/cmd/mod.rs`). Ids follow PowerPoint's ribbon and menu structure.
+(`crates/engine/src/cmd.rs`). Ids follow PowerPoint's ribbon and menu structure.
 
-The `cmd!` macro has three forms (`crates/engine/src/cmd/mod.rs`, `macro_rules! cmd`):
+The `cmd!` macro has three forms (`crates/engine/src/cmd.rs`, `macro_rules! cmd`):
 
 - `cmd!(id, …)` — journaled and undoable (an ordinary edit);
 - `cmd!(noundo id, …)` — journaled, not undoable (navigation, save, playback, settings);
@@ -85,41 +59,41 @@ The `cmd!` macro has three forms (`crates/engine/src/cmd/mod.rs`, `macro_rules! 
 reuse, insert, smartart, shape, background, picture_style, recolor, arrange, selection, merge,
 points, text, format, design, ideas, transition, animation, table, find, review, inspect, media,
 artistic, zoom, compress. That order breaks shortcut ties. `Session::execute` is the single dispatch
-path for the UI, keyboard, CLI, control channel and MCP (`crates/engine/src/lib.rs:609`),
+path for the UI, keyboard, CLI, control channel and MCP (`crates/engine/src/lib.rs:636`),
 panic-guarded by `crates/engine/src/guard.rs`.
 
-**Total: 329 commands** (326 at v0.11.1 = 233 ordinary + 56 `noundo` + 37 `query`; later +`format.languageAll`, +`slide.selectRange`, +`slide.actions`); all ids unique.
+**Total: 329 commands** (234 ordinary + 57 `noundo` + 38 `query`); all ids unique.
 
 | Family module (under `crates/engine/src/cmd/`) | Commands | Covers |
 |---|---:|---|
 | file | 21 | new (theme/template/size), templates, open/adopt/openBytes, save/saveAs/saveTemplate/saveBytes, export, info, render, close, properties, AutoRecover, revert, colour at a point, next window |
 | edit | 12 | undo/redo, cut/copy/paste (rich HTML), pasteSpecial, pasteText, duplicate (repeats a move), delete, select all/deselect/select |
-| slide | 21 | new/duplicate/delete/move/layout/reset/hide/notes/rename, sections, `slide.fromOutline`, navigation, select slides |
-| reuse | 2 | `slide.reuseList` (list the other deck's slides) + `slide.reuse` (insert them) |
+| slide | 22 | new/duplicate/delete/move/layout/reset/hide/notes/rename, sections, `slide.fromOutline`, navigation, select slides |
+| reuse | 2 | `slide.reuseList` (list the other deck's slides) + `slide.reuse` (insert them, scaled to the destination) |
 | insert | 23 | text box, picture, photo album (+edit), table, chart (+type/data/options incl. `textColor`), audio, video, WordArt, slide number, date/time, symbol, hyperlink, SmartArt, icons, preset shapes, action buttons |
 | smartart | 13 | Text Pane outline, add/promote/demote/remove nodes, layout, style, colours, picture, convert to shapes/text |
-| shape | 27 | connect, freeform, ink to shape, sites, move/resize/rotate/flip, adjust, change, smooth corners, fill (solid/gradient/picture/pattern), line, effects (shadow/glow/reflection/soft edges/bevel/3-D), quick style, rename, alt text, visibility, lock, default, crop, picture adjust, media options, size and position |
+| shape | 27 | connect (grouped shapes too), freeform, ink to shape, sites, move/resize/rotate/flip (not SmartArt), adjust, change, smooth corners, fill (solid/gradient/picture/pattern), line, effects (shadow/glow/reflection/soft edges/bevel/3-D), quick style, rename, alt text, visibility, lock, default, crop, picture adjust, media options, size and position |
 | background | 1 | Remove Background |
 | picture_style | 2 | Picture Styles gallery + apply |
 | recolor | 3 | Recolor presets, Set Transparent Colour, gallery |
 | arrange | 19 | order, group/ungroup/regroup (≤32 deep), align (to slide or selection), distribute, rotate, flip, nudge, guides, reorder |
 | selection | 3 | Selection pane: select, Show All, Hide All |
-| merge | 1 | Merge Shapes (`union` / `combine` / `fragment` / `intersect` / `subtract`) |
-| points | 11 | Edit Points: enter/exit, add/delete point, move point/handle, point type, **segment type, delete segment, open/close path**, points query |
+| merge | 1 | Merge Shapes (`union` / `combine` / `fragment` / `intersect` / `subtract`); merged shapes' animations are dropped and their triggers cleared |
+| points | 11 | Edit Points: enter/exit, add/delete point, move point/handle, point type, segment type, delete segment, open/close path, points query |
 | text | 15 | text edit/insert/delete/move caret/select, AutoCorrect (+AutoFormat lists/ordinals), compose (IME), commit, set/get, fonts used, replace font |
-| format | 48 | character, paragraph, bullets/numbering, tabs, **columns (1–16, dialog or values)**, direction, autofit, wrap, margins, painter, font add/rescan, WordArt transform |
+| format | 49 | character, paragraph (incl. `thaiDist`), bullets/numbering, tabs, columns (1–16), direction, autofit, wrap, margins, painter, font add/rescan, WordArt transform |
 | design | 24 | themes/variants/colours/fonts/effects, Browse for Themes (master + layouts), background (+Apply to All), slide size, header/footer (+date format), masters/layouts/placeholders |
 | ideas | 2 | Design Ideas gallery + apply |
-| transition | 6 | transition set/options/timing/sound/apply-all/list |
+| transition | 6 | transition set/options/timing/sound/apply-all/list (Preview plays from the previous slide) |
 | animation | 11 | animation set/add/remove/move/timing/options/clear, painter, list/get |
-| table | 21 | rows/columns, merge/split, distribute, widths/heights, borders, styles, cell fill/margins/align, range selection, draw/erase line |
+| table | 21 | rows/columns, merge/split, distribute, widths/heights, borders, styles, cell fill/margins/align, range selection, draw/erase line; `cells` must be `[row, col]` pairs inside the table |
 | find | 2 | Find, Replace |
-| review | 23 | comments, spelling, thesaurus, dictionary, accessibility, revisions (accept/**reject**/end), compare, slide show start/end/setup(**speaker/browsed/kiosk**)/custom show |
-| inspect | 5 | `document.inspect`, `slide.inspect`, `slide.actions` (read-only action settings, new at v0.14.1), `shape.inspect`, `commands.list` |
+| review | 23 | comments (`comment.next`/`prev` validate `index`), spelling, thesaurus, dictionary, accessibility, revisions (accept/reject/end), compare, slide show start/end/setup(`speaker/browsed/kiosk`)/custom show |
+| inspect | 5 | `document.inspect`, `slide.inspect`, `slide.actions` (read-only action settings), `shape.inspect`, `commands.list` |
 | media | 8 | play/pause/toggle/stop, seek, info, poster frame, GIF play |
 | artistic | 1 | Artistic Effects |
 | zoom | 1 | Insert ▸ Zoom (linked summary/section/slide pictures) |
-| compress | 1 | Compress Pictures |
+| compress | 1 | Compress Pictures (a grouped picture is measured at its displayed size) |
 
 Notes for agents:
 
@@ -128,10 +102,11 @@ Notes for agents:
 - Queries are safe in loops. `noundo` commands change the document but cannot be undone; a save
   discards the document's recovery entry (`crates/engine/src/cmd/file.rs::mark_saved`).
 - UI-only actions (views, panes, dialogs, palette, Quick Access Toolbar) live in `UI_COMMANDS`
-  (`crates/ui-egui/src/lib.rs:364`, 50 entries). They run through `engine.execute` in the desktop app
+  (`crates/ui-egui/src/lib.rs:98`, 52 entries). They run through `engine.execute` in the desktop app
   and are rejected headlessly (`crates/mcp/src/headless.rs`).
 - Parameter docs are the contract: `?` marks an optional key, a spaced ` | ` separates alternative
-  key sets, and `→` starts the answer.
+  key sets, and `→` starts the answer. One doc string lags the code: `format.align` accepts
+  `thaiDist` but does not list it (`crates/engine/src/cmd/format.rs`).
 
 ## Verified keyboard shortcuts
 
@@ -164,7 +139,7 @@ macOS and Ctrl elsewhere; `Alt` matches Option/Alt. **57 engine commands carry a
 **One collision:** `edit.pasteText` and `format.painterApply` both declare Cmd+Shift+V. `edit` is
 registered before `format`, so the key path runs `edit.pasteText`; call `format.painterApply` by id.
 
-### UI-only shortcuts (15 of the 50 `UI_COMMANDS` entries)
+### UI-only shortcuts (15 of the 52 `UI_COMMANDS` entries)
 
 `view.gridlines` Shift+F9 · `view.guides` Alt+F9 · `view.zoomIn` Cmd+= · `view.zoomOut` Cmd+- ·
 `review.thesaurusPane` Shift+F7 · `view.collapseRibbon` Cmd+F1 · `show.start` F5 ·
@@ -192,8 +167,9 @@ Cmd+Shift+P · `app.preferences` Cmd+, · `app.pasteSpecial` Cmd+Alt+V · `app.f
 Next: Right/Down/Space/PageDown/N/Enter (Enter also commits a typed slide number). Previous:
 Left/Up/Backspace/PageUp/P. Escape/Minus backs out (Escape first clears a typed number). Home/End
 first/last. B or `.` black, W or `,` white, E erases ink. Cmd+L laser, Cmd+A arrow, Cmd+P pen.
-Digits 0–9 type a slide number, Enter jumps (1-based). G See All Slides (while open only G/Escape/
-Minus work). Z arms zoom. T pauses the presenter timer, R resets it. `[`/`]` change notes size.
+Digits 0–9 type a slide number, Enter jumps (1-based). G opens See All Slides — in the presenter
+window, which sends the chosen slide to the show; while it is open only G/Escape/Minus work. Z arms
+zoom. T pauses the presenter timer, R resets it. `[`/`]` change notes size.
 
 ## Control channel
 
@@ -212,7 +188,7 @@ run late.
 | Method (aliases) | Params | What it does |
 |---|---|---|
 | `engine.execute` (`ui.menu.invoke`, `command`) | `{command, params}` | Run any engine or UI command |
-| `engine.commands` | — | 328 engine commands + the 51 UI commands in the app (engine only, headless) |
+| `engine.commands` | — | 329 engine commands + the 52 UI commands in the app (engine only, headless) |
 | `document.inspect` | — | Slides, sections, layouts, theme, media, selection |
 | `ui.inspect` | — | UI state, tool, window/canvas/slide rects, dialog, Backstage page, show state, documents, perf |
 | `ui.pointer` | `{events:[{kind: down\|drag\|up\|move\|doubleclick\|tripleclick\|contextclick, x, y, mods?, pressure?}]}` | Pointer input in **slide points** through the active tool |
@@ -231,7 +207,8 @@ run late.
 Notes:
 
 - The module comment in `crates/ui-egui/src/control.rs` still lists `show.key`; there is **no**
-  `show.key` arm — drive a show with `ui.key`.
+  `show.key` arm — drive a show with `ui.key`. The same comment also omits some arms; the `match` is
+  authoritative.
 - `ui.set view` maps `sorter`/`outline`/`notesPage`; anything else is `Normal` (Reading View is
   `view.reading` as a UI command).
 - `deckcraft-cli app [--port PORT] COMMAND [PARAMS]` or `--method METHOD [PARAMS]` sends one
@@ -246,7 +223,8 @@ Notes:
 `deckcraft-cli mcp` serves MCP over stdio — headless by default, or with `--connect PORT`
 (`host:port` allowed); `--sample` opens the sample deck. Protocol revision **2025-06-18**, also
 accepting 2025-03-26 and 2024-11-05 (`crates/mcp/src/server.rs`). Resources:
-`deckcraft://document`, `deckcraft://commands`; no templates.
+`deckcraft://document`, `deckcraft://commands`; no templates. A request frame is capped at 16 MiB
+(`crates/mcp/src/server.rs::MAX_FRAME_BYTES`).
 
 **25 tools** (`tool_definitions()`, `crates/mcp/src/tools.rs`). “RO” = `readOnlyHint`; “app” =
 connected mode only (`APP_ONLY`).
@@ -257,8 +235,8 @@ connected mode only (`APP_ONLY`).
 | `run_command` | | `engine.execute` |
 | `batch` | | several commands; stops at the first error unless `keepGoing` |
 | `new_presentation` | | `file.new` (`theme`, `blank`) |
-| `open_presentation` / `save_presentation` | | `file.open` / `file.save` |
-| `export` | | `file.export` (png/jpeg/pptx/deckcraft/outline/**rtf**/pdf/gif and options) |
+| `open_presentation` / `save_presentation` | | `file.open` / `file.save` (an image path is refused) |
+| `export` | | `file.export` (png/jpeg/pptx/deckcraft/outline/rtf/pdf/gif and options) |
 | `inspect_document` / `inspect_slide` | RO | `document.inspect` / `slide.inspect` |
 | `render_slide` | RO | `ui.render`, returned as an image block (headless scale clamps 0.05–8, default 1) |
 | `add_slide` / `go_to_slide` | | `slide.new` (layout, title, body) / `slide.go` |
@@ -266,7 +244,7 @@ connected mode only (`APP_ONLY`).
 | `add_text_box` | | `insert.textBox` + `text.exit` + `edit.select` |
 | `set_text` | | `text.set` |
 | `insert_picture` | | `insert.picture` (path or base64) |
-| `insert_table` / `insert_chart` | chart also takes optional `x`/`y`/`w`/`h` (v0.14.1) | `insert.table` / `insert.chart` |
+| `insert_table` / `insert_chart` | chart takes optional `x`/`y`/`w`/`h` | `insert.table` / `insert.chart` |
 | `select` / `pointer` | | `edit.select` / `ui.pointer` |
 | `select_tool` / `key` / `type_text` | | `ui.tool.select` / `ui.key` / `ui.text` |
 | `screenshot` | RO, app | `ui.screenshot` as an image block |
@@ -277,10 +255,12 @@ connected mode only (`APP_ONLY`).
   command.
 - Connected mode validates the reply envelope, caps a reply at 16 MiB and reconnects instead of
   replaying (`crates/mcp/src/backend.rs`; `docs/mcp.md`).
-- File confinement: `--automation-read-root DIR` / `--automation-write-root DIR` confine every path (each flag may be repeated since v0.13.0)
-  a command reads and writes, links followed; a root omitted grants none of its access, `--flag=DIR`
-  is accepted, a repeated flag is an error, and the roots apply to the in-process server only — they
-  conflict with `--connect` (`crates/engine/src/file_access.rs`; `apps/deckcraft-cli/src/automation_args.rs`).
+- File confinement: `--automation-read-root DIR` / `--automation-write-root DIR` confine every path a
+  command reads and writes, links followed; a root omitted grants none of its access, `--flag=DIR` is
+  accepted, **both flags may be repeated to grant more folders**, and the roots apply to the
+  in-process server only — they conflict with `--connect` (`crates/engine/src/file_access.rs`;
+  `apps/deckcraft-cli/src/automation_args.rs`). A save's temporary sibling must also be inside the
+  write root (`crates/engine/src/io.rs`).
 - The server's instructions describe the intended flow: `new_presentation → add_slide →
   add_shape`/`add_text_box`/`insert_picture`/`insert_chart` → `inspect_slide` → `render_slide` →
   `save_presentation` (`crates/mcp/src/server.rs`).
@@ -300,20 +280,23 @@ connected mode only (`APP_ONLY`).
 | `.rtf` (or any RTF body) | `deckcraft_format::rtf::sniff_rtf` | Outline import through `rtf_to_outline` (`crates/format/src/rtf.rs`) |
 | `.thmx` (theme), also `.pptx`/`.potx` | `design.browseTheme {path}` or `{name, data}` (`crates/engine/src/cmd/design.rs`) | Applies the theme; a `.pptx`/`.potx` also brings its master and layouts (`crates/pptx/src/lib.rs::import_theme`) |
 
-Native load budgets: 2 GiB per entry, 4 GiB total for media + chart sidecars, 100 000 items
-(`crates/format/src/lib.rs:27-31`). Every read needs a regular file of at most 2 GiB
+Native load budgets: **256 MiB for `presentation.json`**, 2 GiB per entry, 4 GiB total for media +
+chart sidecars, 100 000 items (`crates/format/src/lib.rs:27-34`), and the notes page size is clamped
+to the slide-size bounds. Every read needs a regular file of at most 2 GiB
 (`crates/engine/src/io.rs::read_file`).
 
 **Save** (`file.save {path?, format?: deckcraft|pptx}`, `file.saveAs`, `file.saveTemplate`;
 `crates/engine/src/cmd/file.rs`): the format comes from `format?`, else the path's extension
 (`format_for_path`). `WRITABLE_EXTENSIONS = deckcraft, pptx, potx, ppsx, pdf, png, jpg, jpeg, gif,
 txt, md, rtf`. `save_bytes` understands `pptx|potx|ppsx` (correct content types for template and
-show), `outline|txt`, `rtf`, `pdf`, `gif`, and falls back to the **native** format for anything else
-— so a `.png`/`.jpg` path through `file.save`/`file.saveAs`/`run --save` writes native zip bytes
-under the image name. Use `file.export`/`--export`/`convert` for images. `file.save` without a path
-(and no stored path) returns `{"needsPath": true}` and writes nothing. A save canonicalizes the
-target (writes through symlinks) and preserves the existing file's permissions
-(`crates/engine/src/io.rs::write_file`).
+show), `outline|txt`, `rtf`, `pdf`, `gif`, **refuses `png`/`jpeg`/`jpg`** ("saving a presentation as a
+single image isn't supported; use file.export"), and falls back to the **native** format for anything
+else — so `file.save {path: "x.odp"}` still writes native zip bytes under that name. Use
+`file.export`/`--export`/`convert` for images. `file.save` without a path (and no stored path)
+returns `{"needsPath": true}` and writes nothing. A save canonicalizes the target (writes through
+symlinks), preserves the existing file's permissions, and uses a hidden
+`.deckcraft.<pid>.<n>.saving` sibling created exclusively in the target's directory, renamed over it
+and removed on failure (`crates/engine/src/io.rs::write_file`).
 
 **Export** (`file.export`):
 
@@ -321,9 +304,9 @@ target (writes through symlinks) and preserves the existing file's permissions
 |---|---|---|
 | `png` / `jpeg` | `slide?: index`, `all?: bool`, `scale?`, `transparentBackground?: bool` (png only) | scale default 2, clamped 0.01–16 and to the renderer's 16 000 px side; JPEG quality 92; DPI = scale × 72; `all` writes `stem1.png`, `stem2.png`… (not zero-padded); every index validated before any write |
 | `pptx` / `potx` / `ppsx` / `deckcraft` | — | `.potx`/`.ppsx` get `template.main+xml` / `slideshow.main+xml` content types (`crates/pptx/src/lib.rs::export_as`) |
-| `outline` / `txt` | — | plain-text outline; includes table cell text, indented so table rows stay on their slide (`crates/format/src/lib.rs::slides_to_outline`) |
-| `rtf` | — | Outline/RTF: one paragraph per slide title (outline level 0) and per body paragraph, keeping bold, italic and underline (`crates/format/src/rtf.rs::slides_to_rtf`) |
-| `pdf` | `layout?: slides\|notes\|handouts`, `perPage?: 1-9` (menus offer 1/2/3/4/6/9), `paper?: letter\|a4\|legal\|a3`, `orientation?`, `dpi?`, `slides?: [index]\|"1-3,5"`, `includeHidden?`, `textLayer?`, `frame?` | defaults: slides layout, 6-per-page handouts, letter portrait, dpi 200 (clamped 36–600), hidden excluded, text layer on, frame on; slide artwork is raster at the DPI, capped at 64M pixels per slide (`crates/pdf/src/lib.rs`; `crates/engine/src/cmd/file.rs::pdf_options`) |
+| `outline` / `txt` | — | plain-text outline; includes table cell text, indented so table rows stay on their slide; footer, date and slide-number placeholders are left out (`crates/format/src/lib.rs::slides_to_outline`) |
+| `rtf` | — | Outline/RTF: one paragraph per slide title (outline level 0) and per body paragraph, keeping bold, italic and underline; footer/date/slide-number placeholders skipped (`crates/format/src/rtf.rs::slides_to_rtf`) |
+| `pdf` | `layout?: slides\|notes\|handouts`, `perPage?: 1\|2\|3\|4\|6\|9` (anything else is an error), `paper?: letter\|a4\|legal\|a3`, `orientation?`, `dpi?`, `slides?: [index]\|"1-3,5"`, `includeHidden?`, `textLayer?`, `frame?` | defaults: slides layout, 6-per-page handouts, letter portrait, dpi 200 (clamped 36–600), hidden excluded, text layer on, frame on; slide artwork is raster at the DPI, capped at 64M pixels per slide; the text layer uses evaluated field values (`crates/pdf/src/lib.rs`; `crates/engine/src/cmd/file.rs::pdf_options`) |
 | `gif` | `width?: px 16-3840 \| small\|medium\|large\|extraLarge`, `secondsPerSlide?: 0.1-600`, `loop?`, `slides?`, `includeHidden?` | width default medium 960 (presets 640/960/1280/1920), 5 s per slide, loop forever; one frame per slide, per-frame 256-colour palette; ≤500 frames, ≤3840 px side, ≤200M total pixels (`crates/engine/src/gif_export.rs`) |
 
 An unknown extension with no `format` is treated as `deckcraft` by `file.export` (native bytes under
@@ -344,10 +327,12 @@ Read-back queries: `file.info`, `file.render {slide?, scale?, edit?, transparent
   slide; `--all` writes `slide-01.png…`; `--slide` 0-based; default scale 2.
 - `render-transition FILE --slide N --t T[,T...] [--width PX] OUT.png`.
 - `convert IN OUT` — `.deckcraft`, `.pptx` (and `.potx`/`.ppsx`), `.pdf`, `.txt`/`.md`/`.rtf`,
-  `.png`/`.jpg` (first slide only, via `file.export {slide:0}`), `.gif`.
-- `run [--in FILE | --sample] [--cmd ID[=JSON]]... [--save OUT] [--export OUT [--export-params
-  JSON]] [--print]` — commands in order; stops and saves nothing on the first failure; `--print`
-  prints answers (not a printer flag).
+  `.png`/`.jpg` (first slide only, via `file.export {slide:0}`), `.gif`; other extensions are refused.
+- `run [--in FILE | --sample] [--cmd ID[=JSON] | --cmd-file FILE]... [--save OUT] [--export OUT
+  [--export-params JSON]] [--print]` — commands in order; stops and saves nothing on the first
+  failure; `--print` prints answers (not a printer flag). `--cmd-file` reads one command a line from
+  a UTF-8 file (blank lines and full-line `#` comments skipped, CRLF and a BOM accepted, 16 MiB a
+  line) and may repeat and mix with `--cmd` in order.
 - `app`, `mcp`, `bench [--runs N] [--json]`, `links`, `--version`.
 - The CLI is a **separate signed/notarized zip**, not inside the `.app`
   (`packaging/macos/package.sh`); this machine has no `deckcraft-cli` on `PATH`.
@@ -361,6 +346,8 @@ showMediaControls?, from?, to?, custom?: name}` (`crates/engine/src/cmd/review.r
 - `browsed` runs the show **in a window** (`crates/ui-egui/src/show.rs::show_fills_screen`); it
   round-trips to and from PPTX `p:showPr`.
 - `kiosk` fills the screen and loops until Esc (`crates/anim/src/show.rs`).
+- `showMediaControls` round-trips through `p14:showMediaCtrls` (`crates/pptx/src/write.rs`,
+  `crates/pptx/src/read.rs`); the rest of the media playback options (#74) are still not written.
 
 ## Desktop file hand-off (macOS)
 
@@ -370,8 +357,9 @@ showMediaControls?, from?, to?, custom?: name}` (`crates/engine/src/cmd/review.r
 - `apps/deckcraft/src/apple_events.rs` registers `kAEOpenDocuments` and quit before the event loop,
   opens each path with `SlideApp::open_path`, and turns a quit request into a window close (so a
   dirty deck still gets the Save / Don’t Save / Cancel prompt).
-- The command line uses `open_from_system`, which starts a show when the last file is `.ppsx`. The
-  Apple-event path does not — see the limitations in `SKILL.md`.
+- The command line uses `open_from_system`, which starts a show when the last file is `.ppsx`
+  (`crates/ui-egui/src/app/files.rs`). The Apple-event path does not — see the limitations in
+  `SKILL.md`.
 - Windows installer (`packaging/windows/deckcraft.wxs`) and Linux desktop file
   (`packaging/linux/ai.storyteller.deckcraft.desktop`) declare the same four extensions.
 
@@ -385,7 +373,7 @@ Per-user runtime paths, not repo paths.
 | Logs | `<settings>/logs/deckcraft.log`, rotated to `deckcraft.1.log`/`deckcraft.2.log`, capped at 16 MiB | `apps/deckcraft/src/logging.rs` |
 | Recovery | macOS `…/DeckCraft/Recovery`; Windows `%APPDATA%\DeckCraft\Recovery`; Linux `$XDG_DATA_HOME/deckcraft/recovery` (or `~/.local/share/deckcraft/recovery`); `<uid>.deckcraft` + `<uid>.json`, `owner-<instance>.lock` | `crates/engine/src/recovery.rs` |
 | Dictionaries | `DECKCRAFT_DICTIONARIES` first; macOS `~/Library/Application Support/DeckCraft/Dictionaries`, `~/Library/Spelling`, `/Library/Spelling`; Linux XDG + hunspell/myspell dirs | `crates/engine/src/spell.rs` |
-| Save temporary | `<path>.<pid>.<n>.saving` beside the target, created exclusively, renamed over it, removed on failure | `crates/engine/src/io.rs` |
+| Save temporary | `.deckcraft.<pid>.<n>.saving` in the target's directory, created exclusively, renamed over the target, removed on failure; must pass the automation write-root check | `crates/engine/src/io.rs` |
 
 Environment variables:
 
@@ -404,11 +392,13 @@ Environment variables:
 
 ## Launch surfaces
 
-- App: `deckcraft [--control PORT] [--sample] [--show] [FILE...]`, plus `--help`/`--version`.
-  `-psn_*` is ignored. A `.ppsx` given last on the command line starts its show
-  (`apps/deckcraft/src/main.rs`). The desktop parser is hand-rolled: an unknown argument is treated
-  as a file path, so a mistyped flag shows up as a failed open, not a usage error.
-  `deckcraft-cli` rejects unknown options.
+- App: `deckcraft [--control PORT] [--sample] [--show] [FILE...]`, plus `--help`/`-h` and
+  `--version`/`-V` (both exit before the window and the log file). `-psn_*` is ignored. A `.ppsx`
+  given last on the command line starts its show (`apps/deckcraft/src/main.rs`). The desktop parser
+  is hand-rolled: an unknown argument is treated as a file path, so a mistyped flag shows up as a
+  failed open, not a usage error. `deckcraft-cli` rejects unknown options.
 - CLI: `deckcraft-cli help`, per-subcommand `--help`, `--version` → `deckcraft-cli <version>`.
-- Web: `apps/deckcraft-web` with `trunk build --release`; query flags `?webgl`, `?blank`, `?show`.
-  No TCP control channel, no audio output, no persisted preferences; files download.
+- Web: `apps/deckcraft-web` with `trunk build --release`; query flags `?webgl`, `?blank`, `?show`,
+  and `?host=parent` (+ `&author=`) for a same-origin framing page that sends files and stores saves
+  (`apps/deckcraft-web/src/host.rs`). Otherwise: no TCP control channel, no audio output, no
+  persisted preferences; files download.

@@ -15,25 +15,19 @@ description: >
   not Figma and runs no Figma plugins.
 ---
 
-**Audit basis.** Refreshed 2026-11-04 against tag **v0.15.0**, commit **`02c38a6d959f0afd82e44d9d67d396266e6ab4a3`** — `git rev-parse HEAD` in the pinned checkout confirms, and the installed `/Applications/FigCraft.app` matches (its binary prints `FigCraft 0.15.0 (02c38a6d959f0afd82e44d9d67d396266e6ab4a3)`). The previous release this skill described was v0.14.0 (`5fc2840`).
+**Audit basis.** Refreshed 2026-11-07 against tag **v0.16.0**, commit **`f45b261687880e56d1bad11ec82b45131e57ef8b`** — `git rev-parse HEAD` in the pinned checkout confirms, and the installed `/Applications/FigCraft.app` matches (bundle version 0.16.0, and its binary prints `FigCraft 0.16.0 (f45b261687880e56d1bad11ec82b45131e57ef8b)`). The previous release this skill described was v0.15.0 (`02c38a6d959f0afd82e44d9d67d396266e6ab4a3`).
 
-**v0.14.0 → v0.15.0 delta.** 105 files changed. The automation surface grew by one CLI verb, one MCP tool and one control method (10 subcommands / 19 MCP tools / 18 control methods at this tag). The wave is SVG and `.fig` round-trip fidelity — stretched images, spread shadows and mitred strokes keeping their room, whole ellipses through `.fig` and SVG, connector line styles on `.fig` import — plus plugin-manifest API-version validation and the Layers panel also on Ctrl+1 on Windows/Linux (`crates/engine/src/keymap.rs`).
+**v0.15.0 → v0.16.0 delta.** 133 files changed (+4156/−545; the shallow clone holds one commit between the two tags). The automation surface is **shape-identical** — 10 CLI subcommands, 19 MCP tools (set diff empty), 17 control methods, 24 locales — with exactly **one new command id, `text.wrapStyle`** (`auto|balance|pretty`; `spec!` sites 636 → 637, command directory 487 → 488) and `node.set` accepting `wrapStyle`/`textWrap` (`crates/engine/src/cmd/text.rs`). Balance re-breaks each paragraph as narrow as it goes without adding a line; Pretty keeps lines full and moves one word out of an orphan; per-paragraph settings, text-style support and the `.fig` mapping are still open (`docs/ui-parity.md`). Feature work: **the Bend tool curves a sharp point on a click**, handles along the line between its neighbours (`crates/engine/src/canvas/vectoredit.rs`, #1877); **glass is rebuilt to the reference tool's optics** — a thick-lens bend toward the shape's core, its light a line on the 1-unit bevel, splay turning the bend towards the centre, colours split over 8 dispersion steps, and variables accepted on glass effects with frost held to 0–100 (`crates/render/src/glass.rs`, `crates/render/src/backdrop.rs`, #1886–#1889); the browser build gained an **embedding host bridge** (`?host=parent`, `data-host="page"`, host-opened files and a Save handed back under the host's file name in `apps/figcraft-web/src/host.rs`, `hostmode.rs`, `crates/ui-egui/src/host_save_tests.rs`, `packaging/web/README.md`). Hardening: `proto.interaction.remove`/`set` and `layout.setTrack` now **reject a fractional `index`**, and `node.set` **rejects invalid dashes** instead of dropping them (`crates/engine/src/cmd/proto.rs`, `crates/layout/src/lib.rs`); HTML code export can no longer let document text close its generated `<style>` element (`crates/engine/src/dev/codegen/html.rs`); a plugin's `text.preview` is held to the permissions of the command it previews, and a plugin's offered file is written through the confined file helper; MCP prompts render placeholders in one pass (`crates/mcp/src/prompts.rs`).
 
-**Verify against your installed version** — the ArtCraft Launcher auto-updates, so a newer build may differ; every count quoted here was re-measured at this tag, and code paths that moved were re-cited. The measurement method for each count is in `evidence.md`.
+**v0.14.0 → v0.15.0 delta.** 105 files changed. The automation surface grew by one CLI verb, one MCP tool and one control method (10 subcommands / 19 MCP tools; the control count quoted then was overstated — 17, see Sources). The wave is SVG and `.fig` round-trip fidelity — stretched images, spread shadows and mitred strokes keeping their room, whole ellipses through `.fig` and SVG, connector line styles on `.fig` import — plus plugin-manifest API-version validation and the Layers panel also on Ctrl+1 on Windows/Linux (`crates/engine/src/keymap.rs`).
 
-v0.13.1 → v0.15.0 wave, re-diffed from the tags: a **code-export fix batch** — huge finite numbers
-no longer print `inf` in exported code, CSS `font-family` values escape backslashes and line
-breaks, **paint opacity is applied to CSS gradient stops**, and **each variable gets its own CSS
-custom property** (no collisions); **relative line-height/letter-spacing edits with a unit suffix
-add to the current value** instead of replacing it; number fields keep huge finite values finite
-when stepping; comment thread parsing rejects `+` in ids; Unix builds pick fonts through
-`craft-font-catalog`; the update check gained the shared check-result dialog. **The automation
-surface is unchanged**: 481 `spec!(` sites in the command directory, **zero id changes** (id-set
-diff is empty), and no CLI, MCP, control-channel or locale files were touched.
+**Verify against your installed version** — the ArtCraft Launcher auto-updates, so a newer build may differ; every headline count was re-measured at this tag, and code paths that moved were re-cited. The measurement method for each count is in `evidence.md`.
 
-v0.12.1 → v0.13.1 wave, re-diffed from the tags: **FigJam `.jam` files open, as boards** (#1586); **SVG import reads `color()`/`color-mix()`** (#1550); the **browser build uses the fonts installed on this computer** (Local Font Access, #1051) and can **publish to a server** (Share ▸ Online, #917); **comment mentions** — `comment.list` filters by a mentioned name, `comment.people` lists mentions, `comment.next`/`comment.prompt` drive them (#1415, #1591) — and share links gained a **comment-only access level** (#1525); **colour variables can be calculated from others**, faded or mixed per mode (#1280), with Penpot tokens and CSS export never naming a calculation they leave out; **effects: stacked layer blurs keep the margin they reach together** and the SVG export chains blurs and shadows; **plugin panels gained sliders, hover styles and images** (#1637/#1634/#1639); `.fig` **elbowed and curved connectors without a saved path are routed** (#1649) and connector labels are kept (#1659); Grid **auto-placement** on an occupancy bitmap (#1593); a **server team list** (`team_files`) shows in Home ▸ Online with tokenless team links; `doc.list` gives file **names, not paths** (#1117); a batch keeps **one undo snapshot** (#1099); the **CLI is now clap-parsed (RFC-0012) with shell completions and man pages** (#1396) and gained **`connect publish`** for code-connect mappings (#1643). New engine ids: +`comment.prompt`, +`file.fontReport` (net, over reformatted registrations); locales 22 → 24 (+`ar`, +`bs`). Deep
-operational detail — the full CLI, control-channel and MCP tables, live-session commands and the
-server — is in `references/automation-surfaces.md`.
+v0.13.1 → v0.15.0 wave, folded to a summary: a **code-export fix batch** (no `inf` for huge finite
+numbers, escaped CSS `font-family`, paint opacity on gradient stops, one CSS custom property per
+variable), relative line-height/letter-spacing edits that add to the current value, and **no
+automation-surface change** beyond the counts above. Deep operational detail — CLI, control-channel
+and MCP tables, live sessions, the server — is in `references/automation-surfaces.md`.
 
 # FigCraft
 
@@ -47,8 +41,8 @@ proprietary tools, while the measured table says ~53% ready, ~85% feature breadt
 core-editor breadth (`ROADMAP.md`, `docs/target-app-parity.md` › Headline). It runs on macOS,
 Windows, Linux, FreeBSD and in the browser via WebAssembly (the browser page now exposes a
 `window.figcraft` control channel); source is GitHub `storytold/figcraft`, MIT OR Apache-2.0. Every
-user-visible action is a command in one registry — **630 `spec!` registration sites across the
-engine** (481 of them in the command directory; some ids are const-built; count your build with
+user-visible action is a command in one registry — **637 `spec!` registration sites across the
+engine** (488 of them in the command directory; some ids are const-built; count your build with
 `figcraft-cli commands --json`), covering **212/212 catalogued menu items** (`crates/engine/src/cmd.rs` `spec!` macro,
 `crates/engine/src/catalog.rs`, `docs/parity-checklist.md`) — dispatched identically by the UI,
 CLI, control channel and MCP server.
@@ -60,13 +54,14 @@ large files (PR #989) and state their coverage (PR #951); **new Dev Mode code ta
 single-file components, **React + Tailwind** page code with a Tailwind theme export, Dart constants
 for Flutter, Android Vector Drawable, ArkUI — with full-precision px→rem and transliterated
 class names; **boards growth** (dot grid, curved connectors, re-attaching connector ends, timer
-and voting sessions, board templates and tables: 9 → **19 `board.*` commands**); **plugin API 4**
-(widgets take text input and a property menu; new `saveFile` permission with a host-owned save
-dialog); **`command.batch` named step references** (`as` / `$ref`) and paths in `field`; a
+and voting sessions, board templates and tables: 9 → **21 `board.*` commands**, the count that
+stands at v0.16.0); **plugin API 4 in that wave, 6 now**
+(widgets take text input and a property menu, open their plugin's panel and draw lines and SVG
+pictures; `saveFile` permission with a host-owned save dialog); **`command.batch` named step references** (`as` / `$ref`) and paths in `field`; a
 **`window.figcraft` web control channel** (PR #824); branches in live sessions; and the startup
-  update prompt with self-update. Commands moved 597 → 616 registration sites; locales 19 → **22**
-  (+Italian, Korean, Thai draft, Vietnamese); plugin API 3 → **4**; the `collab.*` set stayed at 21
-  with branches now working inside live sessions.
+  update prompt with self-update. Commands moved 597 → 616 registration sites in that wave (637 at
+  v0.16.0); locales 19 → **24** (+Italian, Korean, Thai draft, Vietnamese, Arabic, Bosnian); plugin
+  API 3 → **6**; the `collab.*` set stayed at 21 with branches now working inside live sessions.
 
 ## Capabilities (verified)
 
@@ -86,6 +81,10 @@ dialog); **`command.batch` named step references** (`as` / `$ref`) and paths in 
   strokes, brushes and pen pressure, text on a path (its path scales with `transform.scale`), pattern
   fills, and fill rules with loop reversal for holes (`vector.fillRule`, `vector.reverseLoop`;
   `crates/engine/src/canvas/vectoredit.rs`, `crates/pathops/src/lib.rs`, `crates/engine/src/canvas/shapebuilder.rs` — engine modules re-homed under `content/`, `canvas/` and `sharing/` in v0.13.x).
+  **A click with the Bend tool on a sharp point curves it**, placing its handles along the line
+  between its neighbours (#1877; `crates/engine/src/canvas/vectoredit/pointer.rs`, test
+  `a_bend_click_curves_a_sharp_point_between_its_neighbours` in
+  `crates/engine/src/canvas/vectoredit/tests.rs`).
 - **Text**: in-place editing, mixed styles (runs stay disjoint across insertions), auto width/height
   (auto height takes max lines into account), truncated text fills its last line and keeps
   truncating when resized, variable font axes, OpenType features, lists, bidi/RTL, HarfRust shaping
@@ -95,14 +94,23 @@ dialog); **`command.batch` named step references** (`as` / `$ref`) and paths in 
   font folders, and the installed styles of an embedded family; `FIGCRAFT_DEFAULT_FONT` names the
   font new text starts in; Thai faces and Noto symbol/math fallbacks ship in the fallback list.
   **CJK kinsoku is complete to JIS X 4051**; Backspace removes Thai and other marks one at a time;
-  justified text does not widen U+200B. `text.fit` shrinks a fixed-width text to the largest size
-  that fits `maxLines` (`crates/engine/src/content/textfit.rs`).
+  justified text does not widen U+200B. **Wrap style** — `text.wrapStyle {style: auto|balance|pretty}`
+  or `node.set {wrapStyle}` — decides where a wrapped layer's lines break: Auto fills each line greedily,
+  Balance narrows each paragraph as far as it goes without adding a line, Pretty keeps lines full but
+  avoids a lone word on the last (saved line breaks still win; the Type settings control, inspect and
+  Dev Mode CSS `text-wrap` show it; per-paragraph settings, text styles and the `.fig` mapping are not
+  implemented) (`crates/engine/src/cmd/text.rs`, `docs/ui-parity.md`). `text.fit` shrinks a fixed-width
+  text to the largest size that fits `maxLines` (`crates/engine/src/content/textfit.rs`).
 - **Paint and effects**: solid and linear/radial/angular/diamond gradients, image fills with
   adjustments (**crop image fills on Cmd/Ctrl resize**; **paste images into selected shapes**;
   magnified images show their pixels), pattern fills, blend modes, inner/drop shadows, uniform and
-  progressive layer/background blur, noise, texture, glass (kept between renders, seam fixed) and
-  masks; **LCH and OKLCH models in the colour picker**; sRGB or Display P3 with profile conversion
-  (`crates/color/src/lib.rs`, `crates/render/src/image_profile.rs`).
+  progressive layer/background blur, noise, texture, **glass** and masks; glass now takes
+  **variables**, bends with the reference tool's thick-lens profile towards the shape's core, puts its
+  light on the bevel and splits its colours over 8 dispersion steps, with frost bounded to 0–100 and
+  splay turning the bend towards the centre (kept between renders, seam fixed); **LCH and OKLCH models
+  in the colour picker**; sRGB or Display P3 with profile conversion
+  (`crates/color/src/lib.rs`, `crates/render/src/image_profile.rs`, `crates/render/src/glass.rs`,
+  `crates/render/src/backdrop.rs`).
 - **Components and design systems**: mains, instances with per-layer overrides, sets and variants,
   properties (boolean/text/instance-swap/slot; strict-mode reserved-word parameters are renamed on
   code export), swap/detach/reset/restore, playground (variant/boolean/text/instance-swap; no slot
@@ -111,9 +119,10 @@ dialog); **`command.batch` named step references** (`as` / `$ref`) and paths in 
   missing fonts), JSON/CSS import/export, **variables as Dart constants for Flutter**
   (`crates/doc/src/styles.rs`, `crates/engine/src/cmd/variables_io.rs`, `docs/components-parity.md`).
 - **Boards**: `File ▸ New board` / `file.newBoard` opens a light-paged board; `inspect_document`
-  says `kind: "board"` and `.figcraft` stores the kind (`crates/doc/src/board.rs` `FileKind`). **19
-  `board.*` commands** now: sticky notes (8 soft colours, author line, growing text), shapes, dot
-  grid, connectors (**curved**, re-attachable ends), stamps, marker/highlighter/eraser strokes,
+  says `kind: "board"` and `.figcraft` stores the kind (`crates/doc/src/board.rs` `FileKind`). **21
+  `board.*` commands** (set unchanged at v0.16.0): sticky notes (8 soft colours, author line, growing text), shapes, **dot
+  grid (`board.grid`)**, connectors (**curved**, re-attachable ends, and `board.addConnected`),
+  **`board.reshape`**, stamps, marker/highlighter/eraser strokes,
   labels, text editing, colour/style setters, `board.nextSticky`, **`board.timer`/`board.timerState`
   (timer sessions)**, **`board.vote`/`board.voteResults` (voting sessions)**, **`board.template`/
   `board.templates` (five code-built board templates, `crates/engine/src/boards/board_templates.rs`)**,
@@ -176,8 +185,8 @@ dialog); **`command.batch` named step references** (`as` / `$ref`) and paths in 
 
 **Automation surfaces (re-measured at this tag)**
 - **`figcraft-cli`** — headless engine with **10 subcommands**: `info`, `export`, `convert`, `render`
-  (png/jpg/webp), `run` (JSON/JSONL command scripts), `commands`, `mcp`, `plugin publish`, `perf`
-  (`apps/figcraft-cli/src/main.rs` `USAGE`, `docs/cli.md`). Every subcommand takes
+  (png/jpg/webp), `run` (JSON/JSONL command scripts), `commands`, `mcp`, `plugin publish`,
+  `connect publish`, `perf` (`apps/figcraft-cli/src/args.rs` `Cli`/`Command`, `docs/cli.md`). Every subcommand takes
   `--no-system-fonts`; `info`/`export`/`convert`/`render`/`run`/`mcp` also take
   `--automation-read-root` and `--automation-write-root`; `--help`/`-h` is accepted anywhere among
   the options and exits 0; literal dash-prefixed filenames are accepted (`apps/figcraft-cli/src/args.rs`).
@@ -185,17 +194,19 @@ dialog); **`command.batch` named step references** (`as` / `$ref`) and paths in 
   and `field` accepts paths; batch errors **name the failing step**; a failed step still prints
   `"rolledBack": true` and exits 1 having written nothing (`crates/engine/src/cmd/`, `docs/mcp.md`).
 - **Control channel** — `figcraft --control <port>`, loopback-only, newline-delimited JSON with
-  **18 methods**: `engine.execute`, `engine.commands`, `document.inspect`, `node.get`, `ui.inspect`,
+  **17 methods**: `engine.execute`, `engine.commands`, `document.inspect`, `node.get`, `ui.inspect`,
   `ui.pointer`, `ui.key`, `ui.type`, `ui.input`, `ui.menu.invoke`, `ui.set`, `ui.screenshot`,
   `ui.render`, `window.new/list/focus`, `app.quit` (`crates/ui-egui/src/control.rs`,
   `docs/control-protocol.md`). State methods answer while the window is minimised; methods that need
   a drawn frame (`ui.screenshot`, `ui.input`, `window.new`) fail fast (`NEEDS_FRAME`). `ui.set`
-  carries `devCompareVersion`.
+  carries `devCompareVersion`. `events.poll` is listed in `docs/control-protocol.md` but only the MCP
+  bridge implements it (`crates/mcp/src/headless.rs`); the app's own channel answers `unknown method`.
 - **MCP server** — `figcraft-cli mcp` (headless) or `--attach <port>` (drives the running app);
-  **19 tools**: `list_commands`, `run_command`, `batch`, `create_node`, `set_properties`,
+  **19 tools** (set unchanged at v0.16.0): `list_commands`, `run_command`, `batch`, `create_node`, `set_properties`,
   `inspect_document`, `get_node`, `select`, `export`, `screenshot`, `open_file`, `save_file`,
-  `undo`, `redo`, `pointer`, `key`, `type_text`, `inspect_ui`; **2 resources + 2 templates**
-  (`figcraft://document`, `figcraft://commands`, `figcraft://node/{id}`, `figcraft://command/{id}`)
+  `undo`, `redo`, `pointer`, `key`, `type_text`, `inspect_ui`, `wait_for_changes`; **3 resources + 2 templates**
+  (`figcraft://document`, `figcraft://commands`, `figcraft://comments`, `figcraft://node/{id}`,
+  `figcraft://command/{id}`)
   and **4 prompts** (`mobile_screen`, `design_system`, `landing_page`, `prototype_flow`)
   (`crates/mcp/src/tools.rs` `TOOL_NAMES`, `resources.rs`, `prompts.rs`, `docs/mcp.md`). Responses
   are size-bounded — `inspect_document`/`get_node` take `maxBytes` (default 8 MiB) and `get_node` an
@@ -206,13 +217,14 @@ dialog); **`command.batch` named step references** (`as` / `$ref`) and paths in 
 - **Live sessions from a script** — **21 `collab.*` commands** cover host/join/share/publish, cursors,
   chat and spotlight; **`branch.*` commands work inside live sessions now**; the headless MCP session
   and the attached app can host, join and publish, the one-shot `run` cannot (no network link)
-  (`crates/engine/src/sharing/live.rs`, `sharing/online.rs`, `docs/mcp.md` › Live sessions); boards sync like any
+  (`crates/engine/src/sharing/live.rs`, `crates/engine/src/sharing/online.rs`, `docs/mcp.md` › Live sessions); boards sync like any
   document.
 - **Plugins** — sandboxed WebAssembly (wasmi, metered fuel, memory cap, no fs/net/clock), manifest
-  permissions (**API version 4**; new `saveFile` permission with a host-owned save dialog), panels,
-  settings and canvas widgets that **take text input and offer a property menu**; Rust SDK and
+  permissions (**API version 6**; `saveFile` permission with a host-owned save dialog), panels,
+  settings and canvas widgets that **take text input, offer a property menu, open their plugin's
+  panel and draw lines and SVG pictures**; Rust SDK and
   three examples; `pluginData` written by `node.set` reads back through `node.get`
-  (`crates/plugin/src/manifest.rs:11` `API_VERSION: u32 = 4`, `plugins/examples`, `docs/plugins.md`).
+  (`crates/plugin/src/manifest.rs:11` `API_VERSION: u32 = 6`, `plugins/examples`, `docs/plugins.md`).
 - **Templates** — eight code-built design starters (`mobile-app`, `landing-page`, `dashboard`,
   `design-system`, `wireframe-kit`, `social-posts`, `slides`, `icon-set`) via `template.list` and
   `file.newFromTemplate`, plus **five board templates** (`crates/engine/src/content/templates.rs`,
@@ -224,7 +236,10 @@ dialog); **`command.batch` named step references** (`as` / `$ref`) and paths in 
 **Platform and runtime facts**
 - WebAssembly build: **yes** (`cargo xtask wasm`, `apps/figcraft-web`); the browser build can join but
   not host sessions, keeps one window, has no system fonts and no accessibility tree, and exposes the
-  `window.figcraft` control channel (`docs/mcp.md`, `docs/hardware-parity.md`).
+  `window.figcraft` control channel. It also has a **host bridge for embedding**: `?host=parent`
+  (which wins over `data-host="page"`) lets the page take a parent-provided file, and a Save of a
+  host-opened document is handed back under the host's file name; the event names are stable
+  (`apps/figcraft-web/src/host.rs`, `hostmode.rs`, `packaging/web/README.md`, `docs/mcp.md`, `docs/hardware-parity.md`).
 - **Mobile layout (new)**: phones and portrait tablets get a purpose-built layout (PR #1209).
 - Releases package macOS universal, Windows x64/x86/arm64, Linux (AppImage, deb, rpm, Flatpak,
   tarball), FreeBSD and web (`README.md`, `packaging/`); Windows installs per-user by default.
@@ -253,7 +268,7 @@ much of the boards gap and added Sketch import, but the file-fidelity gaps remai
   effort" and nothing has been checked against real documents (`docs/gaps.md` 1 and 3) — do not
   promise fidelity. Missing formats: HEIC images and video fills/triggers (no Rust decoder), `.jam`
   (FigJam) and `.deck` (Slides) out of scope (`docs/file-format-parity.md`).
-- **No Figma plugin compatibility.** FigCraft runs its own WASM plugins (API 4), not JavaScript Figma
+- **No Figma plugin compatibility.** FigCraft runs its own WASM plugins (API 6), not JavaScript Figma
   plugins; widgets now take text input and a property menu but there is still no public plugin
   catalogue, only a self-hosted directory (`docs/gaps.md` 6, `docs/plugins.md`).
 - **No AI features at all** and **no spell check** (`docs/gaps.md` 11 and 19).
@@ -274,16 +289,18 @@ much of the boards gap and added Sketch import, but the file-fidelity gaps remai
   `docs/gaps.md` 23).
 - **Screen readers have never been run** against the app; the browser build has no accessibility
   tree, and Linux/browser platform QA is still open (`docs/gaps.md` 22 and 8).
-- **Localization status is claimed, not verified here**: 22 catalogs are in `crates/ui-egui/locales/`
-  (+Italian, Korean, Thai draft, Vietnamese this line); review status per language is a claim —
-  Polish, French and Swedish had native reviews this line, Georgian earlier.
+- **Localization status is claimed, not verified here**: 24 catalogs are in `crates/ui-egui/locales/`
+  (+Italian, Korean, Thai draft, Vietnamese, Arabic and Bosnian); count unchanged at v0.16.0. Review
+  status per language is a claim — Polish, French and Swedish had native reviews in an earlier line,
+  Georgian earlier still.
 - **Bounds worth knowing**: ≤100 versions and ≤100 branches per file; `document.json` is capped by a
   16× compression-ratio rule within 512 MiB per zip member (4 GiB unpacked on 64-bit, 1 GiB on
   32-bit) (`crates/format/src/lib.rs` `MAX_VERSIONS`, `MAX_BRANCHES`, `DOCUMENT_RATIO`, `MAX_MEMBER`).
 - **Counts drift, trust code**: `docs/parity-checklist.md` may lag the command registry, README says
   "400+", and `docs/architecture.md` says "two example plugins" where `plugins/examples` holds three.
-  This tree has **616** `spec!(` registration sites (some ids const-built — count your build with
-  `figcraft-cli commands --json`). Uncertain — see `docs/gaps.md` for the ranked, self-scored list.
+  This tree has **637** `spec!(` registration sites (488 in the command directory; some ids
+  const-built — count your build with `figcraft-cli commands --json`). Uncertain — see
+  `docs/gaps.md` for the ranked, self-scored list.
 
 ## How to operate
 
@@ -329,6 +346,11 @@ shrink to fit 16384 px on `render`; PDF bleed ≤2 in. `export` to a directory w
 top-level frame; an image extension, or `--node`, writes one file. PDF print options
 (`--bleed 3mm --crop-marks --bleed-marks --cmyk`) also work.
 
+**Commands validate, they do not coerce.** A fractional `index` in `proto.interaction.remove`/`set`
+or `layout.setTrack` is rejected, and invalid `dashes` in `node.set` are an error rather than silently
+dropped entries (`crates/engine/src/cmd/proto.rs`, `crates/layout/src/lib.rs`) — pass whole indices and
+valid dash arrays, and read the error instead of assuming the edit landed.
+
 **Document model.** One process shows several **windows**, each with its own **tabs**, panels and
 canvas (`window.new`); a first run opens the **home screen** (Recents, Online, Templates, search).
 Files are documents with pages and per-tab unsaved changes. A `.figcraft` also carries a **kind**:
@@ -344,7 +366,7 @@ a `.fig` name writes an export copy and the document keeps its `.figcraft` path
 
 **Keyboard shortcuts**: do not invent them. The machine-readable list is `figcraft-cli commands
 --json` (each command's `shortcut`) or MCP `list_commands`, generated from
-`crates/engine/src/keymap.rs` — **159 default bindings in 12 groups** (Essential, Tools, View, Zoom,
+`crates/engine/src/keymap.rs` — **163 default bindings in 12 groups** (Essential, Tools, View, Zoom,
 Text, Shape, Selection, Edit, Transform, Arrange, Components, Prototype) with macOS and, where they
 differ, Windows/Linux keys. The board bindings (Q sticky, B shapes, X connector, M marker,
 U highlighter, E eraser, W stamp, Shift+Cmd+Enter next sticky) live in the same table
@@ -412,7 +434,7 @@ What an agent must **not** do:
 
 ## Verification protocol
 
-FigCraft is alpha; treat every automated run as untrusted until checked:
+FigCraft is alpha (v0.16.0); treat every automated run as untrusted until checked:
 
 1. **Throwaway round trip per session.** From a template (`file.newFromTemplate`) or a copy: create →
    edit → `save_file`/`--out` to `.figcraft` → reopen → export PNG/PDF. Compare `info` node counts
@@ -438,48 +460,42 @@ FigCraft is alpha; treat every automated run as untrusted until checked:
 
 ## Sources & evidence
 
-- Repo: https://github.com/storytold/figcraft — inspected at tag **v0.14.0**, commit
-  **02c38a6d959f0afd82e44d9d67d396266e6ab4a3** ("Release 0.14.0", 2026-11-01); the installed app
-  matches the tag (`FigCraft 0.14.0 (02c38a6d…)`). Date inspected: 2026-11-02; the v0.13.1 and
-  v0.12.1 refs were fetched for set diffs.
-- Delta v0.13.1 → v0.14.0, re-measured rather than copied: **481** `spec!(` registration sites in
-  `crates/engine/src/cmd/` — **unchanged**, and the command-id set diff is empty; MCP, control,
-  CLI and locale files untouched in the diff (zero changed files under those trees; the MCP
-  `TOOL_NAMES` const is byte-identical at both tags); engine delta is 6 files, all fixes (code
-  export, comment thread-id parsing, number fields). Engine-wide `spec!(` count 630 (was 616 at
-  the v0.11.2
-  audit). Prior deltas: v0.12.1 → v0.13.1, **481** `spec!(` registration sites in
-  `crates/engine/src/cmd/` (was 473 at v0.12.1; some ids const-built — the live count is
-  `figcraft-cli commands --json`); net new ids +`comment.prompt`, +`file.fontReport`; **10** CLI
-  subcommands (was 9; +`connect publish`, clap-parsed); **24** locale catalogs (was 22); MCP tools,
-  control methods and menu-catalog shapes unchanged. Prior audit: **616** `spec!(` sites
-  (v0.11.2 → v0.12.1), **19**
-  `board.*` commands (was 9) and **5** board templates (new), **22** locale catalogs (was 19),
-  **22** `collab.*` commands (was 21; branches in live sessions), plugin **API 4** (was 3; widgets
-  take text input + property menu, `saveFile` permission). Unchanged shapes: 9 CLI subcommands, 17
-  control methods, 19 MCP tools + 2 resources + 2 templates + 4 prompts, 212/212 menu items, 159
-  keymap bindings, 8 design templates, 5 examples, 3 example plugins. New here, each verified in
-  this tree: `.sketch` import (Sketch 48+; `crates/engine/src/sketch_import_tests.rs`), `.fig`
-  export with component set properties (PR #1152) and large-file/library-link imports (PR #989),
-  Vue/React+Tailwind/Dart/ArkUI/Android-VectorDrawable code targets (`crates/engine/src/dev/
-  {tailwind.rs,codegen/,component_codegen.rs}`), `window.figcraft` web control channel
-  (`apps/figcraft-web/src/query.rs`), `command.batch` named steps, mobile layout, LCH/OKLCH picker,
-  JIS X 4051 kinsoku, save-overwrite guardrails, startup update prompt. The clone is a
-  single-commit shallow checkout, so the delta comes from re-measuring this tree against the
-  previous skill's recorded measurements — not local git history.
+- Repo: https://github.com/storytold/figcraft — inspected at tag **v0.16.0**, commit
+  **f45b261687880e56d1bad11ec82b45131e57ef8b** (`git rev-parse HEAD` in the pinned checkout; the tag
+  is `v0.16.0`, released 2026-11-06). The installed `/Applications/FigCraft.app` matches the release:
+  bundle version 0.16.0, bundle identifier `ai.storyteller.figcraft`, and its binary prints
+  `FigCraft 0.16.0 (f45b261687880e56d1bad11ec82b45131e57ef8b)`. Date inspected: **2026-11-07**. The
+  GUI was never launched; the bundle was read through `Contents/Info.plist` only, and the macOS
+  bundle ships no CLI.
+- Delta v0.15.0 → v0.16.0, measured in this tree rather than copied from notes: **133 files changed**
+  (+4156/−545) in `git diff v0.15.0..HEAD`; `spec!(` sites **636 → 637** engine-wide and **487 → 488**
+  in `crates/engine/src/cmd/`, the single added registration being **`text.wrapStyle`**
+  (`crates/engine/src/cmd/text.rs`). Id-set diffs between the two tags are **empty** for MCP
+  `TOOL_NAMES`, `board.*`, `collab.*` and the locale directory; CLI `Command` variants, control
+  methods and plugin `API_VERSION` are unchanged. The feature delta is glass optics
+  (`crates/render/src/glass.rs`, `backdrop.rs`), the Bend tool click (`crates/engine/src/canvas/
+  vectoredit/pointer.rs`), the web host bridge (`apps/figcraft-web/src/host.rs`, `hostmode.rs`,
+  `packaging/web/README.md`) and stricter command validation in `proto.*`, `layout.setTrack` and
+  `node.set`. Prior deltas: v0.14.0 → v0.15.0 (105 files; one CLI verb, MCP tool and control method;
+  SVG/`.fig` fidelity) and v0.13.1 → v0.15.0 (FigJam `.jam` boards, `connect publish`, clap-parsed
+  CLI). Where the previous skill's figure and the code disagreed the code won: keymap bindings 163
+  (not 159), control methods 17 (not 18), `board.*` 21 (not 19), locales 24 (not 22), plugin API 6.
 - Key files read: `README.md`, `Cargo.toml`, `ROADMAP.md`, `AGENTS.md`; `crates/doc/src/` (`node.rs`,
   `props.rs`, `proto.rs`, `styles.rs`, `board.rs`, `lib.rs`); `crates/{color,layout}/src/lib.rs`;
   `crates/format/src/{lib,library}.rs` and `crates/format/src/fig/{export,kiwi}.rs`;
-  `crates/engine/src/{fonts,keymap,catalog,guard,file_access,live,online,datafill,textfit}.rs`,
+  `crates/engine/src/{fonts,keymap,catalog,guard}.rs`, `crates/engine/src/automation/file_access.rs`, `crates/engine/src/sharing/{live,online}.rs`, `crates/engine/src/content/{datafill,textfit}.rs`,
   `crates/engine/src/cmd.rs` (`spec!` macro), `crates/engine/src/{boards,boards/board_templates,
   content/templates}.rs`, `crates/engine/src/dev/{codegen.rs,codegen/{arkui,compose,css,html,swift}.rs,
   tailwind.rs,component_codegen.rs,dev_measurements.rs,devcompare.rs,devinspect.rs}`,
-  `cmd/{mod,file,edit,variables_io,section}.rs`; `apps/figcraft-cli/src/{main,args,files}.rs`;
+  `crates/engine/src/cmd.rs`, `crates/engine/src/cmd/{file,edit,variables_io,section}.rs`; `apps/figcraft-cli/src/{main,args,files}.rs`;
   `apps/figcraft/src/{main,args,recovery}.rs`; `apps/figcraft-server/src/{cli,config}.rs`;
   `apps/figcraft-web/src/query.rs`; `crates/mcp/src/{tools,resources,prompts,server}.rs`;
   `crates/ui-egui/src/{control,windows,home,a11y,board_bar,present}.rs`;
   `crates/ui-egui/locales/`; `crates/plugin/src/manifest.rs`; `packaging/macos/{Info.plist.in,package.sh}`,
-  `packaging/linux/AppRun`; `plugins/examples/`.
+  `packaging/linux/AppRun`; `plugins/examples/`. Added at this tag: `crates/engine/src/cmd/text.rs`
+  (`text.wrapStyle`), `crates/render/src/{glass,backdrop}.rs`, `crates/engine/src/canvas/vectoredit/
+  pointer.rs`, `crates/engine/src/dev/codegen/html.rs`, `apps/figcraft-web/src/{host,hostmode}.rs`,
+  `crates/ui-egui/src/host_save_tests.rs`, `packaging/web/README.md`, `crates/mcp/src/{headless,prompts}.rs`.
 - Docs read (counts re-checked against code where stated): `docs/{cli,mcp,control-protocol,file-format-parity,gaps,target-app-parity,boards-parity,dev-mode-parity,prototyping-parity,components-parity,collaboration-parity,localization-parity,hardware-parity,ui-parity,auto-layout-parity,plugins,parity-checklist,architecture}.md`.
 - Shared libraries: FigCraft pins its craft-libs crates (incl. `craft-docpath`, `craft-window`,
   `craft-update`) to one revision and patches `krilla` (`Cargo.toml`); the native format is defined

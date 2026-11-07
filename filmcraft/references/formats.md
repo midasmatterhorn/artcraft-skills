@@ -1,18 +1,18 @@
 # FilmCraft file formats — what the code actually reads and writes
 
-Version: repo tag **v0.16.0**, commit `77adc30a756bea17441199caff45a24415ba9753` (inspected 2026-11-02). Carried from v0.14.0 unless marked **New in 0.15.0**; the v0.16.0 wave (244-PR integration round) changed no import/export table row.
+Version: repo tag **v0.18.0**, commit `015d5b3ea37e1202a529e6245d3cc021c8c16ffd` (inspected 2026-11-07).
+Carried from v0.17.0 unless marked **New in 0.18.0**. The v0.18.0 wave adds the H.264 High 10 /
+High 10 Intra encode profile, Premiere `.prfpset` effect-preset import, TTML track language on export,
+and interchange report fixes; no import or export table row gained or lost a format.
 Every list below is read out of the code, not the marketing docs. Where a doc contradicts the code, the
-contradiction is named and the code wins. New since v0.13.0: **uncompressed QuickTime video decodes**
-(raw 24-bit RGB, 2vuy, v210), PNG Sequence writes RGB files when alpha is off, OTIO export bounds
-nested-sequence copies, TTML/DFXP export no longer overflows near i64::MAX cue times, and MCC export
-is bounded to scheduled data. Everything else below is unchanged.
+contradiction is named and the code wins.
 
 **Container ownership changed in 0.13.0.** `crates/isobmff` (MP4/MOV), `crates/matroska` (MKV/WebM) and
-`crates/bitstream` are now re-export shims over `craft-media` from craft-libs, pinned at
-`rev = f0ad6c1e1d297908915f4be315b0fcfc9be7b5d4` (`Cargo.toml:76`; `crates/isobmff/src/lib.rs`,
-`crates/matroska/src/lib.rs`, `crates/bitstream/src/lib.rs`). What this repo proves is that the openers are
-registered and wired; box/element-level behaviour beyond `docs/file-format-parity.md` lives in that pin —
-write "uncertain — see Cargo.toml pin" instead of guessing.
+`crates/bitstream` are now re-export shims over `craft-media` from craft-libs, pinned with the other craft
+crates at one revision, `rev = "c5a1cbfb5f9049f9270955caffb5bee5997aebf7"` (`Cargo.toml:76-91`;
+`crates/isobmff/src/lib.rs`, `crates/matroska/src/lib.rs`, `crates/bitstream/src/lib.rs`). What this repo
+proves is that the openers are registered and wired; box/element-level behaviour beyond
+`docs/file-format-parity.md` lives in that pin — write "uncertain — see Cargo.toml pin" instead of guessing.
 
 ## Import extension lists (authoritative)
 
@@ -47,7 +47,7 @@ consecutive frames merged, transparency kept; a one-frame file falls back to the
 
 | Codec | Decode | Encode | Evidence |
 |---|:--:|:--:|---|
-| H.264/AVC | yes (8-bit 4:2:0 software; High 10/4:2:2 only via OS hardware) | yes (own encoder: High/Main/Baseline, CABAC, B-frames, CRF/CBR/VBR/2-pass; hardware via VideoToolbox on macOS or NVENC on Windows/Linux when `hardwareEncoding: auto`) | `crates/h264`, `crates/h264enc`, `crates/platform/src/hardware_encode.rs`, `crates/platform/src/nvenc/export.rs` |
+| H.264/AVC | yes (8-bit 4:2:0 software; High 10/4:2:2 only via OS hardware) | yes (own encoder: Baseline/Main/High, **High 10 4:2:0 (10-bit) and High 10 Intra since 0.18.0**, CABAC, B-frames, CRF/CBR/VBR/2-pass; hardware via VideoToolbox on macOS or NVENC on Windows/Linux when `hardwareEncoding: auto`) | `crates/h264`, `crates/h264enc`, `crates/export/src/{settings,encoders,mxf_out}.rs`, `crates/platform/src/hardware_encode.rs` |
 | HEVC/H.265 | yes (Main, Main 10) | **hardware only**: NVENC on Windows writes Main 8-bit SDR and Main 10 HDR (PQ/HLG); VideoToolbox on macOS writes Main 8-bit SDR; **no HEVC encode on Linux**; no software encoder | `crates/hevc`, `crates/export/src/lib.rs` (`Format::Hevc` docs), `crates/platform/src/nvenc/export.rs:212-216`, issue #30 |
 | AV1 | yes (Main profile, 8/10-bit 4:2:0 + mono, film grain, superres) | **none** — no encoder or format probe is registered on any platform, so the `av1` Format is never available | `crates/av1`, `crates/export/src/lib.rs:272-294`, `crates/platform/src/lib.rs:70-100` |
 | VP8 / VP9 | yes (VP9 profiles 0–3, 8/10/12-bit, 4:2:0–4:4:4); both also read from MP4 | none | `crates/vp8`, `crates/vp9` |
@@ -102,10 +102,13 @@ TTML/IMSC1/DFXP), plus cea608 and burn (layout + burn-in). Seven import/export f
 `Format::ALL` (`crates/captions/src/lib.rs:49`) has all seven, plus caption *tracks* in Subtitle / CEA-608 /
 CEA-708 / Teletext (`crates/project/src/caption.rs`).
 
-`captions.import` auto-detects by extension and content; `captions.export` takes
-`format: "srt|vtt|scc|mcc|stl|ttml|dfxp"` or infers it from the path, plus `track` and `dropFrame`
-(`crates/engine/src/captions.rs`). CEA-608/708 embedded in a video stream are **not** read or written; use
-burn-in (`burnCaptions: true`) or a sidecar (`captionSidecar: "srt"|"vtt"`).
+`captions.import` auto-detects by extension and content and takes `name` and `language` (default: the file's
+TTML `xml:lang`, else `en`); `captions.export` takes `format: "srt|vtt|scc|mcc|stl|ttml|dfxp"` or infers it
+from the path, plus `track` and `dropFrame` (`crates/engine/src/captions.rs`). Since 0.18.0 TTML and DFXP
+exports write the track's language as `xml:lang`, and `captions.export` **warnings name every character the
+file cannot carry** — SCC/MCC drop characters CEA-608 has no code for or substitute ASCII, and the CEA-708
+service in MCC substitutes `?` (`docs/captions.md`). CEA-608/708 embedded in a video stream are **not** read
+or written; use burn-in (`burnCaptions: true`) or a sidecar (`captionSidecar: "srt"|"vtt"`).
 
 Caption editing at this tag: split (`captions.split`, also the Razor tool on a caption; Shift = every caption
 track), merge, trim, move, **duplicate** (`captions.duplicate`, ⌥-drag), copy/cut/paste through
@@ -115,12 +118,12 @@ ripple), per-track style and the Text panel list that follows the playhead (`doc
 
 ## Project file — `.fcproj`
 
-- UTF-8 JSON envelope: `{"format": "filmcraft.project", "schema_version": 15, "generator": …, "project": {…}, "view": {…}}`
-  (`crates/format/src/lib.rs:62-66`; `SCHEMA_VERSION = MIGRATIONS.len() + 1`, test asserts 15 at `:398`).
-  **The example in `docs/project-files.md:11` still shows 13 — stale; the code writes 15** (14 migrations,
-  `MIGRATIONS` = v1→v2 … v14→v15). Compact on write.
-- Reading: `MIGRATIONS[i]` upgrades v*i+1* → v*i+2*; the current build reads **every version from 1 to 15**;
-  newer versions are refused with an explicit message (`docs/project-files.md:79-86`). The first save over an
+- UTF-8 JSON envelope: `{"format": "filmcraft.project", "schema_version": 17, "generator": …, "project": {…}, "view": {…}}`
+  (`crates/format/src/lib.rs`; `SCHEMA_VERSION = MIGRATIONS.len() + 1`, and a test asserts 17). The example
+  in `docs/project-files.md` has lagged before — the code writes 17 (16 migrations, `MIGRATIONS` =
+  v1→v2 … v16→v17). Compact on write.
+- Reading: `MIGRATIONS[i]` upgrades v*i+1* → v*i+2*; the current build reads **every version from 1 to 17**;
+  newer versions are refused with an explicit message (`docs/project-files.md`). The first save over an
   upgraded project keeps `<name> (schema vN backup).fcproj`.
 - The work area is part of the sequence (`Sequence::work_area`, `crates/project/src/lib.rs:977`) and is now
   settable, so it survives save/load and feeds `range: "workArea"` exports.
@@ -140,11 +143,23 @@ ripple), per-track style and the Text panel list that follows the playhead (`doc
   audio without replacing an occupied path (`crates/format/src/atomic.rs`).
 
 Related files: auto-saves `Auto-Save/<name>-<timestamp>-<unix seconds>.fcproj`
-(`crates/format/src/autosave.rs:4-7`; older `<name>-<timestamp>.fcproj` names still list); recovery
+(`crates/format/src/autosave.rs`; older `<name>-<timestamp>.fcproj` names still list); recovery
 `Recovery/<started>-<pid>[-n]/{snapshot.fcproj,session.json,lock}`; preferences
 data dir files: preferences.json; effect-presets.json; export-presets.json; workspaces.json; graphics
 templates use the `.fcgt` extension;
 label colour presets `<data dir>/Label Presets/*.json`.
+
+## Effect presets (new in 0.18.0)
+
+User effect presets live in `<data dir>/presets.json`. FilmCraft also creates and scans
+`<data dir>/Effect Presets` on start-up and whenever `presets.scan` runs (the Presets and Effects panels'
+**Scan Presets Folder** button), reading **Premiere Pro `.prfpset`** (plain XML or gzip, a `<PremiereData>`
+document) and
+FilmCraft `.json` preset packs, with their nested folder hierarchy, static parameters, animated
+keyframes, Bezier curves and keyframe scaling/anchoring (`crates/engine/src/prfpset.rs`;
+`crates/engine/src/presets.rs`). The same files are accepted by `presets.import` and by `file.import`
+(content sniffed, extension not trusted). One malformed file is renamed `*.json.unreadable` rather
+than overwritten. Presets whose effects this build does not have are reported, not silently dropped.
 
 ## Interchange
 
@@ -160,12 +175,17 @@ label colour presets `<data dir>/Label Presets/*.json`.
 | Markers CSV | `.csv` | – | yes | `crates/engine/src/marker_export.rs` (100 000-marker / 16 MiB caps) |
 
 Format detection sniffs content (AAF/OMF structured storage, `<xmeml`/`<fcpxml` headers, `"OTIO_SCHEMA"`)
-before trusting the extension (`crates/interchange/src/lib.rs:110-138`). Imports merge as one undoable step
+before trusting the extension (`crates/interchange/src/lib.rs`). Imports merge as one undoable step
 and return a report of everything that could not be represented; imported sequence settings are validated
-before merge (`crates/engine/src/interchange.rs:75-90`). AAF/OMF have never been validated in Media
-Composer / Pro Tools (`docs/gaps.md` G15).
+before merge (`crates/engine/src/interchange.rs`). AAF/OMF have never been validated in Media
+Composer / Pro Tools (`docs/gaps.md` G15). At 0.18.0: AAF/OMF export takes `bitDepth` 16 or 24 (`"24"`
+accepted as a string) and **refuses anything else**; AAF top-level compositions carry the registered
+`Usage_TopLevel`; EDL and OMF export reports **name the video tracks they leave out**; an EDL clip named
+only by clip name is reported **missing** rather than offline; media an EDL names starts at
+00:00:00:00 until linked, and relinking it with **Align Timecode** lands on the file's own time; an OTIO
+item's sample rate no longer sets the sequence rate.
 
-## Export formats (`crates/export/src/lib.rs:272-294`, 21 variants)
+## Export formats (`crates/export/src/format.rs`, 21 variants — unchanged at v0.18.0)
 
 `h264`, `hevc*`, `av1*`, `prores`, `dnxhr`, `apv`, `mjpeg`, `png`, `tiff`, `bmp`, `jpg`, `tga`, `dpx`, `exr`,
 `gif`, `wav`, `aiff`, `aac`, `flac`, `mxf-op1a`, `mxf-opatom`. `*` means "offered only when a platform
@@ -179,16 +199,27 @@ Container by format: MP4/MOV (H.264, HEVC, AV1, ProRes, DNxHR, APV, MJPEG), MXF 
 H.264 + PCM, start timecode), MXF OP-Atom (picture + one mono PCM file per channel;
 `opatom_audio_paths`), numbered stills, GIF, WAV/AIFF/AAC/FLAC.
 
-**39 built-in presets** (`crates/export/src/presets.rs:95-190`; default
-`"Match Source – Adaptive High Bitrate"` at `:35`): Match Source Adaptive High/Medium/Low, High Quality
-1080p/2160p, YouTube 1080p/2160p, Vimeo 1080p/2160p, Social Vertical 1080×1920, Apple ProRes 422
-HQ/422/LT/Proxy/4444/4444 with Alpha/4444 XQ, Avid DNxHR HQ/SQ/LB, APV 422-10/422-12, MXF OP1a DNxHR
+**44 built-in presets** (`crates/export/src/presets.rs`; default
+`"Match Source – Adaptive High Bitrate"`): Match Source Adaptive High/Medium/Low, High Quality
+1080p/2160p, YouTube 1080p/2160p, Vimeo 1080p/2160p, Social Vertical 1080×1920, TikTok 1080×1920,
+Instagram Reels 1080×1920, YouTube Shorts 1080×1920, Apple ProRes 422
+HQ/422/LT/Proxy/4444/4444 with Alpha/4444 XQ, Avid DNxHR HQ/SQ/LB, **H.264 High 10 Master**, **H.264
+High 10 Intra**, APV 422-10/422-12, MXF OP1a DNxHR
 HQ/ProRes 422 HQ/H.264, MXF OP-Atom DNxHR (Avid), PNG/TIFF/BMP/JPEG/Targa/DPX/OpenEXR Sequences, Animated GIF
 640×360, Waveform Audio 48 kHz 16-bit/24-bit, AIFF 48 kHz 16-bit, AAC Audio 48 kHz 320 kbps, FLAC 48 kHz 24-bit.
-`docs/roadmap.md` M6 still says "24 built-in presets" — stale.
+The two High 10 presets are new in 0.18.0 (10-bit 4:2:0 from the built-in encoder; "Master" is CRF 16,
+"Intra" is all-intra CRF 12). `docs/roadmap.md` M6 still says "24 built-in presets" — stale.
+
+H.264 encode profiles are selectable on `file.exportMedia` (`h264Profile: baseline|main|high|high10`,
+`h264IntraOnly`): High 10 writes 10-bit 4:2:0 into MP4/MOV and MXF OP1a (`profile_idc` 110). HDR exports
+keep their 10-bit precision; SDR sources are rendered at 8 bits first. High 4:2:2, High 4:4:4 Predictive
+and lossless H.264 remain absent.
 
 A format may change the output extension: exporting `out.mp4` as APV writes `out.mp4.mov`
-(`apps/filmcraft-cli/src/main.rs`, `written_paths`) — always read the returned `path`.
+(`apps/filmcraft-cli/src/main.rs`, `written_paths`) — always read the returned `path`. A **still
+sequence never writes the path it is given**: `a.png` writes `a000.png`, `a001.png`…, and the result
+carries `path` (first still), `lastPath` (last still) and `basePath` (the name they are numbered from,
+which `file.import` takes back as the sequence) — new at 0.18.0 (`crates/engine/src/export_tools.rs`).
 
 Ranges: `entire`, `inOut`, `workArea` (needs a work area; see `sequence.workAreaBar` /
 `sequence.setWorkArea*`) and `custom` (`startSeconds`/`endSeconds`). `sdr: true` tone-maps an HDR sequence

@@ -2,16 +2,23 @@
 
 All paths are repo-relative to https://github.com/storytold/designcraft.
 
-Verified at tag v0.16.0, commit `1fe8885bda7451263879cfbb256b9a3d46c411bf`, 2026-11-01; the automation surface is byte-identical to v0.14.0 (re-diffed).
-Installed `/Applications/DesignCraft.app` reports `0.14.0` and the same build commit.
+Verified at tag **v0.18.0**, commit `58ac6d29b260e033f4291afc4318b507cfd90fd9`, 2026-11-07; the previous
+pin was v0.17.0 (`e79d682`). Installed `/Applications/DesignCraft.app` is 0.18.0 and its bundled CLI
+prints `designcraft-cli 0.18.0`.
+
+New at v0.18.0 (ids below are current): `file.exportBatch` + `file.exportPresets` /
+`file.saveExportPreset` / `file.deleteExportPreset` (File ▸ Export Layouts and Versions: alternate
+layouts × versions, PDF/PNG/JPEG, one folder per version, presets), `layout.alternate.duplicate` /
+`.delete` / `.options`, `layout.parents.duplicate`; UI `app.exportBatch`, `app.parentOptions`,
+`app.alternateLayoutOptions`. Engine ids 547 → 555, UI rows 187 → 190.
 
 ## 1. CLI (`designcraft-cli`)
 
 Source: `apps/designcraft-cli/src/main.rs` (module doc; the `USAGE` const; subcommand dispatch in
-`main`). Not inside the macOS `.app` — install the separate
-`designcraft-cli-<ver>-macos-universal.zip` release asset, `cargo install --path
-apps/designcraft-cli --locked` (`docs/mcp.md` §From source), or build `cargo build --release -p
-designcraft-cli`.
+`main`). The macOS DMG installs it **inside the bundle** at
+`DesignCraft.app/Contents/MacOS/designcraft-cli` (`docs/mcp.md` §Where the CLI is); the separate
+`designcraft-cli-<ver>-macos-universal.zip` asset, `cargo install --path apps/designcraft-cli
+--locked`, or `cargo build --release -p designcraft-cli` are the alternatives.
 
 ```text
 designcraft-cli run [--in FILE | --sample] [--cmd ID[=JSON]]... [--page N] [--scale S]
@@ -24,9 +31,10 @@ designcraft-cli app [--port PORT] COMMAND [JSON]
 designcraft-cli app [--port PORT] --method METHOD [JSON]
 designcraft-cli mcp [--connect PORT] [--sample]
                     [--automation-read-root DIR]... [--automation-write-root DIR]...
-designcraft-cli perf [--pages N] [--frames N] [--chars N] [--images N] [--runs N] [--strict]
+designcraft-cli perf [--pages N] [--runs N] [--strict]
 designcraft-cli bench FILE [--runs N]
-designcraft-cli validate-pdf FILE.pdf    # built-in PDF/X-4 checks
+designcraft-cli validate-pdf FILE.pdf [--standard x4|x1a]   # default: the file's own GTS_PDFXVersion
+designcraft-cli thumbnail FILE.designcraft OUT.png [SIZE]   # the saved first-page preview
 designcraft-cli links
 designcraft-cli --version
 ```
@@ -49,12 +57,16 @@ designcraft-cli --version
 - `script --save` is Save As after the script succeeds; `--export` routes like `run` but
   `.designcraft` writes a copy (`file.saveACopy`).
 - Exit status is non-zero on failure; `script --keep-going` records errors per step instead.
-- `validate-pdf FILE.pdf` prints `{path, standard: "PDF/X-4", valid, issues}` and exits non-zero
-  when a check fails. Checks: PDF version, output intent and profile, Info and XMP identification,
-  image interpolation, encryption, trim boxes, Type 3 fonts, device RGB under a CMYK output intent,
-  and **fonts that draw visible text without an embedded font program** (including inside placed
-  PDF forms) — with font names and pages. Render mode 3 (invisible OCR text) is exempt
-  (`crates/pdf/src/pdfx.rs:212`, `crates/pdf/src/pdfx/fonts.rs:16`, `docs/agents.md`).
+- `validate-pdf FILE.pdf [--standard x4|x1a]` prints `{path, standard, valid, issues, warnings}` and
+  exits non-zero when a check fails; without `--standard` it picks PDF/X-1a:2003 when the file's own
+  `GTS_PDFXVersion` says so, else PDF/X-4. Checks: PDF version, output intent and profile, Info and
+  XMP identification, image interpolation, encryption, trim boxes, Type 3 fonts, device RGB under a
+  CMYK output intent, and **fonts that draw visible text without an embedded font program**
+  (including inside placed PDF forms) — with font names and pages. Render mode 3 (invisible OCR
+  text) is exempt (`crates/pdf/src/pdfx.rs`, `crates/pdf/src/pdfx/fonts.rs`, `crates/pdf/src/pdfx1a.rs`,
+  `docs/agents.md`).
+- `thumbnail FILE.designcraft OUT.png [SIZE]` writes the document's **saved** first-page preview
+  (fitted to SIZE px; nothing is rendered) and refuses an output that names the input document.
 - `perf`/`bench` measure budgets on a synthetic stress document or a real file
   (`apps/designcraft-cli/src/perf.rs`); `--strict` exits non-zero when a budget is exceeded.
 - **Unknown parameter keys**: `run --cmd`, `script` steps (through the backend), MCP and the control
@@ -85,10 +97,14 @@ command.id {"param": 1}            # one step per line; also command.id={json} o
 - `script.run` (the Scripts panel) runs the same text as one undo step and restores the document,
   selection and history when a step fails (`crates/engine/src/cmd/scripts.rs`).
 
-## 3. MCP tools (`designcraft-cli mcp`) — 26, unchanged at v0.13
+## 3. MCP tools (`designcraft-cli mcp`) — 26, unchanged at v0.18.0
 
 Source: `crates/mcp` (`tools.rs` — `tool_definitions` :83, `dispatch` :555; `server.rs`, `headless.rs`,
-`backend.rs`); `docs/mcp.md`. `crates/mcp/src/tools.rs` is byte-identical to v0.12.0.
+`backend.rs`); `docs/mcp.md`. Every input schema is closed (`additionalProperties: false`) and the
+server checks keys at every level it lists (a misspelt key in a `batch` step, a `pointer` event or
+`mods` is a `-32602` naming its path); every tool carries all four MCP hints — `readOnlyHint`,
+`destructiveHint`, `idempotentHint`, `openWorldHint` (#v0.18.0, `crates/mcp/src/tools.rs`,
+`server.rs::check_arguments`).
 Protocol: newline-delimited JSON-RPC 2.0 on stdin/stdout (`2025-06-18`, also `2025-03-26`,
 `2024-11-05`); logs on stderr. An argument a tool doesn't take, and a command `params` key the
 command doesn't name, are invalid-params errors; `execute` and `batch` check every step before the

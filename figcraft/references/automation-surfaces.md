@@ -1,17 +1,17 @@
 # FigCraft automation surfaces — operational detail
 
-Load this when a job is bigger than a couple of command calls. Everything here is from the v0.14.0
-tree (commit `5fc2840d9089e0b21056b57c4dff9f795e38a4e3`, tag `v0.14.0`, 2026-11-01), re-measured at
-that tag; the v0.14.0 diff touched no CLI, MCP, control-channel or locale files, so every shape
-below carries over from the v0.13.1 re-measure (MCP tools, control methods; CLI clap-parsed with
-+`connect publish`). Repo-relative paths only; no machine paths are named.
+Load this when a job is bigger than a couple of command calls. Re-checked at tag **v0.16.0**
+(commit `f45b261687880e56d1bad11ec82b45131e57ef8b`, 2026-11-07): the CLI, MCP, control-channel and
+locale shapes are the same as at v0.14.0/v0.15.0 (CLI clap-parsed with `connect publish`, 19 MCP
+tools, 3 resources + 2 templates, 17 control methods, 24 locales, plugin API 6). Repo-relative paths
+only; no machine paths are named.
 
 ## 1. Three ways in, one command registry
 
 Every user-visible behaviour is a command in `crates/engine/src/cmd/*` (plus the area modules) with
 an id, label, parameter docs and an undo flag (`spec!` macro in `crates/engine/src/cmd.rs`). The
 menus, shortcuts, Actions palette, CLI, control channel, MCP server and WASM plugins all dispatch the
-same ids (`docs/architecture.md` › Commands). This tag registers **616 `spec!(` sites across the id
+same ids (`docs/architecture.md` › Commands). This tag registers **637 `spec!(` sites across the id
 namespaces** (v0.11.2: 597; some ids are const-built — count your build with `figcraft-cli commands
 --json`); the generated parity checklist and README lag. **212 / 212** catalogued menu items have a
 command (`crates/engine/src/catalog.rs` `MENU`/`parity`, `docs/parity-checklist.md`) — 207 engine
@@ -48,7 +48,7 @@ Build: `cargo build --release -p figcraft-cli` → `target/release/figcraft-cli`
 Not inside the macOS `.app` (only the Linux AppImage bundles it as `FigCraft.AppImage cli …`); macOS
 releases ship a separate `figcraft-cli-<version>-macos-<arch>.zip` (`packaging/macos/package.sh`).
 
-Nine subcommands plus `help` / `--help` / `-h` and `--version` / `-V` / `version`
+Ten subcommands plus `help` / `--help` / `-h` and `--version` / `-V` / `version`
 (`apps/figcraft-cli/src/main.rs`):
 
 | Subcommand | Notes |
@@ -60,6 +60,7 @@ Nine subcommands plus `help` / `--help` / `-h` and `--version` / `-V` / `version
 | `run <script.json\|script.jsonl> [--in <file>] [--out <file>]` | Headless command script; one JSON result line per step; **all-or-nothing, one undo step**. No network: it cannot host or join live sessions. |
 | `commands [--json] [--filter TEXT]` | The command catalog. |
 | `mcp [--attach PORT] [--automation-read-root DIR]… [--automation-write-root DIR]…` | MCP on stdio, headless or attached. The headless session can host, join and publish live sessions (`collab.*`) and use plugin directories (`plugin.directory.*`). |
+| `connect publish <file> …` | Publishes a code repository's component mappings (code connect) to a design file. |
 | `plugin publish <folder> --server ws://host:port/[?key=KEY]` | Publishes a plugin folder to a `figcraft-server` directory; the key comes from the address or `FIGCRAFT_SERVER_KEY` (never printed). Prints name, version, size and SHA-256. |
 | `perf [--layers N[,N…]] [--instances N[,N…]]` | Synthetic benchmark tables. Layer sizes clamp to 10–2,000,000; instance workloads default 2000 and cap at 100,000. |
 
@@ -144,7 +145,7 @@ no temporary files.
 ## 4. MCP server
 
 Speaks newline-delimited JSON-RPC 2.0 over stdio (protocol `2025-06-18`; `2025-03-26` and
-`2024-11-05` accepted). Incoming lines are capped at 32 MiB before the newline. **18 tools**, two
+`2024-11-05` accepted). Incoming lines are capped at 32 MiB before the newline. **19 tools**, three
 resources plus two resource templates, four prompts (`crates/mcp/src/tools.rs` `TOOL_NAMES`,
 `resources.rs`, `prompts.rs`, `server.rs`; `docs/mcp.md`).
 

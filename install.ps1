@@ -14,7 +14,7 @@ if ($Claude)     { $dest = Join-Path $HOME '.claude\skills' }
 if ($OpenCode)   { $dest = Join-Path $HOME '.config\opencode\skills' }
 if ($Gemini)     { $dest = Join-Path $HOME '.gemini\skills' }
 if ($Antigravity){ $dest = Join-Path $HOME '.gemini\config\skills' }
-$skills = 'photocraft lightcraft vectorcraft figcraft designcraft wordcraft deckcraft gridcraft pdfcraft effectcraft filmcraft soundcraft cadcraft craft-anything solidcraft texturecraft materialcraft' -split ' '
+$skills = 'artcraft-studio photocraft lightcraft vectorcraft figcraft designcraft wordcraft deckcraft gridcraft pdfcraft effectcraft filmcraft soundcraft cadcraft craft-anything solidcraft texturecraft materialcraft' -split ' '
 
 New-Item -ItemType Directory -Force -Path $dest | Out-Null
 $installed = 0; $skipped = 0

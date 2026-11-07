@@ -1,19 +1,19 @@
 # FilmCraft CLI, control channel and MCP — reference
 
-Transcribed from the **v0.16.0** source, commit `77adc30a756bea17441199caff45a24415ba9753` (inspected 2026-11-02); the v0.15.0 wave added no command, CLI flag, control method or MCP tool, and the v0.16.0 wave added no CLI flag, control method or MCP tool either (its +4 engine commands — `colors.addCustom`/`updateCustom`/`removeCustom`, `markers.delete` — ride `engine.execute`).
+Transcribed from the **v0.18.0** source, commit `015d5b3ea37e1202a529e6245d3cc021c8c16ffd` (inspected 2026-11-07).
 Every flag, tool and method below exists in the code; where a value comes from a doc rather than code, the
-path is given. Changes since v0.13.0 are marked **New in 0.14.0** — this wave added no command, CLI
-subcommand, MCP tool or control method; it changed behaviours (`effects.apply` answers applied
-instances, `effects.setParam` names the parameter and accepted value, exports gained `maxThreads`,
-H.264 export got faster) and the shared-module refactor moved declarations without changing the surface.
+path is given. The v0.18.0 wave adds one engine command (`presets.scan`), no CLI flag, no control method and
+no MCP tool; it adds the export parameters `h264Profile` / `h264IntraOnly`, widens `apvProfile`, makes
+`timeline.move` take time objects, and changes how image-sequence exports report their paths. Changes from
+earlier rounds are marked with the round that introduced them.
 
 ## 1. `filmcraft-cli`
 
-Source of truth for the flags: the `HELP` const in `apps/filmcraft-cli/src/main.rs:63-145`; dispatch at
-`:317-520`. Parser: `apps/filmcraft-cli/src/args.rs` (options may appear anywhere; `--` ends options;
-`-V` in the subcommand position is a version query). `filmcraft-cli --version` prints `filmcraft-cli 0.13.0`.
+Source of truth for the flags: the `HELP` const in `apps/filmcraft-cli/src/main.rs`; dispatch below it.
+Parser: `apps/filmcraft-cli/src/args.rs` (options may appear anywhere; `--` ends options;
+`-V` in the subcommand position is a version query). `filmcraft-cli --version` prints `filmcraft-cli 0.18.0`.
 
-Count unchanged at **11 functional subcommands**, i.e. **12 subcommand words** counting `help` (`-h`; `--version` in the subcommand position also works):
+Count unchanged at **12 functional subcommands**, i.e. **13 subcommand words** counting `help` (`-h`; `--version` in the subcommand position and the `version` word also work):
 
 ```
 filmcraft-cli [OPTIONS] <SUBCOMMAND> [ARGS]
@@ -35,6 +35,7 @@ SUBCOMMANDS
   probe <media> [--image-sequence]      media info as JSON (MXF/Ogg/BWF/image-sequence details)
   bench-decode <media> [--frames N]
   mcp                                   MCP server on stdio (headless, or --bridge)
+  version                               print the version
   help | --version
 
 OPTIONS
@@ -52,7 +53,10 @@ Notes (all verified in code):
 
 - `export` writes through `file.exportMedia` with `wait: true` (or `export.queue.add` with
   `start: true, wait: true` for `--queue`), then prints the result and a stderr line
-  `exported <paths> in <s>s` (`apps/filmcraft-cli/src/main.rs`).
+  `exported <paths> in <s>s` (`apps/filmcraft-cli/src/main.rs`). An image sequence is numbered from
+  `basePath`: `a.png` writes `a000.png`, `a001.png`…; the result's `path` is the **first** still,
+  `lastPath` the last and `basePath` the name they are numbered from, and the CLI prints
+  "first to last" (v0.18.0).
 - The local backend forces `wait: true` on the long commands (`LONG_COMMANDS = ["file.exportMedia"]`,
   `crates/automation/src/long_job.rs:18`) — for `exec` and for every line of `run` — unless the params
   contain exactly `"wait": false`. The process exits after the command, so a background export would
@@ -109,20 +113,21 @@ timeout per connection (expiry closes silently, so pooled clients must reconnect
 for a UI reply (`MAX_LINE`/`MAX_CONNECTIONS`/`CONNECTION_TIMEOUT`,
 `apps/filmcraft/src/control_server.rs:24-28`, reply timeout `:101`).
 
-**23 methods** (handler ids in `crates/ui-egui/src/control.rs`):
+**24 methods** (handler ids in `crates/ui-egui/src/control.rs`):
 
 | Method | Params | Notes |
 |---|---|---|
 | `engine.execute` / `ui.menu.invoke` | `{command, params}` | any engine or UI command id |
 | `engine.commands` / `ui.menu.list` | – | command registry / UI menu tree |
 | `ui.inspect` | – | tool, workspace, dock, timeline view, playback, fps, settings draft, panels, `keyboardFocus`, `input`… |
+| `ui.docking` | – | dock layout, focused panel, maximized panel and the dock hit rectangles (`{layout, focused, maximized, hitRects}`) |
 | `ui.elements` | `{prefix?}` | every on-screen interactive element: id, label, rect |
 | `ui.set` | `{tool, workspace, mode, theme, focused, playbackRes, timeline:{pps,scroll,fit,thumbnails}, program:{…}, source:{…}, clipDialog:{…}, menuDialog:{…}, panels:{…}, export:{…}, keyframeSelection:[…], projectPanel:{…}, mediaBrowser:{…}, settings, gfxTemplates, tts}` | merges into UI state |
 | `ui.panel.show` / `ui.panel.close` | `{panel}` | |
 | `ui.click` / `ui.move` | `{id}` or `{x,y}`, `button`, `count`, `modifiers` | synthetic pointer input; click `count` is an integer 0–10 (default 1; 0 queues no click); `ui.move` ignores it |
 | `ui.drag` | `{from, to, steps, modifiers}` | press–move–release; `steps` 0–1024 (default 12; 0 or 1 uses 2). Out-of-range or non-integer values return an error before any input is queued (`crates/ui-egui/src/control.rs:28-45,338-380`) |
 | `ui.scroll` | `{id|x,y, dx, dy, modifiers}` | wheel/trackpad |
-| `ui.key` / `ui.type` | `{key}` (`Cmd+K`, `Space`) / `{text}` | keyboard |
+| `ui.key` / `ui.type` | `{key}` (`Cmd+K`, `Space`) / `{text}` | keyboard; since v0.18.0 a chord matches only with **exactly** its modifiers |
 | `ui.timeline.hit` / `ui.timeline.locate` | `{x,y,modifiers?}` / `{clip, edge?}` | hit-testing; `kind` is the trim a press would start; **New in 0.13.0:** on the ruler it reports `ruler`, or `workArea` with the bar's `edge` |
 | `ui.playback` | `{action: play\|stop\|toggle, speed?}` | |
 | `ui.screenshot` | `{path?, panel?}` | PNG of the window or one panel; fails after 10 s with no presented frame |
@@ -137,6 +142,9 @@ Rules of thumb (`docs/control-protocol.md`):
 - Commands that act on a selection are disabled until something is selected, unless you name targets
   (`clips`/`clip`, `items`/`item`); naming targets leaves the selection alone.
 - Tracks are ids or names (`"V1"`, `"A2"`); naming a missing track is an error, never a fallback track.
+- `timeline.move` entries take `time` as ticks or a time object at the sequence rate (`{"seconds": 2}`,
+  `{"frame": 48}`, `{"timecode": "00:00:02:00"}`); an entry missing `clip`, `track` or `time` is refused
+  by its index (v0.18.0).
 - `ui.elements` describes the last rendered frame; after a layout change, retry on the next frame.
 - Started with `--control`, the app opens without activating itself and UI requests bring the window forward
   without making it key; only `ui.focus {}` activates it. `--control-input-only` (needs `--control`) ignores
@@ -221,7 +229,9 @@ Editing: `source.insert`, `source.overwrite`, `sequence.lift`, `sequence.extract
 Look/audio/text: `effects.list`, `effects.apply`, `effects.setParam` (rejects out-of-range values),
 `lumetri.setInputLut`, `lumetri.setLook`, `lumetri.setSection`, `lumetri.applyMatch`, `lut.*`,
 `mixer.*`, `clipMixer.set`, `essentialSound.*`, `captions.*`, `transcript.*`, `tts.*`, `graphics.*`
-(templates: `graphics.template.*`, `file.exportGraphicsTemplate`).
+(templates: `graphics.template.*`, `file.exportGraphicsTemplate`), and the effect-preset group
+`presets.list` / `save` / `apply` / `delete` / `rename` / `export` / `import` / `scan` (v0.18.0 adds
+`presets.scan`; `.prfpset` and FilmCraft JSON presets are also read by `file.import`).
 
 Output: `file.exportMedia`, `file.exportFrame`, `export.queue.add/start/list/stop/cancel/retry/remove/move/clear`,
 `export.quick`, `export.presets.*`, `export.formats` (per-format `available`), `export.resolve`,
@@ -233,12 +243,14 @@ UI/app: `tool.*`, `playback.*`, `view.*` (incl. `view.resetInterfaceZoom`, `view
 `window.dockPanel`, `window.floatPanel`, `window.dockAction`, `app.settings.<category>`,
 `prefs.get`/`prefs.set`/`prefs.reset`/`prefs.schema`, `shortcuts.*`, `command.list`.
 
-`file.exportMedia` parameters (registry, `crates/engine/src/commands.rs:1655`):
+`file.exportMedia` parameters (registry, `crates/engine/src/commands.rs`):
 `path` (required), `preset`, `settings` (ExportSettings JSON), `format`, `audioCodec: auto|aac|pcm|flac`,
 `flacLevel` 0–8, `width`, `height`, `fps`, `bitrateKbps`, `bitrateMode: cbr|vbr1Pass|vbr2Pass|crf`, `crf` 0–51,
 `hardwareEncoding: off|auto`, `scale`, `audio`, `quality` 0–100, `burnCaptions`, `alpha`,
 `exrCompression: none|rle|zips|zip`, `captionSidecar: srt|vtt`, `loudnessLufs`, `proresProfile`,
-`dnxProfile`, `apvProfile`, `mxfVideoCodec`, `sequence`, `range: entire|inOut|workArea|custom`,
+`dnxProfile`, `apvProfile: 422-10|422-12|444-10|444-12|4444-10|4444-12|400-10`,
+**`h264Profile: baseline|main|high|high10`**, **`h264IntraOnly`** (v0.18.0; High 10 is 10-bit 4:2:0 from
+the built-in encoder, in MP4/MOV and MXF OP1a), `mxfVideoCodec`, `sequence`, `range: entire|inOut|workArea|custom`,
 `startSeconds`, `endSeconds`, `sdr` (tone-map HDR to SDR), `wait` (default **false** at the engine; the local
 CLI forces true).
 

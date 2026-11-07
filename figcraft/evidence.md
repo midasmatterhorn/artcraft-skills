@@ -1,103 +1,135 @@
-# FigCraft — evidence ledger (tag v0.15.0)
+# FigCraft — evidence ledger (tag v0.16.0)
 
-Audit basis: this checkout is tag **`v0.15.0`**, commit **`02c38a6d959f0afd82e44d9d67d396266e6ab4a3`**
-("Release 0.14.0", shallow clone). Inspection date **2026-11-02**. Installed `/Applications/FigCraft.app`
-matches the tag and prints `FigCraft 0.14.0 (02c38a6d…)`; the GUI was never launched.
+Audit basis: this checkout is tag **`v0.16.0`**, commit **`f45b261687880e56d1bad11ec82b45131e57ef8b`**
+(`git rev-parse HEAD`, release 2026-11-06). Inspection date **2026-11-07**. Installed
+`/Applications/FigCraft.app` matches the release — `Contents/Info.plist` `CFBundleShortVersionString`
+0.16.0, `CFBundleIdentifier` `ai.storyteller.figcraft` — and prints `FigCraft 0.16.0
+(f45b261687880e56d1bad11ec82b45131e57ef8b)`; the GUI was never launched, and the macOS bundle ships
+no CLI, so nothing was executed from it on this machine.
 
-v0.13.1 → v0.15.0 delta: **automation surface unchanged** — spec! sites 481 → 481 in the command
-directory (engine-wide 630), command-id set diff empty, MCP/control/CLI/locale files untouched in
-the diff. Code fixes only: code export (no `inf` for huge finite values, CSS font-family
-escaping, paint opacity on CSS gradient stops, unique CSS custom properties per variable),
-relative line-height/letter-spacing unit-suffix edits add to the current value, comment thread-id
-parsing rejects `+`, Unix fonts via craft-font-catalog, shared check-result update dialog.
+v0.15.0 → v0.16.0 delta: **133 files changed** (+4156/−545), measured with `git diff
+v0.15.0..HEAD`. Automation-surface **id sets are unchanged** — MCP `TOOL_NAMES`, `board.*`,
+`collab.*`, the locale directory, clap `Command` variants, control dispatch and plugin `API_VERSION`
+are identical at both tags. Exactly **one engine id is new: `text.wrapStyle`** (Wrap style: auto /
+balance / pretty), the only added `spec!(` line (`crates/engine/src/cmd/text.rs:312`), so `spec!`
+sites move 636 → 637 engine-wide and 487 → 488 in `crates/engine/src/cmd/`. Feature work: glass
+rebuilt to the reference tool's optics (thick-lens bend toward the core, bevel light line, 8-step
+dispersion, variables accepted, frost 0–100; `crates/render/src/glass.rs`, `backdrop.rs`), the Bend
+tool curving a sharp point on a click (`crates/engine/src/canvas/vectoredit/pointer.rs`), and the web
+build's embedding host bridge (`?host=parent`, `data-host="page"`, host file handed back on Save;
+`apps/figcraft-web/src/host.rs`, `hostmode.rs`, `packaging/web/README.md`). Hardening: fractional
+`index` rejected in `proto.interaction.remove`/`set` and `layout.setTrack`, invalid `dashes` rejected
+in `node.set` (`crates/engine/src/cmd/proto.rs`, `crates/layout/src/lib.rs`), HTML export cannot be
+escaped out of its generated `<style>` element (`crates/engine/src/dev/codegen/html.rs`), plugin
+`text.preview` held to the permissions of the command it previews, plugin-offered files written
+through the confined helper, MCP prompt placeholders rendered in one pass
+(`crates/mcp/src/prompts.rs`).
 
-Prior v0.12.1 → v0.13.1 delta: spec! sites 473 → 481 (+`comment.prompt`, `file.fontReport` net new;
-several registrations re-wrapped multiline), CLI 9 → 10 verbs (+`connect publish`, clap-parsed,
-shell completions + man pages), locales 22 → 24 (+ar, +bs), MCP tools 18 / control methods 17
-unchanged, FigJam `.jam` boards, comment mentions, variable colour calculations, server team list.
-
-The v0.11.2 → v0.12.1 wave is large (598 commits): Sketch import, `.fig` export/import improvements,
-five new Dev Mode code targets, boards growth (9 → 19 commands), plugin API 4, `command.batch` named
-steps, the `window.figcraft` web control channel, mobile layout, four new locales, and the startup
-update prompt.
+Prior deltas, kept for history: v0.13.1 → v0.15.0 changed the automation surface by one CLI verb,
+one MCP tool and one control method and otherwise fixed code export, comment thread-id parsing and
+number fields; v0.12.1 → v0.13.1 added `comment.prompt` and `file.fontReport`, `connect publish`,
+clap parsing with completions/man pages, FigJam `.jam` boards as boards, comment mentions, colour
+variables calculated from others, and locales 22 → 24.
 
 ## 1. Capability claims → evidence → tier
 
 | # | Claim | Evidence (repo-relative) | Tier |
 |---|---|---|---|
-| 1 | 616 `spec!(` registration sites; some ids const-built (live count via CLI) | `crates/engine/src/cmd.rs:57` `macro_rules! spec` (`$id:expr` — consts legal); `grep -rho 'spec!(' crates/engine/src \| wc -l` = 616 (was 597) | implemented |
-| 2 | 212/212 menu items | `docs/parity-checklist.md` "**212 / 212 menu items (100.0%)**" | implemented |
-| 3 | 159 keymap bindings, 12 groups | `crates/engine/src/keymap.rs:160` `pub static KEYS` — 159 `k(` rows between `KEYS` and `GESTURES:345`; `Group::ALL [Group; 12]` at `:45` | implemented |
-| 4 | 9 CLI subcommands; `--help` anywhere; dash-prefixed filenames | `apps/figcraft-cli/src/main.rs` USAGE (`info export convert render run commands mcp plugin perf`); PRs #954, #4063-equivalent | implemented |
-| 5 | 17 control methods | `crates/ui-egui/src/control.rs` — 16 direct arms + `ui.menu.invoke` at `:1390` | implemented |
-| 6 | 18 MCP tools, set unchanged; 2 resources + 2 templates; 4 prompts | `crates/mcp/src/tools.rs:86` `TOOL_NAMES` (18); `resources.rs`; `prompts.rs` | implemented |
-| 7 | 19 `board.*` commands (was 9); timer/voting/templates/tables/reattach/curved connectors/dot grid | grep `"board\.[a-z]+"` in `crates/engine/src/` — sticky shape connector ink stamp label editText nextSticky setColor setStyle reattach table tableEdit template templates timer timerState vote voteResults; `crates/engine/src/boards/board_templates.rs:27` `TEMPLATES: &[BoardTemplate]` (5) | implemented |
-| 8 | 21 `collab.*` commands (set unchanged); `branch.*` commands now work inside live sessions | grep `"collab\.[a-zA-Z]+"` in `crates/engine/src/` = 21; PR #1367 | implemented |
-| 9 | Plugin API version 4; widgets take text input + property menu; `saveFile` permission | `crates/plugin/src/manifest.rs:11` `pub const API_VERSION: u32 = 4`; PRs #1365, #698 | implemented |
-| 10 | 22 locale catalogs (+it, ko, th, vi) | `ls crates/ui-egui/locales/` = 22 `.toml` (was 19) | implemented |
-| 11 | `.sketch` import (Sketch 48+) | `crates/engine/src/sketch_import_tests.rs` (mod at `lib.rs:447`); PR #1021 | implemented (best-effort) |
-| 12 | `.fig` export Figma imports, with component set properties; import coverage note; large files keep layers + library links | PRs #1152, #951, #989; `crates/format/src/fig/export.rs` | implemented (experimental) |
-| 13 | Dev Mode code targets: CSS/HTML/React/Vue/Leptos/SwiftUI/Compose/ArkUI + React+Tailwind page + Tailwind theme + Dart constants + Android Vector Drawable | `crates/engine/src/dev/codegen/{arkui,compose,css,html,swift}.rs`, `crates/engine/src/dev/tailwind.rs`, `crates/engine/src/dev/component_codegen.rs`, tests `vue_codegen_tests.rs`/`html_codegen_tests.rs`/`component_codegen_tests.rs`; PRs #1011, #664, #726, #840, #1202 | implemented |
-| 14 | `command.batch` named steps (`as`/`$ref`), paths in `field`, errors name the failing step | PRs #1003, #1340; `docs/mcp.md` | implemented |
-| 15 | `window.figcraft` web control channel; downloads for Save/Export | `apps/figcraft-web/src/query.rs`; PRs #824, #1010 | implemented |
-| 16 | 8 design templates + 5 board templates; 5 examples; 3 example plugins | `crates/engine/src/content/templates.rs:72` (8); `crates/engine/src/boards/board_templates.rs` (5); `examples/`; `plugins/examples/` | implemented |
-| 17 | Save guardrails: no overwrite of externally-changed file or unloaded-image file; NaN/inf → 0 | PRs #1374, #1314, #959; `crates/engine/src/cmd/file.rs` `save_to` | implemented |
-| 18 | LCH/OKLCH picker; JIS X 4051 kinsoku; truncated-text fills last line; Thai backspace; font discovery incl. Adobe Fonts | PRs #827, #990, #1378, #1242, #661, #1309, #1294; `crates/engine/src/fonts.rs` | implemented |
-| 19 | Startup update prompt + self-update; Windows per-user install | PRs #1328, #1399; `Cargo.toml` craft pins | implemented |
-| 20 | No Figma plugin compat, no AI, no spell check, no `.jam`/`.deck`/HEIC/video | `docs/gaps.md` 6, 11, 19; `docs/file-format-parity.md` | not implemented (verified absent) |
+| 1 | 637 `spec!(` registration sites engine-wide, 488 in the command directory (636/487 at v0.15.0); one new id `text.wrapStyle`; some ids const-built (live count via CLI) | `crates/engine/src/cmd.rs:57` `macro_rules! spec` (`$id:expr` — consts legal); `crates/engine/src/cmd/text.rs:312`; `grep -rho 'spec!(' crates/engine/src \| wc -l` = 637 | implemented |
+| 2 | 212/212 menu items (unchanged) | `docs/parity-checklist.md` "**212 / 212 menu items (100.0%)**"; `docs/target-app-parity.md` › Headline | implemented |
+| 3 | 163 keymap bindings, 12 groups (was recorded as 159 — stale) | `crates/engine/src/keymap.rs:160` `pub static KEYS` — 163 `k(` rows between `KEYS` and `GESTURES:352`; `Group::ALL` is 12 groups | implemented |
+| 4 | 10 CLI subcommands, incl. `connect publish` and `plugin publish`; `--help` anywhere; dash-prefixed filenames | `apps/figcraft-cli/src/args.rs` `enum Command` (`info export convert render run commands mcp plugin connect perf`); `clap` parsing; `docs/cli.md` | implemented |
+| 5 | 17 control methods dispatched by the app channel | `crates/ui-egui/src/control.rs` — 16 match arms in `handle()` + `ui.screenshot` in `route_queued`; `events.poll` is documented (`docs/control-protocol.md`) but only `crates/mcp/src/headless.rs` implements it | implemented (17, not 18) |
+| 6 | 19 MCP tools (set unchanged); 3 resources + 2 templates; 4 prompts | `crates/mcp/src/tools.rs:86` `TOOL_NAMES` (19, incl. `wait_for_changes`); `resources.rs` (`document`, `commands`, `comments`; `node/{id}`, `command/{id}`); `prompts.rs` (4) | implemented |
+| 7 | 21 `board.*` commands (set unchanged at v0.16.0); timer/voting/templates/tables/reattach/reshape/curved connectors/dot grid/addConnected | 19 ids registered one-per-line in `crates/engine/src/boards/` plus `board.label` and `board.templates` in one-line `spec!` form = 21; `board.editText` is a UI request, not a command; `crates/engine/src/boards/board_templates.rs:27` `TEMPLATES: &[BoardTemplate]` (5) | implemented |
+| 8 | 21 `collab.*` commands (set unchanged) | `grep -rho '"collab\.[a-zA-Z]*"' crates/engine/src/ \| sort -u` = 22 strings, one of them the bare prefix: 21 ids | implemented |
+| 9 | Plugin API version **6**; widgets take text input + property menu (4), open the plugin panel (5), draw lines and SVG pictures (6); `saveFile` permission | `crates/plugin/src/manifest.rs:11` `pub const API_VERSION: u32 = 6` (identical at v0.15.0); `docs/plugins.md` API 4/5/6 notes | implemented |
+| 10 | 24 locale catalogs (unchanged at v0.16.0) | `ls crates/ui-egui/locales/` = 24 `.toml` (`ar bn bs cs de en es-419 es fi fr id it ja ka ko nl pl pt-BR ru sv th tr vi zh-Hans`) | implemented |
+| 11 | `.sketch` import (Sketch 48+) | `crates/format/src/sketch.rs`, `crates/engine/src/sketch_import_tests.rs` | implemented (best-effort) |
+| 12 | `.fig` export Figma imports, with component set properties; large files keep layers and library links | `crates/format/src/fig/export.rs`, `crates/format/src/fig/kiwi.rs`; `docs/file-format-parity.md` › Export to `.fig` | implemented (experimental) |
+| 13 | Dev Mode code targets: CSS/HTML/React/Vue/Leptos/SwiftUI/Compose/ArkUI + React+Tailwind page + Tailwind theme + Dart constants + Android Vector Drawable | `crates/engine/src/dev/codegen/{arkui,compose,css,html,swift}.rs`, `crates/engine/src/dev/tailwind.rs`, `crates/engine/src/dev/component_codegen.rs`, tests `vue_codegen_tests.rs`/`html_codegen_tests.rs`/`component_codegen_tests.rs` | implemented |
+| 14 | `command.batch` named steps (`as`/`$ref`), paths in `field`, errors name the failing step | `crates/engine/src/cmd/`, `docs/mcp.md` | implemented |
+| 15 | `window.figcraft` web control channel; **host bridge (`?host=parent`, `data-host="page"`)**; downloads for Save/Export, host-opened file saved under the host's name | `apps/figcraft-web/src/query.rs`, `apps/figcraft-web/src/host.rs`, `apps/figcraft-web/src/hostmode.rs`, `crates/ui-egui/src/host_save_tests.rs`, `packaging/web/README.md` | implemented |
+| 16 | 8 design templates + 5 board templates; 5 examples; 3 example plugins (unchanged) | `crates/engine/src/content/templates.rs:72` `TEMPLATES` (8); `crates/engine/src/boards/board_templates.rs` (5); `examples/` (5); `plugins/examples/` (3) | implemented |
+| 17 | Save guardrails: no overwrite of externally-changed file or unloaded-image file; NaN/inf → 0; predecessor replaced with the same permissions | `crates/engine/src/cmd/file.rs` `save_to`; `crates/format/src/lib.rs` (`staging_tests.rs`, `large_tests.rs`) | implemented |
+| 18 | LCH/OKLCH picker; JIS X 4051 kinsoku; truncated-text fills last line; Thai backspace; font discovery incl. Adobe Fonts | `crates/engine/src/fonts.rs`, `crates/text/src/layout.rs`; `docs/ui-parity.md` | implemented |
+| 19 | Text **wrap style** (Auto/Balance/Pretty) on a whole layer; saved line breaks still win; per-paragraph, text styles and `.fig` mapping not included | `crates/engine/src/cmd/text.rs:312` `text.wrapStyle`; `node.set wrapStyle`/`textWrap`; `docs/ui-parity.md` (§ Text: wrap style) | implemented (partial tail) |
+| 20 | **Glass**: variables accepted, thick-lens bend toward the core, light line on the 1-unit bevel, splay toward the centre, 8 dispersion steps, frost 0–100 | `crates/render/src/glass.rs` (`glass::tests::*`), `crates/render/src/backdrop.rs` (`backdrop_tests::splay_turns_the_bend_towards_the_centre`), `docs/target-app-parity.md` change log 2026-11-02 | implemented |
+| 21 | **Bend tool**: a click on a sharp point curves it, handles along the line between its neighbours | `crates/engine/src/canvas/vectoredit/pointer.rs`; test `a_bend_click_curves_a_sharp_point_between_its_neighbours` (`crates/engine/src/canvas/vectoredit/tests.rs:148`); `docs/ui-parity.md` | implemented |
+| 22 | Startup update prompt + self-update; Windows per-user install | `Cargo.toml` craft pins (craft-update); `docs/` packaging notes | implemented |
+| 23 | No Figma plugin compat, no AI, no spell check, no `.deck`/HEIC/video, `.jam` import only as boards | `docs/gaps.md` 6, 11, 19; `docs/file-format-parity.md`; `docs/boards-parity.md` | not implemented (verified absent) |
 
-## 2. Automation-surface counts: v0.11.2 → v0.12.1
+## 2. Automation-surface counts: v0.15.0 → v0.16.0
 
-| Surface | v0.11.2 | v0.12.1 (measured) | Change |
+| Surface | v0.15.0 (re-extracted) | v0.16.0 (measured) | Change |
 |---|---:|---:|---|
-| `spec!` registration sites | 597 | **616** | +19 (some ids const-built; live count `figcraft-cli commands --json`) |
+| `spec!` registration sites (engine / command dir) | 636 / 487 | **637 / 488** | +1 (`text.wrapStyle`) |
 | Menu items live | 212/212 | **212/212** | unchanged |
-| Keymap bindings | 159 | **159** | unchanged count |
-| CLI subcommands | 9 | **9** | unchanged |
-| Control methods | 17 | **17** | unchanged set |
-| MCP tools | 18 | **18** | unchanged set |
-| MCP resources/templates | 2 + 2 | **2 + 2** | unchanged |
+| Keymap bindings | 163 | **163** | unchanged at v0.16.0 |
+| CLI subcommands | 10 | **10** | unchanged set |
+| Control methods (app channel) | 17 | **17** | unchanged set |
+| MCP tools | 19 | **19** | unchanged set |
+| MCP resources/templates | 3 + 2 | **3 + 2** | unchanged |
 | MCP prompts | 4 | **4** | unchanged |
-| `collab.*` commands | 21 | **21** | set unchanged; branches now work inside live sessions |
-| `board.*` commands | 9 | **19** | +reattach, table, tableEdit, template, templates, timer, timerState, vote, voteResults, dot grid |
-| Board templates | — | **5** | new |
-| Plugin API | 3 | **4** | widgets text input + property menu; `saveFile` permission |
-| Locale catalogs | 19 | **22** | +it, ko, th, vi |
-| Design templates / examples | 8 / 5 | **8 / 5** | unchanged (templates moved to `content/templates.rs`) |
+| `collab.*` commands | 21 | **21** | unchanged set |
+| `board.*` commands | 21 | **21** | unchanged set |
+| Board templates | 5 | **5** | unchanged |
+| Plugin API | 6 | **6** | unchanged |
+| Locale catalogs | 24 | **24** | unchanged at v0.16.0 |
+| Design templates / examples / example plugins | 8 / 5 / 3 | **8 / 5 / 3** | unchanged |
 
 ## 3. Uncertain / not verified
 
-- The exact per-command id list behind the 616 registration sites (const-built ids) — the live registry
+- The exact per-command id list behind the 637 registration sites (const-built ids) — the live registry
   is `figcraft-cli commands --json`.
 - GUI behaviour not launched; registry + docs + packaging are the evidence.
-- `.fig`/`.sketch`/REST import fidelity is best-effort and unproven against real files (`docs/gaps.md`).
+- `.fig`/`.sketch`/REST fidelity is best-effort and unproven against real files (`docs/gaps.md`).
+- Penpot: `crates/format/src/penpot.rs` (`import`) and the CLI's `--format penpot` export exist but were
+  not audited this round; not described in `SKILL.md`.
+- Glass optics were checked by the repo's own tests against synthetic files only; no live comparison
+  was performed here.
 
 ## 4. Doc-vs-code drift found at this tag (code wins)
 
 | Doc statement | Code reality |
 |---|---|
-| README "about 49%" vs measured table ~53% ready / ~85% breadth | both are self-assessments; the measured table is the closer number |
+| `docs/control-protocol.md` documents `events.poll` as a control method | the app channel has no such arm (16 `handle()` arms + `ui.screenshot`); only `crates/mcp/src/headless.rs` implements `events.poll` |
+| README "about 49%" vs measured table ~53% ready / ~85% breadth / ~94% core | both are self-assessments; the measured table is the closer number |
 | `docs/parity-checklist.md` may lag the registry | count with `figcraft-cli commands --json` |
 | `docs/architecture.md` "two example plugins" | `plugins/examples/` holds three |
+| previous skill's "API 4", "159 bindings", "22 catalogs", "19 `board.*`", "2 resources", "18 methods" | API 6, 163, 24, 22, 3 + 2, 17 at both v0.15.0 and v0.16.0 |
 
 ## 5. Verification commands (read-only)
 
 ```sh
-git -C <clone> rev-parse HEAD                                   # 02c38a6d959f0afd82e44d9d67d396266e6ab4a3
-grep -rho 'spec!(' crates/engine/src/ | wc -l                   # 616
+git -C <clone> rev-parse HEAD                                   # f45b261687880e56d1bad11ec82b45131e57ef8b
+grep -rho 'spec!(' crates/engine/src/ | wc -l                   # 637
+grep -rho 'spec!(' crates/engine/src/cmd/ | wc -l               # 488
 grep -E '212' docs/parity-checklist.md | head -1                # 212 / 212 menu items
-awk 'NR>=160 && NR<345' crates/engine/src/keymap.rs | grep -cE '^\s+k\('   # 159
-awk '/pub const TOOL_NAMES/,/];/' crates/mcp/src/tools.rs | grep -oE '"[a-z_]+"' | wc -l  # 18
-grep -rho '"board\.[a-zA-Z]*"' crates/engine/src/ | sort -u | grep -c board\.  # 19 (+1 prefix-only string)
-grep -rho '"collab\.[a-zA-Z]*"' crates/engine/src/ | sort -u | wc -l       # 21 (22nd match is the bare prefix)
-ls crates/ui-egui/locales/ | wc -l                              # 22
-grep -n 'API_VERSION' crates/plugin/src/manifest.rs             # u32 = 4
-ls crates/engine/src/dev/codegen/                               # arkui compose css html swift
+awk 'NR>=160 && NR<352' crates/engine/src/keymap.rs | grep -cE '^\s+k\('   # 163
+awk '/pub const TOOL_NAMES/,/];/' crates/mcp/src/tools.rs | grep -oE '"[a-z_]+"' | wc -l  # 19
+grep -rhoE 'spec!\(\s*"board\.[a-zA-Z]+"|^\s+"board\.[a-zA-Z]+",' crates/engine/src/ | grep -oE '"board\.[a-zA-Z]+"' | sort -u | wc -l  # 21
+grep -rho '"collab\.[a-zA-Z]*"' crates/engine/src/ | sort -u | wc -l     # 22 (one is the bare prefix)
+ls crates/ui-egui/locales/ | wc -l                              # 24
+grep -n 'API_VERSION' crates/plugin/src/manifest.rs             # u32 = 6
+grep -nE '"(engine|document|node|ui|window|app)\.[a-zA-Z.]+"' crates/ui-egui/src/control.rs | wc -l
+grep -n 'enum Command' -A 20 apps/figcraft-cli/src/args.rs      # 10 variants
+git diff --name-only v0.15.0..HEAD | wc -l                      # 133
 ```
 
+## Round 2026-11-07 (refresh)
 
-## Round 2026-11-04 (refresh)
-
-- Pinned to `v0.15.0` = `02c38a6d959f0afd82e44d9d67d396266e6ab4a3` (installed `FigCraft 0.15.0 (02c38a6d959f0afd82e44d9d67d396266e6ab4a3)`).
-- CLI 9 → **10** verbs, MCP 18 → **19** tools, control 17 → **18** methods.
-- Id sets were diffed between the two tags with the same extraction method as the claims above; counts here are the new ones.
+- Pinned to `v0.16.0` = `f45b261687880e56d1bad11ec82b45131e57ef8b` (installed `FigCraft 0.16.0
+  (f45b2616…)`, bundle id `ai.storyteller.figcraft`). GUI not launched; no CLI in the bundle.
+- Re-measured: `spec!` sites 636 → **637** / 487 → **488**; everything else in the count table was
+  re-extracted and is **unchanged at v0.16.0**, with the id sets (MCP tools, `board.*`, `collab.*`,
+  locales, CLI verbs, plugin API) diffed between the two tags — all diffs empty.
+- Corrected stale carried-forward figures by measuring both tags: keymap **163** (not 159), control
+  **17** (not 18; `events.poll` drift recorded above), `board.*` **21** (not 19), locales **24** (not
+  22), plugin **API 6** (not 4), MCP **3 resources + 2 templates** (not 2 + 2), CLI list now names
+  `connect publish` as the 10th verb and the MCP list names `wait_for_changes`.
+- Every cited repo-relative path was re-resolved against this clone; none had moved, so none was
+  re-cited. Docs read at this tag: `docs/{cli,mcp,control-protocol,file-format-parity,gaps,
+  target-app-parity,ui-parity,boards-parity,dev-mode-parity,prototyping-parity,components-parity,
+  collaboration-parity,localization-parity,hardware-parity,auto-layout-parity,plugins,
+  parity-checklist,architecture}.md` plus `packaging/web/README.md`.
