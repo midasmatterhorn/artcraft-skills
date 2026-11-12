@@ -1,49 +1,33 @@
-# SoundCraft — round 2026-11-07 changes
+# SoundCraft — round 2026-11-12 changes
 
-Re-pinned: v0.17.0 (`b35dd0f`) -> v0.18.0 (`5ff012ab`, installed `soundcraft 0.18.0 (macos aarch64)`).
+Re-pinned: v0.18.0 (`5ff012ab`) -> v0.20.1 (`a52bbdc`, installed `soundcraft 0.20.1 (macos aarch64)`). v0.19.0, v0.19.1 and v0.20.0 shipped between the two pins; the shallow checkout carries only the v0.18.0 and v0.20.1 tag objects, so the delta was measured against v0.18.0.
 
 ## Corrected / re-measured
 
-- UI commands 68 → **70** (`ui.reduce_visual_effects`, `ui.undo_levels`; nothing removed), so a
-  running app's `engine.commands` reply is **554** ids — 484 engine specs plus 70 UI ids, with no id
-  in both lists.
-- Engine command specs **484, unchanged** — the v0.17.0 tree was extracted and compared with the
-  same extraction: 389 literal `cmd!` ids + 94 helper-macro ids (toggle 17 / flag 61 / radio 6 /
-  option 10) + 1 direct `CommandSpec` on each side, none added or removed.
-- Two registries the skill quotes were re-measured rather than carried: **34** channel formats and
-  **512** menu-catalog leaves (parity report 397/512, 77.5 %).
-- New at this tag, now documented: complete Grid/Nudge time scales (`clips_markers` for grid only,
-  `{"timecode"}` / `{"feet_frames"}` increments, `follow_main`), the nine-page Preferences window
-  with only three live controls, WAV bounces stamped with a BWF `bext` TimeReference (and `convert`
-  keeping one), the 256 MiB session cap with duplicate-field and duplicate-payload refusals, and
-  transient live input toggles.
-- Rows whose evidence moved (1, 4, 9) were edited in place; five rows were added for the new
-  surfaces. The carried rows (5–8, 10–11) were left exactly as written; none had to be deleted.
+- **Audio formats left the repo.** `crates/audio-io` is deleted; `craft-audio` (pinned at `75895c…` in `Cargo.toml`) now supplies decode/encode/peaks, and `crates/model/src/source.rs::FileFormat` only maps them onto the session. Write extension aliases were re-measured **6 → 7**: `wav`, `wave`, `bwf`, `aif`, `aiff`, **`aifc`**, `flac` (the exact list is asserted by `apps/soundcraft-cli/tests/it/behaviour.rs`). Read gains Opus, AC-3/E-AC-3 and `.mov`/`.mka` audio (`docs/file-format-parity.md`, updated 2026-11-11).
+- **Workspace crate count corrected 14 → 13.** The README's old crate table row for `soundcraft-audio-io` is gone; the workspace is 13 library crates plus `soundcraft`, `soundcraft-cli`, `soundcraft-web` and `xtask`.
+- **`setup.playback_engine` corrected.** The previous skill said playback never reads it and only the headless `applied: false` shape mattered. At this tag a programmatic desktop call routes device/buffer through `ui.audio_device` and applies delay compensation (`crates/ui-egui/src/panels/windows.rs::setup_audio_command`), while headless still stores the request and returns `applied: false` (`crates/engine/src/cmd/setup_more.rs`). The remaining alpha blocker is the duplex/channel-routing path, not device choice.
+- **CLI flag list completed.** `convert` has `--in-place`; `info` has `--compact`; `run`/`script` have `--inspect --compact --in-place`; `app` has `--compact`. The previous skill omitted these while listing the rest.
+- **Labels are no longer the ids' names.** Beat Detective displays "Beat Analysis", QuickPunch "Punch Recording", Sibelius "MusicXML", x-form "Rendered (High Quality)", HEAT "Analog Saturation", Melodyne "No ARA plug-ins", Ableton Link "Tempo Sync", Pro Tools Search "Search"; the `lofi` plug-in displays "Bit Crusher" (`crates/engine/src/feature_names.rs`, `crates/dsp/src/plugins/harmonic.rs`). Command ids, catalog paths and saved values are unchanged; legacy catalog paths still dispatch. Five catalog leaves are disabled placeholders with "Not available yet." (`crates/engine/src/catalog.rs::PLACEHOLDERS`).
+- **Shortcut claim corrected.** The previous skill listed Cmd+Alt+L as Clip Loop. Both `clip.loop` and `edit.move_selection_left` declare it, and `command_for` returns the earlier-registered `edit.move_selection_left` (`edit::specs()` precedes `clip::specs()`), so the key moves the edit selection. The skill now says to trigger Clip Loop by id and flags the collision. `Space` is declared by play/stop/toggle but is handled before the registry, so it still plays/stops.
+- **New behaviour documented from the diff:** defensive exports (exclusive part files; `write_file` refuses dangling links, non-regular/read-only files and hard links; Export Clips skips occupied names and numbers a same-named run once) in `crates/engine/src/io.rs`; the 128-fold import growth guard (`crates/engine/src/io/import.rs`); locked clips kept whole through Separate/Trim/range edits and split first by Event Time operations (`crates/engine/src/edit.rs`, `crates/engine/src/cmd/event.rs`); per-sample track/master volume automation, hosted-instrument latency compensation, serial audio-thread strips and a bounded Consolidate tail (`crates/mix/src/`); CLAP reset releasing held notes (`crates/clap-host/src/plugin.rs`); Smart Tool chords, zoom auto-repeat and selection-centring arrows (`crates/ui-egui/src/shortcuts.rs`); Sub-counter format menu, scrolling menus, I/O search and colour-strip double-click (`crates/ui-egui/src/`); updater result states and install-at-exit (`crates/ui-egui/src/updates_ui.rs`); video frame budgets (`crates/video/src/movie.rs`).
+- **Counts re-derived, not carried:** engine **484, unchanged** (the full id-literal set was diffed against the v0.18.0 tag tree); UI commands **70, unchanged** (sorted id list identical); live `engine.commands` **554**; MCP **17 tools + 2 resources**; control **17 methods (+2 aliases)**; CLI **10 subcommands**; **30** plug-ins; **34** channel formats; **512** catalog leaves and **397/512** engine parity; **7** AudioSuite legacy non-plug-in names; `FORMAT_VERSION` **1**; `MAX_BATCH_CALLS` **1000**; `MAX_SESSION_BYTES` **256 MiB**; `MAX_RATE_EXPANSION` **128**; `MAX_IMPORT_SAMPLES` **1 << 30**; `BUNDLE_LIMITS` **10,000 entries / 1 GiB**; bounces capped at **4 hours**.
 
 ## Method
 
-- `git rev-parse HEAD` = `5ff012ab88490cdfc635ee304c1019885e1b880d` (tag `v0.18.0`);
-  `git diff v0.17.0..HEAD --stat` = 108 files changed, +6,468/−554. The shallow clone retains the
-  v0.17.0 commit object, so the diff and the tag-tree extraction both run locally.
-- Counts re-derived with the extraction named in `evidence.md` §5, run against HEAD and against
-  `git archive v0.17.0`; the UI id lists were diffed (`comm`) to identify the two additions.
-- Every repo path cited in `SKILL.md` was re-resolved against the clone; all exist, none moved.
-- The installed bundle was read only through `--version` and `Info.plist` (`soundcraft 0.18.0
-  (macos aarch64)`, `ai.storyteller.soundcraft`); the GUI was never launched.
+- `git rev-parse HEAD` = `a52bbdccbe15342f44e0de1906bf71a621e7a68f` (tag `v0.20.1`); `git diff v0.18.0..HEAD --stat` = 171 files changed, +3,824/−5,732. The clone is shallow, so only the v0.18.0 and v0.20.1 tag objects are present and no commit count is claimed.
+- Counts re-derived with the extraction named in `evidence.md` §5, run against HEAD and against a `git archive v0.18.0` tree. The literal `cmd!` id list and the complete dotted-id literal set both diff clean; the sorted UI id list is identical; helper-macro counts are 17/61/6/10 on both sides.
+- Every repo path cited in `SKILL.md` was re-resolved against the checkout; the removed `crates/audio-io/**` citations were replaced with `crates/model/src/source.rs` and `craft-audio` references, and the rest exist.
+- The installed bundle was read only through `--version` and `Info.plist` (`soundcraft 0.20.1 (macos aarch64)`, `ai.storyteller.soundcraft`); `--help` was run; the GUI was never launched. No build, no test run and no commit was made.
 
 ## Unchanged
 
-- 484 engine specs, 17 MCP tools + 2 resources, 17 control methods (+2 aliases), 10 CLI subcommands
-  (the CLI gained `commands --json` inside the existing subcommand), 30 built-in plug-ins, 6 write
-  extensions, and the craft-libs pin `c5a1cbfb…` for every crate.
-- Sections whose code path and count did not move were path-verified at this tag and carried
-  forward; the refreshed prose already marks them "unchanged at v0.18.0", and this round re-checked
-  those counts rather than re-deriving the sections.
+- 484 engine specs, 70 UI commands, 554 live ids, 17 MCP tools + 2 resources, 17 control methods (+2 aliases), 10 CLI subcommands, 30 built-in plug-ins, 34 channel formats, 512 catalog leaves, 397/512 parity, 7 AudioSuite legacy process names, `FORMAT_VERSION` 1, the 256 MiB session cap and the 10,000-entry / 1 GiB bundle limits.
+- The egui fork pin `6d518fc7…` is unchanged. The craft-libs pins split: `craft-audio`/`craft-media` at `75895c…`, `craft-docpath`/`craft-ui`/`craft-update` at `6e03f65…`.
+- Folded history from the previous skill (now kept only here): **v0.17.0 → v0.18.0** added the nine-page Preferences window, complete Grid/Nudge time scales, BWF `bext` stamps on WAV bounces, the 256 MiB session cap with duplicate-field/duplicate-payload refusals, transient live input toggles and `commands --json`, and moved UI commands 68 → 70 (live 552 → 554). **v0.16.0 → v0.17.0** changed 18 files: score export notes when bars are shorter than a sixteenth, MIDI export bounded to the notes a trimmed clip still plays, AIFF negative channel counts rejected, and VST3 multi-out instruments accepted with up to 64 buses (only bus 0 activated per direction). **v0.15.0 → v0.16.0** added `view.zoom_toggle_cancel` (engine specs 483 → 484) and a hostile-input hardening wave (automation `value_at`, grid/tempo math, non-finite DSP, CAF/WAV/FLAC/MIDI/H.264 bounds); an earlier audit had wrongly dated Zoom Toggle cancellation to v0.15.0.
 
 ## Known gap in this round
 
-- The 554 figure is arithmetic from the two registries plus an overlap check: `soundcraft-cli` is
-  not installed on the authoring machine and the bundle ships only the GUI, so no live
-  `engine.commands` reply was observed and no `commands --json` output was captured.
-- This was a repair round — `SKILL.md` had already been refreshed by an earlier agent — so the prose
-  was verified and re-pinned, not re-derived from scratch for every capability.
+- The 554 figure is arithmetic from the two registries plus an overlap check: `soundcraft-cli` is not installed on the authoring machine and the bundle ships only the GUI, so no live `engine.commands` reply was observed and no `commands --json` output was captured.
+- The exact `craft-audio` `DECODE_EXTENSIONS` array was not opened at the pinned rev (the commit is absent from every local craft-libs checkout and Cargo cache). The 7-entry write list and the new import families are taken from the repo's own CLI test and `docs/file-format-parity.md`; the read list is the app's `FileFormat` mapping plus that doc.
+- GUI behaviour, the Preferences placeholders and the disabled catalog placeholders were verified from code and unit tests, not from a running window. `docs/parity-checklist.md` was read, not regenerated (that needs a build).

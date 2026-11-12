@@ -1,3 +1,3 @@
 interface:
   display_name: "SolidCraft"
-  short_description: "Parametric 3D CAD in Rust: sketches, feature timeline, assemblies, STEP/IGES/3MF, 20-tool MCP server"
+  short_description: "Parametric 3D CAD in Rust: sketches, feature timeline, assemblies, STEP/IGES/3MF, 22-tool MCP server"

@@ -1,16 +1,19 @@
 # AGENTS.md — ArtCraft Skills archive
 
-You are a coding agent. This folder is the persistence archive of the
-[artcraft-skills](https://github.com/midasmatterhorn/artcraft-skills) project: 18
-evidence-verified skills for the ArtCraft desktop apps (17 storytold apps — the 13 pure-Rust craft
-apps plus ArtCraft Studio's AI image and video workspace, Craft Anything's rebuild workbench,
-TextureCraft's 3D texture painting and MaterialCraft's node-based procedural materials — and
-Tangency Labs' SolidCraft parametric CAD). If the user asks you to
-install, update, or verify these skills, do it for the agent **you** are running as.
+You are a coding agent. This repository holds **20 evidence-verified skills** for the ArtCraft
+desktop apps: the 18 apps from the [`storytold`](https://github.com/storytold) organization — the
+thirteen pure-Rust craft apps (PhotoCraft, LightCraft, VectorCraft, FigCraft, DesignCraft,
+WordCraft, DeckCraft, GridCraft, PdfCraft, EffectCraft, FilmCraft, SoundCraft, CADCraft) plus
+ArtCraft Studio's AI image and video workspace, AniCraft's 2D vector animation studio, Craft
+Anything's "see how software works, rebuild it" workbench, TextureCraft's 3D texture painting and
+MaterialCraft's node-based procedural materials — and two outside it: Tangency Labs' SolidCraft
+parametric CAD and UCS Care Group's MailCraft mail, calendar and contacts app (a *community* app in
+the ArtCraft Launcher catalog). If the user asks you to install, update, or verify these skills, do
+it for the agent **you** are running as.
 
 ## Install (pick your target)
 
-From the packaged release in this folder — the 18 skill folders sit at the zip root
+From the packaged release in this folder — the 20 skill folders sit at the zip root
 (pick the newest `artcraft-skills-v*.zip`):
 
 ```sh
@@ -49,12 +52,13 @@ bash install.sh              # default → ~/.agents/skills/  (add --claude, --o
 
 ## Verify
 
-All 18 skill directories must exist under the chosen target — `artcraft-studio`, `cadcraft`, `craft-anything`,
-`deckcraft`, `designcraft`, `effectcraft`, `figcraft`, `filmcraft`, `gridcraft`, `lightcraft`,
-`materialcraft`, `pdfcraft`, `photocraft`, `solidcraft`, `soundcraft`, `texturecraft`,
-`vectorcraft`, `wordcraft` — each containing
-`SKILL.md` and `agents/openai.yaml`. Print the target directory you used, then tell the
-user to restart their agent session so the skills are discovered.
+All 20 skill directories must exist under the chosen target — `anicraft`, `artcraft-studio`,
+`cadcraft`, `craft-anything`, `deckcraft`, `designcraft`, `effectcraft`,
+`figcraft`, `filmcraft`, `gridcraft`, `lightcraft`, `mailcraft`,
+`materialcraft`, `pdfcraft`, `photocraft`, `solidcraft`, `soundcraft`,
+`texturecraft`, `vectorcraft`, `wordcraft` — each containing `SKILL.md` and
+`agents/openai.yaml`. Print the target directory you used, then tell the user to restart their agent
+session so the skills are discovered.
 
 ## Windows: driving the GUI apps live
 
@@ -68,7 +72,7 @@ so the GPU can look "disabled" until that memory is cleared.
 **Try the direct launch first.** `CREATE_NO_WINDOW` only hides a console; it does not move
 the process to another window station. An agent running in the user's logged-on session (a
 terminal, an IDE, a desktop app) can start the GUI itself. A fresh MSI install from the
-launcher v0.16.0 is machine-wide — `C:\Program Files\ArtCraft\<App>`, or
+launcher v0.19.2 is machine-wide — `C:\Program Files\ArtCraft\<App>`, or
 `Program Files (x86)` for a 32-bit build — and Windows asks for elevation once; an app
 already installed for one account (`%LOCALAPPDATA%\Programs\ArtCraft\<App>`) keeps that
 folder and scope when it is updated (`crates/native/src/msi_context.rs::install_scope`):
@@ -109,17 +113,47 @@ healthy — delete `%APPDATA%\<App>\logs\graphics-start.json` so the next start 
 again. Not every app writes that file.
 
 Then connect a TCP socket to `127.0.0.1:<port>` and send one JSON request per line.
-Authentication differs per app — check the app's SKILL.md before connecting:
+Authentication differs per app — check the app's SKILL.md before connecting (verified against
+the 12 November 2026 releases):
 
-- **PhotoCraft**: pass `--control-token <64-hex>` (or `--control-token-file <path>`) at launch.
-- **WordCraft**: read the key from `%APPDATA%\<App>\control-key.local-<port>` (mode 0600, deleted on exit).
+- **PhotoCraft**: pass `--control-token <64-hex>` (or `--control-token-file <path>`) at
+  launch, else `PHOTOCRAFT_CONTROL_TOKEN` / `PHOTOCRAFT_CONTROL_TOKEN_FILE`.
+- **WordCraft**: the app writes a control key file for the port (`control-key.local-<port>`,
+  mode 0600, deleted on exit) in its settings folder; the MCP bridge reads it, or
+  `WORDCRAFT_CONTROL_KEY`.
 - **PdfCraft**: launch with `--control FILE` — the file holds the loopback port and per-launch token.
-- **CADCraft**: every request needs `"token": "<session token>"`, read from `cadcraft-control-<port>.token` (`%LOCALAPPDATA%` on Windows; `$XDG_RUNTIME_DIR`, else `~/.cache` elsewhere) — the app prints the path at startup.
-- **FilmCraft**: the listener only opens when `FILMCRAFT_CONTROL_TOKEN` holds 64 hex characters at launch; every request carries the same `"token"`.
-- **GridCraft**: the first line of a connection must authenticate with the app's token — pass `--control-token <token>` or `GRIDCRAFT_CONTROL_TOKEN` at launch, or read the auto-generated token file whose path the app prints to stderr (`gridcraft-cli` reads it automatically); a connection that does not authenticate, or later sends a bad line, is closed.
-- **TextureCraft**: every connection's first request must authenticate — `{"id":0,"method":"auth","params":{"token":"…"}}` with `TEXTURECRAFT_CONTROL_TOKEN` (16 characters or more) or the fresh random token the app writes to `texturecraft-control-<port>.token` in the temp directory and prints to stderr; anything else as the first request is refused.
-- **ArtCraft Studio**: no control channel, CLI or MCP server — it is a Tauri GUI app; the programmatic surface is the API-key-gated Omni HTTP API documented in the `artcraft-studio` skill.
-- **All other apps**: loopback-only, unauthenticated — enable only while in use.
+- **CADCraft**: every request needs `"token": "<session token>"`, read from
+  `cadcraft-control-<port>.token` (`%LOCALAPPDATA%` on Windows; `$XDG_RUNTIME_DIR`, else
+  `~/.cache` elsewhere) — the app prints the path at startup.
+- **FilmCraft**: the listener only opens when `FILMCRAFT_CONTROL_TOKEN` holds 64 hex characters at
+  launch; every request carries the same `"token"`.
+- **GridCraft**: the first line of a connection must authenticate with the app's token — pass
+  `--control-token <token>` or `GRIDCRAFT_CONTROL_TOKEN` at launch, or read the auto-generated
+  token file whose path the app prints to stderr (`gridcraft-cli` reads it automatically); a
+  connection that does not authenticate, or later sends a bad line, is closed.
+- **TextureCraft**: every connection's first request must authenticate —
+  `{"id":0,"method":"auth","params":{"token":"…"}}` with `TEXTURECRAFT_CONTROL_TOKEN` (16
+  characters or more) or the fresh random token the app writes to
+  `texturecraft-control-<port>.token` in the temp directory and prints to stderr; anything
+  else as the first request is refused.
+- **MaterialCraft**: same handshake as TextureCraft — `MATERIALCRAFT_CONTROL_TOKEN` or the token
+  file the app writes/prints for that port.
+- **SolidCraft**: `SOLIDCRAFT_CONTROL_TOKEN` or the app's token file for that port (the token
+  is scoped to the port the app opened).
+- **MailCraft** (community app): a control *key* file, `control-key.<instance>`, in the app's
+  settings folder (macOS `~/Library/Application Support/MailCraft`, Windows `%APPDATA%\MailCraft`,
+  otherwise `$XDG_CONFIG_HOME/mailcraft` or `~/.config/mailcraft`) — or
+  `MAILCRAFT_CONTROL_KEY`; the MCP bridge proves the key to the app before the app answers.
+- **AniCraft**: no loopback control channel — it is driven headlessly by `anicraft-cli`
+  (`info`, `render`, `render-seq`, `gif`, `commands`, `run`, `exec`, `new`, `bench`, `serve`,
+  `mcp`) with no token needed; the live GUI has its agent chat instead.
+- **Craft Anything**: no loopback control channel — `craft-anything-cli` (12 named subcommands
+  plus every engine tool id as a pass-through) and its stdio MCP server.
+- **ArtCraft Studio**: no control channel, CLI or MCP server — it is a Tauri GUI app; the
+  programmatic surface is the API-key-gated Omni HTTP API documented in the
+  `artcraft-studio` skill.
+- **All other apps** (LightCraft, VectorCraft, FigCraft, DesignCraft, DeckCraft, EffectCraft,
+  SoundCraft): loopback-only, unauthenticated — enable only while in use.
 
 Send UTF-8 **without a BOM**: the control servers treat a BOM-prefixed first line as
 malformed JSON and close the connection. Windows PowerShell 5.1 pipes add a BOM — use raw

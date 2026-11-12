@@ -1,40 +1,47 @@
-# EffectCraft extensions: plug-ins, helpers, the Plug-in Library, scripts (v0.22.0)
+# EffectCraft extensions: plug-ins, helpers, the Plug-in Library, scripts (v0.24.1)
 
-Reference for the surfaces in "Extensions" in `SKILL.md`. Grounded in `crates/effects/src/plugin.rs`,
-`crates/plugin/src/{lib,wasm}.rs`, `crates/helper-host/src/`, `crates/engine/src/system/library.rs`,
-`crates/engine/src/cmd/effect.rs`, `docs/plugins.md`, `docs/external-helpers.md`,
-`docs/publishing-plugins.md` and `docs/adr/0001-external-effect-helpers.md`.
+Reference for the surfaces in "Extensions" in `SKILL.md`. Grounded in
+`crates/effects/src/plugin.rs`, `crates/plugin/src/{lib,wasm}.rs`, `crates/helper-host/src/`,
+`crates/engine/src/system/library.rs`, `crates/engine/src/cmd/effect.rs`, `docs/plugins.md`,
+`docs/external-helpers.md`, `docs/publishing-plugins.md` and
+`docs/adr/0001-external-effect-helpers.md`.
 
 **Everything here executes third-party code.** Load a plug-in or a helper only when the user asked
 for that plug-in or helper by name, prefer the catalog path over an arbitrary file path, and never
 install into an app another process is using.
 
-## Three kinds of plug-in, three ABIs
+## Three kinds of plug-in, three contracts
 
-| Kind | ABI | Runs | Commands |
+| Kind | Contract | Runs | Commands |
 |---|---|---|---|
-| WebAssembly effect plug-in | `.wasm` / `.wat`, **plug-in API v1** | in-process, `wasmi` interpreter | `effect.plugins.load`, `effect.plugins.install`, `effect.plugins.list` |
-| Native plug-in (API v2) | Rust / native, `PLUGIN_API_VERSION = 2` | in-process (built in) | manifest `api` may be 1 or 2 (`crates/effects/src/plugin.rs`) |
+| WebAssembly effect plug-in | `.wasm` / `.wat`, **WebAssembly ABI 1 or 2** (`ec_api_version`) | in-process, `wasmi` interpreter | `effect.plugins.load`, `effect.plugins.install`, `effect.plugins.list` |
+| Native plug-in | Rust, **plug-in API 2** (`PLUGIN_API_VERSION = 2`) | in-process (built in) | manifest `api` may be 1 or 2 (`crates/effects/src/plugin.rs`) |
 | External effect helper | its own manifest, API 1–2, **helper protocol v1** | a separate child process | `effect.helpers.scan`, `effect.helpers.load`, `effect.helpers.list` |
 
-`WASM_API_VERSION = 1` is unchanged in v0.22.0. A `.wasm` module declares `ec_api_version`, which
-must return `1`. API 2 additions (layer parameters, host services) are what native code and helpers
-get; they are not part of the WebAssembly ABI.
+`WASM_API_VERSION = 2` and `MIN_WASM_API_VERSION = 1`: a module declares `ec_api_version` 1 for
+`ec_render` or 2 for `ec_render2`, and both load. The ABI is independent of the manifest's `api`
+(the native plug-in API): a module can use ABI 2 while its manifest says `"api": 1`. The native
+API 2 additions (layer parameters, host services, `padding`/`render_v2`) are what native code and
+helpers get; they are not part of the WebAssembly ABI.
 
 ## WebAssembly plug-ins
 
 - A module must have **no imports** and export `memory`, `ec_api_version`, `ec_manifest_ptr`,
-  `ec_manifest_len`, `ec_alloc` and `ec_render(pixels, width, height, params, nparams, time, scale)`.
-  Pixels are premultiplied RGBA `f32` in linear memory; `ec_render` processes them in place.
+  `ec_manifest_len`, `ec_alloc`, and either `ec_render(pixels, width, height, params, nparams,
+  time, scale)` (ABI 1) or `ec_render2(...)` with the same arguments followed by `prev, prev_time,
+  next, next_time, flags` (ABI 2). Pixels are premultiplied RGBA `f32` in linear memory; the render
+  export processes them in place and returns 0 on success. An ABI 2 module's neighbouring frames
+  are resampled onto the current grid, zeroed when a frame does not exist, and `flags` bit 0/1 says
+  which are real.
 - Sandbox: the `wasmi` interpreter with deterministic floats, no files, network or clock, a fuel
-  limit per frame, one instance, at most **1 GiB** of linear memory, and a manifest cap of 1 MiB
-  (`crates/plugin/src/wasm.rs`). The crate's own docs state that a plug-in cannot escape its
-  sandbox, hang the app or render differently on another machine — but it can still be *wrong*,
-  so check its output.
+  limit per frame (`FUEL_BASE` 50 000 000, `FUEL_PER_PIXEL` 20 000), one instance, at most **1 GiB**
+  of linear memory, and a manifest cap of 1 MiB (`crates/plugin/src/wasm.rs`). The crate's own docs
+  state that a plug-in cannot escape its sandbox, hang the app or render differently on another
+  machine — but it can still be *wrong*, so check its output.
 - The `wasm` feature is enabled on native builds by the host crate (`crates/host/Cargo.toml`,
   `[target.'cfg(not(target_arch = "wasm32"))'.dependencies]`); without it, loading reports that
   WebAssembly plug-ins are unavailable.
-- `effect.plugins.load {path | folder}` — loads for this session (`API v1`).
+- `effect.plugins.load {path | folder}` — loads for this session.
 - `effect.plugins.install {path | folder | bundle?}` — copies a `.wasm` into the Plug-ins folder so
   it loads on every start; a **bundle** folder means every `.wasm` goes into the Plug-ins folder and
   every `.jsx` becomes a ScriptUI panel.
@@ -56,10 +63,11 @@ effect rather than a crash.
   `EFFECTCRAFT_HELPERS=1` starts them at launch (an environment variable, not a setting, so writing
   the settings folder cannot turn it on). `effect.helpers.load {path}` hands a file or folder (for
   example a folder of `.ofx` plug-ins) to the helpers that accept it.
-- **Protocol v1:** one JSON object per line on stdin; replies on stdout prefixed with `@ec-helper `;
-  every object has an `op`; lines are capped at 256 MB. Pixels never travel through the pipe — the
-  host creates a frame-exchange file and passes an image ref. The helper is started with
-  `--effectcraft-helper` and may keep state in `EFFECTCRAFT_HELPER_STATE_DIR`.
+- **Protocol v1** (`crates/helper-host/src/protocol.rs`, `PROTOCOL_VERSION = 1`): one JSON object
+  per line on stdin; replies on stdout prefixed with `@ec-helper `; every object has an `op`; lines
+  are capped at 256 MB. Pixels never travel through the pipe — the host creates a frame-exchange
+  file and passes an image ref. The helper is started with `--effectcraft-helper` and may keep
+  state in `EFFECTCRAFT_HELPER_STATE_DIR`.
 - **Failure handling:** a failed render leaves the frame as it was and puts a warning after the
   effect's name. An effect that stops its helper three times is turned off and listed in
   `helper_blocklist.txt`; `effect.helpers.scan {"retry": true}` turns it back on. A helper that
@@ -74,7 +82,7 @@ effect rather than a crash.
 ## The Plug-in Library
 
 One reviewed catalog (`index.json` in a Git repository) lists community packages with version,
-plug-in API, the oldest EffectCraft they need, and the release asset URL plus its **SHA-256**. The
+plug-in ABI, the oldest EffectCraft they need, and the release asset URL plus its **SHA-256**. The
 default catalog is the community one (`storytold/effectcraft-plugins`); `library.refresh` accepts a
 `https://` or `file://` catalog of your own.
 
@@ -89,6 +97,9 @@ default catalog is the community one (`storytold/effectcraft-plugins`); `library
 | `library.uninstall {id}` | remove; its effects stay registered until the next start |
 | `library.loadInstalled` | load what is installed (the app runs it at start-up) |
 
+- A release runs here when its ABI is between `MIN_WASM_API_VERSION` (1) and `WASM_API_VERSION` (2)
+  and its minimum app version is not newer than this build (`runs_here`, `latest_compatible` in
+  `crates/engine/src/system/library.rs`).
 - Downloads use the system's `curl` (like trained models), so no networking code is linked in. Only
   `https://` URLs on GitHub's hosts are fetched and a redirect ending elsewhere is refused; a local
   `file://` catalog may name local files. Catalog ≤ 4 MiB, module ≤ 64 MiB.
@@ -104,6 +115,9 @@ default catalog is the community one (`storytold/effectcraft-plugins`); `library
   `Scripts/Shutdown/` run in alphabetical order at launch and quit, each in its own global scope.
 - ScriptUI panels are dockable, reopen at the next launch, and can be given a shortcut in Edit ▸
   Keyboard Shortcuts.
+- A script that calls `app.project.renderQueue.render()` through the control channel keeps the
+  window responsive and can be stopped with the `scriptRender.stop` automation id; other control
+  requests wait or error while it runs (`docs/control-protocol.md` §Waiting for a render).
 - No `.jsxbin`, no separate Legacy ExtendScript engine mode, no inter-application `BridgeTalk`
   messaging.
 
@@ -116,3 +130,5 @@ default catalog is the community one (`storytold/effectcraft-plugins`); `library
   the app, but the failure is easy to misread as an EffectCraft bug.
 - Assume a helper is sandboxed: it is a child process running native code, isolated by a protocol
   and by error handling, not by a security boundary (`docs/adr/0001-external-effect-helpers.md`).
+- Assume an old release's ABI number: a package pinned to ABI 1 still loads, a package built for an
+  ABI newer than 2 is refused (`library.list` shows `needsNewerApp`).

@@ -1,93 +1,121 @@
-# PdfCraft — evidence ledger (tag v0.19.0)
+# PdfCraft — evidence ledger (tag v0.21.1)
 
-Audit basis: this checkout is tag **`v0.19.0`**, commit **`8c572792d6760bdc903d6f9a032e3e38e8f71cb8`** ("Release 0.19.0: the internal crates' version requirements", 2026-11-06); inspection **2026-11-07**. `git rev-parse HEAD` in the pinned checkout matches. The installed bundle prints `pdfcraft 0.19.0`; the GUI was never launched.
+Audit basis: this checkout is tag **`v0.21.1`**, commit **`b503b2e62dfeec5598f344e4e287d9c9cbdb34fa`** ("Merge tested main for v0.21.1", 2026-11-11); inspection **2026-11-12**. `git rev-parse HEAD` in the pinned checkout matches. The installed bundle prints `pdfcraft 0.21.1`; the GUI was never launched.
 
-v0.18.1 → v0.19.0 delta (measured, not quoted from notes): **375 files** changed (`git diff --stat v0.18.1..HEAD`, +58 349 / −3 517). Automation **+11 tools, none removed**; **+4 registry command ids, none removed**; control methods 17 = 17; `apps/pdfcraft-cli/src/main.rs` zero diff. New surfaces: 3D models (U3D/PRC annotation, PRC→PNG), bookmark tree export/import/copy, comment copy/paste between documents, PCX input, IBAN redaction pattern, a second OCR engine with review/dictionary/confidence, in-place scan enhancement, and a new file identifier for redacted or sanitized copies.
+v0.19.0 → v0.21.1 delta (measured, not quoted from notes): **872 files** changed (`git diff --shortstat v0.19.0..HEAD`, +165 335 / −11 319). The round's compare API reports 1 957 commits and caps its file list at 300; the clone's tag diff is the file count used here. Automation **+13 tools, none removed**; **+7 registry command ids, none removed**; control methods 17 = 17; `apps/pdfcraft-cli/src/main.rs` zero diff. New surfaces: prepress (hairlines, colour conversion, printer marks, driver papers), find/replace inside paragraphs, grouped-text preparation, cross-document object copy/paste, Office import through LibreOffice, split view, initial-view chrome hiding, portfolio presentation, full-screen transitions, custom-stamp line, comment pop-ups, field focus/pointer scripts, redaction regex, optimizer discards, XFA milestone 12, accessibility layout-table conversion, and a web `window.pdfcraft` API.
 
 ## 1. Capability claims → evidence → tier
 
 | # | Claim | Evidence (repo-relative) | Tier |
 |---|---|---|---|
-| 1 | 195 automation tools (+11 at v0.19.0, none removed) | `crates/automation/src/tools.rs` — unique `t("name"` set = 195 (162 inline + 33 wrapped; 184 at v0.18.1); additions `bookmark_copy`, `bookmark_export`, `bookmark_import`, `comments_copy`, `comments_paste`, `model_add`, `model_render`, `ocr_dictionary`, `ocr_review_apply`, `ocr_words`, `page_enhance_scan` | implemented |
-| 2 | 214 registry command ids (+4) | `crates/engine/src/commands.rs:165` `COMMANDS` — 214 `c("id")` (210 at v0.18.1); `comment.copy`, `comment.paste`, `ocr.correct`, `ocr.enhance` added | implemented |
-| 3 | 17 UI control methods unchanged | `crates/ui-egui/src/control/requests.rs` — identical 17-method set at both tags | implemented |
-| 4 | Interface languages: no in-tree count | `crates/ui-egui/src/i18n/` holds only `tests.rs`; catalogs are embedded from the `craft-i18n` pin (`craft-i18n.rev` = `575cfdef…`) by `crates/ui-egui/src/i18n.rs` | unmeasurable (claim dropped) |
-| 5 | CLI 14 documented subcommands + internal `check-one` | `apps/pdfcraft-cli/src/main.rs` match arms; zero diff between tags | implemented |
-| 6 | 99 tools carry a command id, covering 73 registry ids | per-`t(` chunk `.cmd("…")` (99) ∩ `COMMANDS` (73 of 214; 71 of 210 at v0.18.1; `edit.undo`/`edit.redo` are tool-only names) | implemented |
-| 7 | 13 convertible input extensions (+`pcx`) | `CONVERTIBLE`, `crates/create/src/lib.rs:749` | implemented |
-| 8 | 6 redaction patterns (+`Iban`) | `PATTERNS`, `crates/redact/src/patterns.rs:17` | implemented |
-| 9 | 3D models: `model_add` takes U3D or PRC with a poster; `model_render` draws PRC to PNG | tool descriptions in `crates/automation/src/tools.rs`; `crates/prc/`, `crates/prc-render/`; U3D draw returns an error | implemented / **partial** (no U3D rendering) |
-| 10 | Bookmark tree export, import and copy between documents | `crates/organize/src/outline_io.rs`; `bookmark_export`, `bookmark_import`, `bookmark_copy` | implemented |
-| 11 | Comment copy/paste between documents | `crates/automation/src/comments.rs`; `comments_copy` returns XFDF, `comments_paste` adds it; commands `comment.copy`/`comment.paste` | implemented |
-| 12 | OCR: two engines, ensemble strategies, confidence bands, review loop, dictionary | `crates/ocr/src/{lib,ocrs,tesseract}.rs`, `crates/ocr/README.md`, `crates/ocr/src/confidence.rs`; tools `ocr_words`/`ocr_review_apply`/`ocr_dictionary`; existing OCR tools gained `engine`, `strategy`, `retain_review` | implemented; `language` enum still `["en"]` |
-| 13 | Scanned pages are cleaned in place | `crates/engine/src/scan_clean.rs:207` `enhance_scanned_pages`; tool `page_enhance_scan` | implemented |
-| 14 | A redacted or sanitized copy gets a new file identifier | `crates/redact/src/lib.rs:667`, `crates/redact/src/sanitize.rs:678` (ISO 32000-2 §14.4) | implemented |
-| 15 | Compare has page-scoped engine calls that no tool argument exposes | `crates/engine/src/compare.rs` (`compare_pages`, `compare_report_of`, `mark_differences_of`); `doc_compare*` schemas have no `pages` argument | implemented (engine), not reachable headlessly |
-| 16 | Page-image export runs on worker threads | `crates/render/src/raster/work_queue.rs` | implemented (unchanged) |
-| 17 | XFA: static form with thousands of filled fields; signature fields named by SOM path; round checkbox highlight | PRs #4638, #4507, #4512; `crates/xfa/src/{lib,layout}.rs` | implemented (carried) |
-| 18 | Redaction F-008/F-011: vector paths behind clipping not retained; unused Type 3 glyph programs unlinked | PRs #4577, #4579; `crates/redact/src/` | implemented (carried) |
-| 19 | Native macOS menus from craft-menu; craft-ui task panes; craft-ui ComboBox | PRs #4752, #4606; `crates/ui-egui/src/` | implemented (carried) |
-| 20 | No Office import; no PDF/X or PDF/UA verification; attachments one-way; no timestamp server | `docs/gaps.md`; attachment tool set | not implemented (verified absent) |
-| 21 | Office export: 5 kinds / 7 extensions (was reported as 4/5) | `OfficeFormat::from_extension`, `crates/engine/src/compare.rs:180` — `docx`, `pptx`, `html`/`htm`, `rtf`, `md`/`markdown`; Markdown already present at v0.18.1 | implemented, **corrected** |
-| 22 | All-tools catalogue unchanged: 150 items in 24 groups (30 sections) | `crates/engine/src/catalog.rs:75` `TOOL_GROUPS` | implemented (carried) |
+| 1 | 208 automation tools (+13 at v0.21.1, none removed) | `crates/automation/src/tools.rs` — 208 top-level `t(` declarations (195 at v0.19.0); additions `accessibility_layout_table_to_blocks`, `attachment_edit`, `comment_popup`, `doc_convert_colours`, `doc_fix_hairlines`, `doc_printer_marks`, `form_focus`, `js_event`, `object_copy`, `object_paste`, `printer_papers`, `text_prepare`, `text_replace` | implemented |
+| 2 | 221 registry command ids (+7) | `crates/engine/src/commands.rs:167` `COMMANDS` — 221 `c("id")` (214 at v0.19.0); additions `edit.replace`, `prepress.convert_colors`, `prepress.hairlines`, `prepress.marks`, `prepress.marks.remove`, `view.split`, `view.toggle_interface` | implemented |
+| 3 | 17 UI control methods, including `ui.panel` (not `ui.dock`) | `crates/ui-egui/src/control/requests.rs` — identical set at both tags: state/commands/command/set/open/inspect/click/focus/resize/quit/drag/move/type/key/screenshot/panel/dock.reset | implemented; previous skill's `ui.dock` was wrong |
+| 4 | CLI 14 documented subcommands + internal `check-one`; 34 `--flag` names | `apps/pdfcraft-cli/src/main.rs` match arms; `--flag` strings across `apps/pdfcraft-cli/src/*.rs`; zero diff between tags | implemented |
+| 5 | 58 launch view/preference keys | top-level match arms of `PdfCraftApp::set_option`, `crates/ui-egui/src/app/control.rs` | implemented; previous skill said 46 |
+| 6 | 104 tools carry a command id, covering 77 distinct ids (75 registry ids) | `.cmd("…")` in `crates/automation/src/tools.rs`; intersection with `COMMANDS`; `edit.undo`/`edit.redo` are not registry entries. 99 / 73 at v0.19.0 | implemented |
+| 7 | 146 of 221 commands have no headless tool | `COMMANDS` minus the 75 mapped ids | measured |
+| 8 | Catalogue: 152 entries in 23 groups, 29 sections; 21 planned entries (24 at v0.19.0), 5 planned groups | `crates/engine/src/catalog.rs:75` `TOOL_GROUPS` — 149 `item(` + 3 `menu_item(`; 23 `ToolGroup {`; 29 `ToolSection {`; the three prepress entries moved from Planned to Ready | implemented; previous skill's 150/24/30 was off by one on each |
+| 9 | 13 convertible input extensions, unchanged | `CONVERTIBLE`, `crates/create/src/lib.rs:779` — images plus `txt`/`text` | implemented |
+| 10 | 28 Office import extensions through LibreOffice | `OFFICE_EXTENSIONS`, `crates/create/src/office.rs` — doc/docx/docm/dot/dotx/dotm/odt/ott/rtf, xls/xlsx/xlsm/xlt/xltx/xltm/ods/ots, ppt/pptx/pptm/pot/potx/potm/pps/ppsx/ppsm/odp/otp | implemented (desktop only) |
+| 11 | Office import paths differ | File ▸ Open converts in a background worker (`crates/ui-egui/src/platform/open_worker.rs:224`); `doc_combine`/`doc_create_multiple` convert (`crates/automation/src/assemble.rs`, `crates/engine/src/session/files.rs`); `doc_open` opens PDF only (`crates/automation/src/documents.rs:106`); GUI Combine/Insert/Create Multiple refuse on the frame thread (`crates/ui-egui/src/workflows/combine_ui/parts.rs:42`, `crates/ui-egui/src/workflows/create_multiple_ui.rs:46`, `crates/ui-egui/src/workflows/files.rs:669`) | implemented / **partial by path** |
+| 12 | `doc_create` text uses Inter for Latin/Greek/Cyrillic outside WinAnsi | `crates/automation/src/tools.rs` `doc_create`; `crates/create/src/text_font.rs`; other scripts refused | implemented; previous "WinAnsi only" was too strict |
+| 13 | 23 print paper presets (was 21) | `PAPERS`, `crates/print/src/settings.rs:233`; driver names via `printer_papers` (`crates/automation/src/tools.rs`) | implemented |
+| 14 | 20 `comment_add` types (previous prose said 19) | `crates/automation/src/tools.rs` `comment_add` `type` enum | implemented |
+| 15 | 6 redaction patterns plus a custom regex with checksum validators | `PATTERNS`, `crates/redact/src/patterns.rs:17`; `regex`/`validate` in `redact_mark`, `crates/automation/src/tools.rs`; `crates/redact/src/user_regex.rs` | implemented |
+| 16 | Office export: 5 kinds / 7 extensions, unchanged | `OfficeFormat::from_extension`, `crates/engine/src/compare.rs:180` — docx, pptx, html/htm, rtf, md/markdown | implemented, **partial/lossy** |
+| 17 | Form-data: 8 extensions → 6 formats, unchanged | `Format::from_extension`, `crates/xfdf/src/lib.rs:75` — xfdf, fdf, xml, xdp, csv, txt/tab/tsv | implemented |
+| 18 | Page-image export: 3 formats, unchanged | `ImageFormat`, `crates/engine/src/export.rs:362` — png, jpeg, tiff | implemented |
+| 19 | MCP compact 17 entries; 4 resource templates + 2 list resources; 16 MiB line cap | `COMPACT_CORE_TOOLS`, `crates/automation/src/mcp.rs:45` (15 core) + `tool_search` + `tool_call`; `resource_templates()` (4) and `resource_list()` (2); `MAX_LINE_BYTES` 16 MiB | implemented |
+| 20 | Split view and initial-view chrome hiding | `view.split` / `crates/ui-egui/src/panes.rs`; `view.toggle_interface` / `crates/ui-egui/src/viewer_prefs.rs` (`HideToolbar`, `HideMenubar`, `HideWindowUI`, ISO 32000-2 Table 147) | implemented |
+| 21 | Portfolio: file list and `/D` document first; `doc_info` reports both | `crates/ui-egui/src/app/files.rs:564-587`; `crates/render/src/inspect/model.rs:817`; `crates/automation/src/json.rs:351` | implemented; no tool extracts an attachment |
+| 22 | 3D: PRC renders from named/orbit views; U3D still cannot draw | `model_render` in `crates/automation/src/tools.rs`; `crates/prc-render/src/nav/{mod,orbit,axes}.rs` | implemented / **partial** (U3D) |
+| 23 | Text replace inside paragraphs and preparation of grouped text | `text_replace` (`crates/engine/src/find_replace.rs`) and `text_prepare` (`crates/automation/src/tools.rs`); command `edit.replace` | implemented; partial coverage (see skips) |
+| 24 | Copy/paste page objects within or between documents | `object_copy` / `object_paste`; `crates/engine/src/rich_copy.rs`, `crates/engine/src/object_clip.rs` | implemented |
+| 25 | Prepress: fix hairlines, convert colours, printer marks, driver papers | `crates/edit/src/hairlines.rs`, `crates/edit/src/convert_colours.rs`, `crates/edit/src/printer_marks.rs`; commands `prepress.*`; `printer_papers` | implemented / **partial** (no ICC, output intent or separations) |
+| 26 | Document actions: Open, WillSave and WillPrint run | `crates/engine/src/js.rs:819` `DocumentScriptEvent`; call sites `crates/ui-egui/src/editing/save.rs:131`, `workflows/print_ui.rs:639`, `engine/src/js.rs:1095` `run_open_scripts` | implemented; other triggers absent |
+| 27 | Accessibility: 32 rules in 7 categories; layout table → blocks tool | `crates/a11y/src/lib.rs:3,77`; `accessibility_layout_table_to_blocks`, `crates/a11y/src/layout_table.rs` | implemented |
+| 28 | XFA milestone 12: prototypes, traversal, linked images, table rows, master-page fields, template properties | `crates/xfa/src/{proto,traverse,linked_images}.rs`; `crates/js/src/xfa/props.rs`; `xfa_to_static` | implemented / **partial** (full XFA still incomplete) |
+| 29 | No Preflight panel; PDF/A only 2b/3b and structural | `crates/preflight/src/lib.rs:41` `Level::{A2b,A3b}`; catalogue's Preflight is `Planned("M11")` (`crates/engine/src/catalog.rs:411`) | not implemented / partial |
+| 30 | Headless OCR is English-only | `crates/ocr/src/ocrs.rs:32` `LANGUAGES = [("en", "English")]`; tool `language` enum built from it; Tesseract allow-list in `crates/ocr/src/tesseract.rs` is not exposed | implemented with limit |
+| 31 | Attachments are one-way; `content_copy` is added content only | `attachment_add`/`attachment_delete`/`attachment_edit`; no extract tool; `content_copy` vs `object_copy` in `crates/automation/src/tools.rs` | implemented with limits |
+| 32 | Web: in-page `window.pdfcraft` API with `?control`; OCR in Web Workers | `apps/pdfcraft-web/src/api.rs`; `apps/pdfcraft-ocr-worker/src/main.rs`; `apps/pdfcraft-web/index.html` | implemented / **partial web build** |
 
-## 2. Headline counts: v0.18.1 → v0.19.0
+## 2. Headline counts: v0.19.0 → v0.21.1
 
-| Surface | v0.18.1 (measured) | v0.19.0 (measured) | Change |
+| Surface | v0.19.0 (measured) | v0.21.1 (measured) | Change |
 |---|---:|---:|---|
-| Automation tools | 184 | **195** | +11, none removed |
-| Registry commands | 210 | **214** | +4, none removed |
-| Tools with a command id (distinct registry ids) | 96 (71) | **99 (73)** | +3 tools, +2 ids |
-| UI control methods | 17 | **17** | unchanged at v0.19.0 |
-| CLI subcommands | 14 + `check-one` | **14 + `check-one`** | unchanged at v0.19.0 |
-| Convertible input extensions | 12 | **13** | +`pcx` |
-| Redaction patterns | 5 | **6** | +`Iban` |
-| Office export | 5 kinds / 7 ext | **5 kinds / 7 ext** | unchanged at v0.19.0 (the skill's old 4/5 was wrong) |
-| Form-data extensions → formats | 8 → 6 | **8 → 6** | unchanged at v0.19.0 |
-| Page-image export formats | 3 | **3** | unchanged at v0.19.0 |
-| All-tools catalogue | 150 / 24 groups | **150 / 24 groups** | unchanged at v0.19.0 |
-| MCP compact entries / resources | 17 / 4 templates + 2 | **17 / 4 templates + 2** | unchanged at v0.19.0 |
+| Automation tools | 195 | **208** | +13, none removed |
+| Registry commands | 214 | **221** | +7, none removed |
+| Tools with a command id (distinct ids / registry ids) | 99 (73 / 71) | **104 (77 / 75)** | +5 tools, +4 ids |
+| Read-only / destructive tools | 53 / 30 | **54 / 30** | +1 read-only |
+| Commands with no tool | 143 | **146** | +3 after additions |
+| UI control methods | 17 | **17** | unchanged at v0.21.1 |
+| CLI subcommands | 14 + `check-one` | **14 + `check-one`** | unchanged at v0.21.1 |
+| CLI `--flag` names | 34 | **34** | unchanged at v0.21.1 |
+| Launch view keys | 58 | **58** | unchanged at v0.21.1 |
+| All-tools catalogue | 152 / 23 groups / 29 sections | **152 / 23 / 29** | unchanged totals; planned entries 24 → 21 |
+| Convertible input extensions | 13 | **13** | unchanged at v0.21.1 |
+| Office import extensions | — (absent) | **28** | new at v0.21.1 |
+| Office export | 5 kinds / 7 ext | **5 kinds / 7 ext** | unchanged at v0.21.1 |
+| Form-data extensions → formats | 8 → 6 | **8 → 6** | unchanged at v0.21.1 |
+| Redaction patterns | 6 | **6** (+ custom regex) | unchanged at v0.21.1 |
+| Page-image export formats | 3 | **3** | unchanged at v0.21.1 |
+| Print paper presets | 21 | **23** | +2 |
+| Comment types | 20 | **20** | unchanged at v0.21.1 |
+| MCP compact entries / resources | 17 / 4 templates + 2 | **17 / 4 + 2** | unchanged at v0.21.1 |
 | Interface languages | not measurable | **not measurable** | catalogs live in the `craft-i18n` pin |
 
 ## 3. Uncertain / not verified
 
-- GUI behaviour not launched; registry, tool schemas and engine code are the evidence.
-- The Tesseract OCR engine was not exercised (no binary assumed or run); its 12-language allow-list is code-only and unreachable because the tool's `language` enum is built from `ocrs::LANGUAGES` (`["en"]`).
-- U3D rendering was not tested; `model_render` refuses it.
-- The `model_add` poster path and `page_enhance_scan` image write-back were read, not exercised on a real scan.
+- GUI behaviour not launched; registry, tool schemas, engine code and the read-only `--version`/`--help` runs are the evidence.
+- The new tools were not exercised end to end: hairline fixing, colour conversion, printer marks, text replace/prepare, object copy/paste, form focus/pointer scripts, portfolio presentation, split view and Office import are read from code and their schemas.
+- Office import was not run; no LibreOffice installation or conversion was assumed. The 28 extensions and the worker/frame-thread split are from code.
+- U3D rendering was not tested; `model_render` documents that only PRC streams draw.
+- The Tesseract OCR engine was not exercised (no `tesseract` binary was assumed or run); its 12-language allow-list is code-only and unreachable because the tool's `language` enum is built from `ocrs::LANGUAGES` (`["en"]`).
+- Prepress was not exercised on a real print file; "partial" means the code path and tool exist, not that a print house signed off.
+- Text replace's overlap warning (new rows can overlap what follows) is documented in the tool description and not visually verified.
 
 ## 4. Doc-vs-code drift found at this tag (code wins)
 
 | Doc statement | Code reality |
 |---|---|
-| Several repo docs "141 automation tools / 184 registered commands" | 195 / 214 |
-| Previous skill's at-a-glance table "183 tools / 205 commands / 35 languages" | 195 / 214 / no measurable language count |
-| Previous skill "71 tools mapped to a command" | 99 tools; 73 distinct registry ids |
-| Previous skill "134 of 210 commands have no tool" | 141 of 210 at v0.18.1; 143 of 214 at v0.19.0 |
-| Round context compare API "300 files changed" | 375 files in the clone's `v0.18.1..HEAD` diff |
-| Previous skill "Office export 4 kinds / 5 extensions" | 5 kinds / 7 extensions (Markdown already at v0.18.1) |
+| `docs/target-app-parity.md`, `docs/ui-parity.md` still say "141 automation tools / 184 registered commands" | 208 / 221 |
+| README says MCP `--compact` returns "about ten core tools" | 15 core + `tool_search` + `tool_call` = 17 |
+| `docs/gaps.md` gap 8 says Insert, Combine and Create Multiple do not take Office files | Headless `doc_combine`/`doc_create_multiple` do; GUI Combine/Insert/Create Multiple refuse on the frame thread; File ▸ Open converts in the background |
+| `docs/gaps.md` gap 18 lists colour conversion as missing (while also saying fix hairlines is in) | Both are tools (`doc_convert_colours`, `doc_fix_hairlines`) and commands (`prepress.convert_colors`, `prepress.hairlines`) |
+| `docs/gaps.md` gap 16 says comment pop-ups cannot be moved | `comment_popup` moves one (`rect`), opens or closes it |
+| Previous skill said 150 catalogue entries / 24 groups / 30 sections | 152 / 23 / 29 at both tags |
+| Previous skill said 25 CLI `--flag` names / 46 launch keys | 34 / 58 at both tags |
+| Previous skill said "no Office import", "no portfolio view", "split view missing" | Office import via LibreOffice; portfolio view and split view exist |
+| Previous skill said `ui.dock` is a control method | The method is `ui.panel`; `ui.dock.reset` resets it |
 
 ## 5. Verification commands (read-only)
 
 ```sh
-git -C <clone> rev-parse HEAD                                   # 8c572792d6760bdc903d6f9a032e3e38e8f71cb8
-git -C <clone> diff --stat v0.18.1..HEAD                        # 375 files, +58349 / -3517
-grep -oE '\bt\(\s*"[a-z][a-z0-9_.]*"' crates/automation/src/tools.rs | sort -u | wc -l  # 162 inline names
-grep -cE '^\s+t\($' crates/automation/src/tools.rs              # 33 wrapped declarations (162+33 = 195)
-grep -cE '^\s+c\("|^\s+c\($' crates/engine/src/commands.rs      # 214
+git -C <clone> rev-parse HEAD                                   # b503b2e62dfeec5598f344e4e287d9c9cbdb34fa
+git -C <clone> diff --shortstat v0.19.0..HEAD                   # 872 files, 165335 insertions, 11319 deletions
+python3 - <<'PY'                                                # 208 tools, 195 at v0.19.0
+import re, subprocess
+for tag in ("v0.19.0", "v0.21.1"):
+    src = subprocess.run(["git","show",tag+":crates/automation/src/tools.rs"],capture_output=True,text=True).stdout
+    print(tag, len(re.findall(r'\bt\(\s*"([a-z][a-z0-9_.]*)"', src)))
+PY
+grep -cE '^\s+c\("|^\s+c\($' crates/engine/src/commands.rs      # 221
 grep -oE '"[a-z]+\.[a-zA-Z.]+"' crates/ui-egui/src/control/requests.rs | sort -u | wc -l  # 17
-grep -cE '\.cmd\(' crates/automation/src/tools.rs               # 99
-grep -c 'Planned(' crates/engine/src/catalog.rs                 # 30 = 24 items + 5 groups + the enum arm
-grep -c 'CONVERTIBLE' crates/create/src/lib.rs                  # [&str; 13] at line 749
+grep -cE '\.cmd\(' crates/automation/src/tools.rs               # 104 (per-block parsing gives 77 distinct ids)
+grep -c 'Planned(' crates/engine/src/catalog.rs                 # 27 = 21 items + 5 groups + the enum declaration
+grep -n 'CONVERTIBLE' crates/create/src/lib.rs                  # [&str; 13]
+grep -n 'pub const PAPERS' crates/print/src/settings.rs       # [&str, (f64,f64); 23]
 ls crates/ui-egui/src/i18n/*.tsv | wc -l                        # 0 (catalogs are not in-tree)
 ```
 
-The exact-set diffs were done with a one-off script over `t\(\s*"name"` and `c\(\s*"id"` at both tags; totals above are the resulting set sizes.
+The exact-set diffs were done with a one-off script over the tool and command declarations at both tags; totals above are the resulting set sizes.
 
-## Round 2026-11-07 (refresh)
+## Round 2026-11-12 (refresh)
 
-- Pinned to `v0.19.0` = `8c572792d6760bdc903d6f9a032e3e38e8f71cb8`; installed `pdfcraft 0.19.0`.
-- Tools 184 → **195** (+11, none removed); registry commands 210 → **214** (+4, none removed).
-- `references/automation-tools.md` was regenerated from `tools()` at this tag (195 rows) rather than carried forward.
-- Corrected the stale counts and the mapped-tool sentence listed in §4; dropped the language total because the catalogs are no longer in-tree.
+- Pinned to `v0.21.1` = `b503b2e62dfeec5598f344e4e287d9c9cbdb34fa`; installed `pdfcraft 0.21.1`.
+- Tools 195 → **208** (+13, none removed); registry commands 214 → **221** (+7, none removed).
+- `references/automation-tools.md` was regenerated from `tools()` at this tag (208 rows) rather than carried forward.
+- Corrected the stale counts, the `ui.dock` method name, the Office-import/portfolio/split-view/print-production claims, and the limits around `content_copy`, document actions and `doc_create` text listed in §4.
 - Paths: every repo-relative path cited by `SKILL.md` was re-resolved with `git cat-file -e HEAD:<path>`; all exist (brace shorthands expanded). Nothing was deleted for being wrong.

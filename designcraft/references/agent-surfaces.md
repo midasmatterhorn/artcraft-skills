@@ -2,21 +2,22 @@
 
 All paths are repo-relative to https://github.com/storytold/designcraft.
 
-Verified at tag **v0.18.0**, commit `58ac6d29b260e033f4291afc4318b507cfd90fd9`, 2026-11-07; the previous
-pin was v0.17.0 (`e79d682`). Installed `/Applications/DesignCraft.app` is 0.18.0 and its bundled CLI
-prints `designcraft-cli 0.18.0`.
+Verified at tag **v0.20.1**, commit `33a467872268c98536231491865b4011b0275b17`, 2026-11-12; the
+previous pin was v0.18.0 (`58ac6d2`). The installed app bundle is 0.20.1 and its bundled CLI prints
+`designcraft-cli 0.20.1`.
 
-New at v0.18.0 (ids below are current): `file.exportBatch` + `file.exportPresets` /
-`file.saveExportPreset` / `file.deleteExportPreset` (File ▸ Export Layouts and Versions: alternate
-layouts × versions, PDF/PNG/JPEG, one folder per version, presets), `layout.alternate.duplicate` /
-`.delete` / `.options`, `layout.parents.duplicate`; UI `app.exportBatch`, `app.parentOptions`,
-`app.alternateLayoutOptions`. Engine ids 547 → 555, UI rows 187 → 190.
+At v0.20.1 the registry is unchanged from v0.18.0 (555 engine ids, 190 UI rows, 26 MCP tools, 11
+CLI subcommands, format 4). New behaviour under existing ids: `layout.pages.delete` →
+`{deleted}`, `layout.pages.applyParent` → `{applied}` and out-of-range indices refused;
+`preflight.run` gained `whiteOverprint`; scripts have depth/step/byte bounds; table commands accept
+`story?`/`table?` without a table selection; anchored text frames keep their own stories; links
+checks run on a worker thread with a document-side size+time fingerprint (see §12).
 
 ## 1. CLI (`designcraft-cli`)
 
 Source: `apps/designcraft-cli/src/main.rs` (module doc; the `USAGE` const; subcommand dispatch in
 `main`). The macOS DMG installs it **inside the bundle** at
-`DesignCraft.app/Contents/MacOS/designcraft-cli` (`docs/mcp.md` §Where the CLI is); the separate
+`Contents/MacOS/designcraft-cli` (`docs/mcp.md` §Where the CLI is); the separate
 `designcraft-cli-<ver>-macos-universal.zip` asset, `cargo install --path apps/designcraft-cli
 --locked`, or `cargo build --release -p designcraft-cli` are the alternatives.
 
@@ -50,10 +51,10 @@ designcraft-cli --version
 - `app` defaults to port 7979 (`--port`/`--connect`); `--method` calls any control-channel method.
 - `mcp`: the automation roots confine every file the agent's commands read (open, placed images,
   data sources, libraries) and write (save, export, package), links followed. **Each flag may be
-  given more than once at this tag (#1552)**, in `--flag DIR` and `--flag=DIR` spelling; a path
-  inside any root of its kind passes, and the roots' common parent, `..`, a link out of them or the
-  other kind's roots stay refused. A kind left out grants none of its access; combining the roots
-  with `--connect` is an error (`apps/designcraft-cli/src/automation_args.rs`, `docs/mcp.md`).
+  given more than once**, in `--flag DIR` and `--flag=DIR` spelling; a path inside any root of its
+  kind passes, and the roots' common parent, `..`, a link out of them or the other kind's roots
+  stay refused. A kind left out grants none of its access; combining the roots with `--connect` is
+  an error (`apps/designcraft-cli/src/automation_args.rs`, `docs/mcp.md`).
 - `script --save` is Save As after the script succeeds; `--export` routes like `run` but
   `.designcraft` writes a copy (`file.saveACopy`).
 - Exit status is non-zero on failure; `script --keep-going` records errors per step instead.
@@ -71,12 +72,12 @@ designcraft-cli --version
   (`apps/designcraft-cli/src/perf.rs`); `--strict` exits non-zero when a budget is exceeded.
 - **Unknown parameter keys**: `run --cmd`, `script` steps (through the backend), MCP and the control
   channel reject a key the command's params description doesn't name (`crates/engine/src/cmd/
-  params.rs:224`, `check_params`; `apps/designcraft-cli/src/main.rs`; `crates/ui-egui/src/control.rs:164`).
+  params.rs`, `check_params`; `apps/designcraft-cli/src/main.rs`; `crates/ui-egui/src/control.rs`).
   `Session::execute` itself only checks in `#[cfg(test)]` builds, so the in-app Scripts panel is the
   one path that may ignore an unknown key. `docs/agents.md`'s "most commands ignore parameters they
   don't know" is stale for the CLI/MCP/control path.
 
-## 2. Script syntax (`designcraft-cli script`, `script.run`, MCP `batch`)
+## 2. Script syntax and limits (`designcraft-cli script`, `script.run`, MCP `batch`)
 
 Source: `apps/designcraft-cli/src/main.rs` `SCRIPT_HELP`; `crates/engine/src/script.rs`;
 `docs/agents.md`.
@@ -96,19 +97,23 @@ command.id {"param": 1}            # one step per line; also command.id={json} o
   failure; `--keep-going` converts failures to `{"error": …, "command": …}` results.
 - `script.run` (the Scripts panel) runs the same text as one undo step and restores the document,
   selection and history when a step fails (`crates/engine/src/cmd/scripts.rs`).
+- **Limits at v0.20.1** (`crates/engine/src/script.rs`): nesting depth 8
+  (`MAX_SCRIPT_DEPTH`); 100,000 steps for one outermost script including the scripts it runs
+  (`MAX_SCRIPT_STEPS`); 16 MiB for one `${…}` interpolation (`MAX_INTERPOLATED_BYTES`); 64 MiB for
+  one `$N.path` string copy (`MAX_REFERENCED_BYTES`); 256 MiB of strings in one step's resolved
+  parameter tree (`MAX_STEP_PARAM_BYTES`). A script that reads a story and pastes it back stops at
+  these limits with an error instead of doubling until memory runs out.
 
-## 3. MCP tools (`designcraft-cli mcp`) — 26, unchanged at v0.18.0
+## 3. MCP tools (`designcraft-cli mcp`) — 26, unchanged at v0.20.1
 
-Source: `crates/mcp` (`tools.rs` — `tool_definitions` :83, `dispatch` :555; `server.rs`, `headless.rs`,
+Source: `crates/mcp` (`tools.rs` — `tool_definitions`, `dispatch`; `server.rs`, `headless.rs`,
 `backend.rs`); `docs/mcp.md`. Every input schema is closed (`additionalProperties: false`) and the
 server checks keys at every level it lists (a misspelt key in a `batch` step, a `pointer` event or
 `mods` is a `-32602` naming its path); every tool carries all four MCP hints — `readOnlyHint`,
-`destructiveHint`, `idempotentHint`, `openWorldHint` (#v0.18.0, `crates/mcp/src/tools.rs`,
-`server.rs::check_arguments`).
-Protocol: newline-delimited JSON-RPC 2.0 on stdin/stdout (`2025-06-18`, also `2025-03-26`,
-`2024-11-05`); logs on stderr. An argument a tool doesn't take, and a command `params` key the
-command doesn't name, are invalid-params errors; `execute` and `batch` check every step before the
-first runs.
+`destructiveHint`, `idempotentHint`, `openWorldHint`. Protocol: newline-delimited JSON-RPC 2.0 on
+stdin/stdout (`2025-06-18`, also `2025-03-26`, `2024-11-05`); logs on stderr. An argument a tool
+doesn't take, and a command `params` key the command doesn't name, are invalid-params errors;
+`execute` and `batch` check every step before the first runs.
 
 | Group | Tools |
 |---|---|
@@ -125,21 +130,27 @@ first runs.
   (`screenshot`, `click`, `drag`, `menu_list`, `ui_inspect`, `ui_set`, `dialog_*`) return an
   error in headless mode, and UI-only commands (`view.*`, `window.*`, `help.*`,
   `edit.dynamicSpelling`, `app.*` except `app.links`) error too (`docs/mcp.md` "Modes"). This is
-  how `window.importShortcuts`, `view.goBack`/`view.goForward` and the new paragraph dialogs are
+  how `window.importShortcuts`, `view.goBack`/`view.goForward` and the paragraph dialogs are
   reached from MCP.
 - Connected `list_commands` returns engine **and** UI commands (UI entries carry `"ui": true`);
   headless `list_commands` returns engine commands only.
 - Resources: `designcraft://document`, `designcraft://commands`. `app.links` works everywhere;
   `help.about {tab?}` opens the About window in the running app.
+- **Tables without a selection:** a table command whose params list `story?`/`table?` can be
+  driven by `table` (the id `table.insert`/`table.get` return) and optionally `story`, even with
+  nothing in a table selected; a range is optional and the whole table is the default. A missing
+  table, or one not in the given story, is an error (`docs/mcp.md` §Tables without a selection;
+  `crates/engine/src/cmd/table/target.rs`).
 
 ## 4. Control channel (`designcraft --control PORT`)
 
-Source: `apps/designcraft/src/control_server.rs` (`MAX_LINE` = 4 MiB :22, `MAX_CONNECTIONS` = 16
-:24); `crates/ui-egui/src/control.rs` (`handle_request` :149); `docs/control-protocol.md`. Start with
+Source: `apps/designcraft/src/control_server.rs` (`MAX_LINE` = 4 MiB, `MAX_CONNECTIONS` = 16);
+`crates/ui-egui/src/control.rs` (`handle_request`); `docs/control-protocol.md`. Start with
 `designcraft --control PORT` or `DESIGNCRAFT_CONTROL_PORT`. JSON lines on `127.0.0.1`; one
 request/one reply per line (the reply echoes the request's `id`). `control.rs` and
-`control_server.rs` are unchanged from v0.12.0: still 26 dispatch arms (the table below collects
-the grouped aliases).
+`control_server.rs` are **byte-identical to v0.18.0**: 28 unique dispatch arms and 31 accepted
+method strings (30 dotted names plus the legacy `command` alias) — unchanged at v0.20.1. Earlier
+notes said 26 or 27 arms; those were undercounts of the same file.
 
 Rules that matter: only requests are read; a line that is not a JSON object with a string `method`
 gets one error reply and the connection is closed, so anything after it on that connection never
@@ -171,7 +182,7 @@ egui shortcut handler; after a drag wait for both the expected document state an
 `document.inspect.canUndo` before testing undo; `ui.key` does not synthesize Cocoa menu events —
 use `ui.menu.invoke` to test a menu command (`docs/control-protocol.md`). `ui.click`/`ui.drag`
 validate the whole gesture before queuing input: at most 10,003 pending events
-(`MAX_PENDING_POINTER_EVENTS`, `crates/ui-egui/src/control.rs:118`); a click uses
+(`MAX_PENDING_POINTER_EVENTS`, `crates/ui-egui/src/control.rs`); a click uses
 1 + 2×`count`, a drag 1 + `steps` + 2×`count`; over-budget requests return `ok: false` and leave
 the queue unchanged.
 
@@ -186,7 +197,7 @@ Headless window screenshots with no visible window:
 (`crates/ui-egui/examples/ui_shot.rs`): each line is a control request, `{"shot": "out.png"}` or
 `{"steps": n}`; a first line `{"empty": true}` skips the sample document.
 
-## 5. Coordinates and text offsets
+## 5. Coordinates, text offsets and page indices
 
 - Points (1/72 in), y down, spread space; page indices for `render_page`/`export_png` are
   0-based; commands that create items take `spread` (body index,
@@ -201,6 +212,10 @@ Headless window screenshots with no visible window:
   range is an error that leaves the story unchanged (`docs/mcp.md` "Text offsets").
 - `layout.pages.insert` takes `count` 1–9999 and `after` as a 0-based page index (default: the last
   page) (`crates/engine/src/cmd/layout.rs`).
+- `layout.pages.delete` and `layout.pages.applyParent` take `pages: [0-based indices]`; an index
+  at or past `page_count`, or a list entry that is not a whole number, is an error naming the page
+  count. Their replies are `{deleted}` and `{applied}`, counting a repeated index once
+  (`crates/engine/src/cmd/layout/registry.rs` `page_indices`, `distinct_pages`).
 
 ## 6. Guides and custom column guides
 
@@ -220,7 +235,7 @@ Headless window screenshots with no visible window:
 | `layout.createGuides` | `{rows?, columns?, rowGutter?, columnGutter?, fitTo?: margins\|page, removeExisting?, spread?, page?}`; rows/columns 0–1000 |
 
 - Positions are spread coordinates and must be finite, within ±1,000,000 pt. At most 10,000 guides
-  per `guide.add`/`layout.createGuides` (`crates/engine/src/cmd/guides.rs:20,25,130`).
+  per `guide.add`/`layout.createGuides` (`crates/engine/src/cmd/guides.rs`).
 - Guides live on a page, on the active layer (`guide.add`). `spreadGuide: true` makes a guide cross
   the pasteboard; `liquid: true` makes a Page-tool liquid guide (page guides only).
 - `view.lockGuides {on?: bool}` (UI command, `Cmd+Alt+;`) only blocks pointer dragging and persists
@@ -235,7 +250,7 @@ Headless window screenshots with no visible window:
 
 Column positions are stored per page (`Columns.positions`: 2 × count offsets from the margin box's
 left edge) and validated: finite, ascending, first 0, last margin width, ≤ 216 columns
-(`crates/doc/src/page.rs` `valid_column_positions`, `MAX_COLUMNS` :46).
+(`crates/doc/src/page.rs` `valid_column_positions`, `MAX_COLUMNS`).
 
 | Command | Params / result |
 |---|---|
@@ -250,7 +265,7 @@ left edge) and validated: finite, ascending, first 0, last margin width, ≤ 216
   gutters/margins. The reply's `positions` are offsets from the margin-box left edge; `left` is in
   spread x.
 
-## 7. Placed graphics, placed PDFs and layer options (v0.13)
+## 7. Placed graphics, placed PDFs and layer options
 
 ### Placed-PDF layer visibility
 
@@ -282,14 +297,14 @@ left edge) and validated: finite, ascending, first 0, last margin width, ≤ 216
   placement, not on the shared asset; scalar attributes, layer order, parent/child links, IDs,
   names, original/current visibility, link-update policy and view/export/print flags survive import,
   native save/reopen and IDML export. Native files that hold them require **format version 4**, so
-  older readers refuse them instead of silently dropping the field (`crates/doc/src/assets.rs:48`,
+  older readers refuse them instead of silently dropping the field (`crates/doc/src/assets.rs`,
   `docs/graphic-layer-options.md`).
 - This is preservation, **not layer-aware rendering**: the renderer and PDF exporter use the asset's
   composite/default appearance. Changed visibility or explicit view/export/print states produce an
   import warning, a persistent `unsupportedGraphicLayers` preflight issue and a PDF export warning.
   Do not promise appearance fidelity from a retained IDML layer choice.
 
-## 8. New and changed engine/UI surfaces at v0.14.0 (v0.13 items below still apply)
+## 8. Earlier engine/UI surfaces (v0.13–v0.18) still current
 
 ### EPUB Split Document
 
@@ -301,7 +316,7 @@ left edge) and validated: finite, ascending, first 0, last margin width, ≤ 216
 
 - `off` (default) writes one content file; `exportTags` splits before each paragraph whose style has
   Split Document on; `{style}` splits before each paragraph of that style. Navigation and note links
-  point across the files (`crates/epub/src/lib.rs:42,1063`; `crates/engine/src/cmd/export.rs:15,19`).
+  point across the files (`crates/epub/src/lib.rs`; `crates/engine/src/cmd/export.rs`).
 
 ### Type, notes and variables
 
@@ -323,7 +338,7 @@ left edge) and validated: finite, ascending, first 0, last margin width, ≤ 216
 |---|---|
 | `selection.key` | `{id}` — makes a selected item (≥ 2 selected) the Align key object; toggling clears it |
 | `object.align` | `{edge, to?: selection\|keyObject\|margins\|page\|spread, ids?}`; `to` defaults to `keyObject` while a key object is set |
-| `view.goBack` / `view.goForward` | `{}` (UI, `Cmd+PageUp`/`Cmd+PageDown`) — retrace page jumps at the current zoom; a new jump drops the pages ahead; scrolling adds no entry; deleted pages are skipped (`crates/ui-egui/src/page_history.rs`) |
+| `view.goBack` / `view.goForward` | `{}` (UI, `Cmd+PageUp`/`Cmd+PageDown`) — retrace page jumps at the current zoom (`crates/ui-egui/src/page_history.rs`) |
 | `file.openRecent` | `{index}` (engine) — open an entry from File › Open Recent |
 | `app.openRecent` | `{index}` (UI) — the same with an alert when the file can't be opened |
 | `prefs.set` | `recentFilesMax?: 0–100` (default 20) trims/extends the recent list |
@@ -332,14 +347,14 @@ left edge) and validated: finite, ascending, first 0, last margin width, ≤ 216
 
 - `file.exportPdf` adds `created?: int (Unix seconds)` for reproducible output (default: now).
 - `file.print` adds `created?: int` too.
-- `file.exportPdf` with `standard: "x4"` and `designcraft-cli validate-pdf` now report fonts that
+- `file.exportPdf` with `standard: "x4"` and `designcraft-cli validate-pdf` report fonts that
   draw visible text without an embedded font program, including inside placed PDF forms; invisible
   (render mode 3) text is exempt. Nothing embeds, substitutes or outlines those fonts automatically
   (`docs/gaps.md` §28).
 
 ## 9. Shortcut import (`window.importShortcuts`)
 
-Source: `crates/ui-egui/src/shortcut_import.rs` (unchanged from v0.12.0); UI command entry in
+Source: `crates/ui-egui/src/shortcut_import.rs`; UI command entry in
 `crates/ui-egui/src/menus.rs`; `docs/file-format-parity.md` keyboard row.
 
 ```text
@@ -350,7 +365,7 @@ window.importShortcuts {path | text}
 
 - Input is a set saved by InDesign's Keyboard Shortcuts ▸ **Show Set**: `.txt`, UTF-8 (BOM
   accepted) or UTF-16 (BOM or zero-byte pattern), Windows (`Shift+Ctrl+S`) or Mac (`⇧⌘S`) key names,
-  at most 8 MiB (`MAX_BYTES` :17). Lines are `<item> --- <context>: <keys>, <context>: <keys>` or
+  at most 8 MiB (`MAX_BYTES`). Lines are `<item> --- <context>: <keys>, <context>: <keys>` or
   `[none defined]`.
 - Matching: menu path + label first, then engine menu placement, then a unique label. Only the
   **Default** context applies; a type/text command with no Default entry takes its **Text** entry.
@@ -366,46 +381,46 @@ window.importShortcuts {path | text}
 - Reset everything with `window.resetShortcuts {}`; set one command with
   `window.setShortcut {id, shortcut: "Cmd+Alt+J" | "" | null}` → `{shortcut, conflicts}`.
 
-## 10. Sample commands that create content
+## 10. Sample commands that create or change content
 
 | Command | Params (from the command registry) |
 |---|---|
-| `file.new` | `{preset?, intent?, units?, width?, height?, pages?, startPage?, facingPages?, columns?, gutter?, margins?, bleed?, slug?, title?, primaryTextFrame?}` — new documents get `[Basic Paragraph]` hyphenation defaults (capitalized/last word/across column off) |
+| `file.new` | `{preset?, intent?, units?, width?, height?, pages?, startPage?, facingPages?, columns?, gutter?, margins?, bleed?, slug?, title?, primaryTextFrame?}` — new documents get `[Basic Paragraph]` hyphenation defaults (capitalized/last word/across column off); a negative gutter is clamped to 0 |
 | `file.newSample` | `{}` — multi-page magazine (`crates/engine/src/sample.rs`) |
 | `frame.create` | `{spread?, rect: [x0,y0,x1,y1], shape?, content?, sides?, starInset?, text?, caret?, vertical?}` → `{id, story?}` |
 | `text.thread` | `{from?, to?, rect?, spread?, autoflow?}` → `{story, from, to, overset, pagesAdded}`; autoflow fills the following pages before adding pages |
-| `file.place` | `{path\|base64, name?, frame?, spread?, x?, y?, width?, height?, pdfPage?, pdfCrop?, loadCursor?, layoutPage?, page?, rect?, autoflow?, removeStyles?, styleMap?, styleConflicts?, link?}` — text files and `.xlsx` flow into frames/tables |
+| `file.place` | `{path\|base64, name?, frame?, spread?, x?, y?, width?, height?, pdfPage?, pdfCrop?, loadCursor?, layoutPage?, page?, rect?, autoflow?, removeStyles?, styleMap?, styleConflicts?, link?}` — text files and `.xlsx` flow into frames/tables; with a line or open path selected it creates its own graphic frame and leaves the line alone |
 | `object.layerOptions` / `object.pdfLayers` | see §7 |
 | `document.epubSplit` / `file.exportEpub` | see §8 |
-| `file.exportPdf` | `{path?, pages?, flatten?, spreads?, fullScreen?, bookmarksPanel?, pageLayout?, view?, advanceSeconds?, bleed?, marks?, standard?: "none"\|"x4"\|"a2b", compressImages?, tagged?, media?, title?, author?, created?}` → `{path, bytes, pages, warnings}` |
+| `file.exportPdf` | `{path?, pages?, flatten?, spreads?, fullScreen?, bookmarksPanel?, pageLayout?, view?, advanceSeconds?, bleed?, marks?, standard?: "none"\|"x4"\|"x1a"\|"a2b", compressImages?, tagged?, media?, title?, author?, created?}` → `{path, bytes, pages, warnings}` |
 | `file.exportEpub` / `file.exportFixedEpub` | `{path?, title?, author?, language?, identifier?, coverImage?, tocTitle?, cover?, embedFonts?, split?, fixedLayout?}` / `{path?, title?, author?, language?}` |
 | `file.exportPptx` / `file.exportHtml` | `{path?, pages?, lineBreaks?: keep\|reflow, rasterize?, embedFonts?, title?, author?}` / `{path?, title?, language?}` |
 | `file.exportIdml` | `{path?, embedImages? (default true)}` — also `file.exportText`, `file.exportXml`, `file.printBooklet`, `file.print` |
-| `object.qrCode` | `{type?: url\|text\|sms\|email\|vcard, content, …, color?, rect?, spread?}` → `{id, content}` (`crates/engine/src/cmd/qr.rs`) |
-| `math.insert` / `math.svg` | `{latex, size?, x?, y?, spread?}` / `{latex, size?}` → `{svg, width, height}` (`crates/engine/src/cmd/mathexpr.rs`) |
-| `color.extractTheme` → `swatch.addColorTheme` | `{id?}` → up to five colours from a placed raster / `{colors, name?}` (`crates/engine/src/cmd/color_theme.rs`) |
-| `data.source.select` → `data.merge` | link CSV/TSV/xlsx, then merge into a new document (`crates/engine/src/cmd/datamerge/`) |
-| `font.reload` | `{}` — re-read fonts installed, edited or removed while running (`crates/engine/src/cmd/fonts.rs`) |
-| `file.package` | `{dir, idml?: true, pdf?: false, instructions?}` → `{dir, files, report}`; report names a lost placed-PDF layer choice (`crates/engine/src/cmd/package.rs`) |
-| `file.close` | `{index?}` — closes **without asking** and discards recovery data; the UI's Close asks (`crates/engine/src/lib.rs:505`) |
+| `object.qrCode` | `{type?: url\|text\|sms\|email\|vcard, content, …, color?, rect?, spread?}` → `{id, content}` |
+| `math.insert` / `math.svg` | `{latex, size?, x?, y?, spread?}` / `{latex, size?}` → `{svg, width, height}` |
+| `color.extractTheme` → `swatch.addColorTheme` | `{id?}` → up to five colours from a placed raster / `{colors, name?}` |
+| `data.source.select` → `data.merge` | link CSV/TSV/xlsx, then merge into a new document; a merge is capped at 1,000,000 pages (`crates/engine/src/cmd/datamerge.rs`) |
+| `font.reload` | `{}` — re-read fonts installed, edited or removed while running |
+| `file.package` | `{dir, idml?: true, pdf?: false, instructions?}` → `{dir, files, report}`; copies the loaded bytes and reports a lost placed-PDF layer choice |
+| `layout.pages.delete` | `{pages: [0-based indices]}` → `{deleted}`; refuses every page and an index past the end |
+| `layout.pages.applyParent` | `{pages: [0-based indices], parent: id\|"A-Parent"\|"A"\|null}` → `{applied}` |
+| `preflight.run` | `{minPpi?}` → `{issues: [{severity, kind, message, item?, page?}]}`; kinds include `overset`, `unplacedStory`, `missingFont`, `missingFontStyle`, `missingGlyphs`, `missingLink`, `lowResolution`, `rgbColor`, `emptyText`, `unsupportedGraphicLayers`, `unsupportedTypography`, `whiteOverprint` |
+| `links.list` | `{}` → placed graphics then linked text files; the panel's worker keeps the statuses current, the command reads them now |
+| `file.close` | `{index?}` — closes **without asking** and discards recovery data; the UI's Close asks |
 
 Ground truth for params: `designcraft-cli describe <command-id>` — the `params` field is the
-command's own documentation string (`crates/engine/src/cmd/mod.rs` `CommandSpec.params`); the
+command's own documentation string (`crates/engine/src/cmd.rs` `CommandSpec.params`); the
 automation boundaries validate keys against it (`crates/engine/src/cmd/params.rs`).
 
 ## 11. Live discovery and pitfalls
 
-- `designcraft-cli commands` lists the **542 engine commands** at this tag; it does not list the 176
-  UI commands. In a running app, `engine.commands` (control) / `list_commands` (MCP connected)
-  returns both, with UI entries marked `"ui": true`. `describe` works for engine commands.
-- Counts are code-derived: 542 unique `cmd!` registrations across the `specs()` lists, plus 176
-  `UI_COMMANDS`. Versus v0.13.0 (537 + 172): added engine `file.info`, `ink.separations`,
-  `note.split`, `text.deleteSurrounding` (+1 const-built id); added UI `help.checkForUpdates`,
-  `ui.dock`, `view.storyEditorDepthRuler`, `window.shortcutSets`; nothing removed. MCP stays 26;
-  the control dispatch gained `ui.docking` (shared dock layout). New this release: PDF/X-1a:2003
-  export through the craft-prepress flattener, Separations Preview of the exported PDF's plates,
-  editable tool keys and shortcut sets in the shared Keyboard Shortcuts dialog, Story Editor depth
-  ruler, and gradient table-cell fills.
+- `designcraft-cli commands` lists the **555 engine commands** at this tag and does not list the
+  **190** UI commands. In a running app, `engine.commands` (control) / `list_commands` (MCP
+  connected) returns both, with UI entries marked `"ui": true`. `describe` works for engine
+  commands.
+- Counts are code-derived: 555 unique `cmd!` registrations across the `specs()` lists, plus 190
+  `UI_COMMANDS`, both unchanged since v0.18.0. MCP stays 26; the control surface is byte-identical
+  to v0.18.0 (28 arms / 31 method strings).
 - UI-only commands (`view.*`, `window.*`, `help.*`, `edit.dynamicSpelling`, `app.*` except
   `app.links`) work only in the desktop app; headless MCP errors. This includes
   `window.importShortcuts`, `view.lockGuides`, `view.goBack`/`view.goForward`,
@@ -418,3 +433,22 @@ automation boundaries validate keys against it (`crates/engine/src/cmd/params.rs
   state untouched. Retained IDML graphic-layer options warn instead of rendering — check
   `preflight.run` for `unsupportedGraphicLayers`.
 - The control channel has no authentication and only binds loopback; do not expose the port.
+- Whole-file reads (open, place, import) accept **regular files only, at most 4 GiB**
+  (`crates/engine/src/io.rs`); a FIFO or device is an error, not a hang.
+
+## 12. New and changed surfaces at v0.20.1 (v0.18.0 → v0.20.1)
+
+| Area | Change | Evidence |
+|---|---|---|
+| Anchored text frames | Copy, paste (also into another document, with placed graphics), duplicate, release and delete keep each frame's story and ids; nesting ≤ 64 | `crates/doc/src/anchored.rs`, `crates/engine/src/cmd/anchored.rs` |
+| Preflight | New issue kind `whiteOverprint` for white/[Paper] fills, strokes, gaps, ruby and kenten set to overprint | `crates/engine/src/cmd/preflight.rs`, `crates/engine/src/cmd/preflight/white_overprint.rs` |
+| Pages | `layout.pages.delete` → `{deleted}`, `layout.pages.applyParent` → `{applied}`; out-of-range or non-integer indices refused | `crates/engine/src/cmd/layout/registry.rs` `page_indices` |
+| Tables | `story?`/`table?` targeting without a table selection; whole table by default | `crates/engine/src/cmd/table/target.rs`, `docs/mcp.md` |
+| Scripts | Depth 8, 100,000 steps, 16 MiB interpolation, 64 MiB reference, 256 MiB resolved step | `crates/engine/src/script.rs` |
+| Links | Panel checks on a worker thread; per-asset size+time fingerprint in the document; `links.list` shape unchanged | `crates/ui-egui/src/links_worker.rs`, `crates/engine/src/cmd/links.rs`, `crates/doc/src/assets.rs` |
+| Text | Hyperlink and data-merge source ranges adjust on story edits | `crates/doc/src/edit.rs` `adjust_text_ranges`, `crates/engine/tests/hyperlink_offsets.rs` |
+| GREP | Subroutine calls and recursion refused; empty-match scans budgeted | `crates/compose/src/grep.rs` |
+| Files | Whole-file reads refuse devices/FIFOs and cap at 4 GiB; recovery entries refuse links | `crates/engine/src/io.rs`, `crates/engine/src/recovery.rs` |
+| Package | Copies the bytes it loaded; refuses a font destination that changed | `crates/engine/src/cmd/package.rs` |
+| Canvas | Spread spine hairline where pages meet; screen only | `crates/doc/src/page.rs`, `crates/ui-egui/src/canvas/page_decor.rs` |
+| Updates | Installs at exit, reports installing/ready/installed/failed; Flatpak permissions repaired in 0.20.1 | `crates/ui-egui/src/updates_ui.rs`, `packaging/linux/flatpak/` |

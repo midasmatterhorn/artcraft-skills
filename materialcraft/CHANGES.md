@@ -1,106 +1,119 @@
-# MaterialCraft — round 2026-11-07 changes
+# MaterialCraft — round 2026-11-12 changes
 
-Re-pinned **v0.1.0** (`cedabf02030a3c662fda99b197ceb3ed12790ee7`, first audit) → **v0.2.0**
-(`a1bbd4a83f62365d90f085e5f1ad61410f9cf11c`); the installed bundle's own binary prints
-`MaterialCraft 0.2.0 (a1bbd4a 2026-11-06)`, and `git rev-parse HEAD` in the pinned checkout
-matches the tag commit. Delta measured from `git diff v0.1.0..HEAD` (493 files, +28 806/−13 724).
+Re-pinned **v0.2.0** (`a1bbd4a83f62365d90f085e5f1ad61410f9cf11c`) → **v0.4.1**
+(`65f7bfd3e5f40d695d03162285879f0f8079ff6c`); the installed bundle's own binary prints
+`MaterialCraft 0.4.1 (65f7bfd 2026-11-12)` and `git rev-parse HEAD` in the pinned checkout
+matches the tag commit. Delta measured from `git diff v0.2.0..HEAD` — **434 files, +28 465 /
+−3 661**. The checkout carries both tags but a squashed history, so this is a tree diff, not a
+replay of the commits between the releases.
 
 ## Corrected / re-measured
 
-- **The native document is `.sbs`, not `.mcraft`.** v0.2.0 saves and opens native SBS XML
-  (`crates/formats/src/sbs/sbs_reader.rs`, `sbs_writer.rs`; `file.save` doc: "saves native SBS").
-  `.mcraft` read/write support is gone from the code — zero `.rs` occurrences of the string in
-  the tree; `docs/architecture.md` and `docs/atomic-workflow.md` say so, while
-  `docs/file-format-parity.md` and `docs/releasing.md` still describe `.mcraft` (stale docs, not
-  code). The SKILL's format section, description and round-trip protocol were rewritten.
-- **The Rust node library was replaced by native primitives.** The old "227 nodes, all tileable"
-  claim and the "node library 45 %, ≈67 % parity" roadmap figures are retired: `ROADMAP.md`
-  states earlier estimates and node counts are superseded. Measured now: **30 catalog entries**,
-  25 nodes in the `Atomic nodes` category + 5 `Graph items` (`crates/nodes/src/atomic/catalog.rs` `defs()`),
-  **85 function operations** (`crates/nodes/src/function/catalog.rs` `FUNCTIONS`), **4 pattern
-  nodes** — Quadrant, Switch, Iterate, Dot (`crates/nodes/src/pattern/catalog.rs`).
-  `crates/nodes/src/catalog.rs` now just re-exports `atomic::defs`. `ROADMAP.md`'s "26 primitives and
-  four graph items" split is off by one against the code's categories (measured 25 + 5; Dot is a graph
-  item) — the total of 30 agrees, and the drift is recorded in `evidence.md`.
-- **`.mcmat` is manifest version 2**, not 1: maps + `material.json` + **`source.sbs`**
-  (`crates/formats/src/material/archive.rs` `VERSION = 2`, `SOURCE = "source.sbs"`), and archives
-  with any other version are rejected (`archive.rs` read path).
-- **The MCP gap closed.** `material_export` is a real tool now
-  (`crates/automation/src/server/material_craft_mcp.rs`), and the JSON-lines server gained
-  `material.export` (`crates/automation/src/rpc.rs` `METHODS`). The previous "a sandboxed agent
-  cannot hand a material to TextureCraft" limitation is deleted.
-- **MCP tool count was wrong in the last round.** The old "21 tools" counted `#[tool` attributes
-  including `#[tool_router]`/`#[tool_handler]`. Re-measured: **19 tool functions at v0.1.0**
-  (`crates/automation/src/server.rs`) → **20 at v0.2.0**, the addition being `material_export`.
-- **JSON-lines methods: 11 → 12.** `METHODS` is a literal slice; `material.export` is new.
-  (`methods` was already in the v0.1.0 list, so the old "11" was right for that release.)
-- **Engine command ids: 68 → 86.** The registry was split from six `*_cmds.rs` files into **19
-  modules** aggregated by `command_specs()` (`crates/engine/src/commands.rs`): the count is
-  `cmd!(` literal ids across exactly those modules — graph 53, edit 13, file 10, view 8,
-  library 1, session 1. New ids include `graph.wire.insertDot/swap/delete`,
-  `file.newAtomicSample`, `graph.templates`, plus alignment/frame/annotation/comment/function/
-  pattern/value-input command modules.
-- **Templates: 12 → 3.** `crates/engine/src/samples.rs` `TEMPLATES` is now `empty`, `pbr`,
-  `atomics`; the material presets (bricks, wood, lava, marble, …) are gone. `docs/
-  control-protocol.md` still lists the old template ids for `file.new` — that is doc drift.
-- **Languages: 2, not 1.** `crates/ui-egui/src/i18n.rs` registers `en` and `ar` (Arabic, with
-  RTL handling); the old "English-only UI" gap is now "no keymap editor".
-- **Control channel hardening** (v0.2.0): random 256-bit token, token file created owner-only
-  (0600 on Unix) after bind, one authentication attempt within 10 s, refusal closes the
-  connection, 16 connections max, 8 MiB request cap (`apps/materialcraft/src/control_server.rs`,
-  `crates/automation/src/security.rs`). The SKILL's auth paragraph was rewritten.
-- **Moved paths re-resolved.** `crates/automation/src/server.rs` →
-  `crates/automation/src/server/material_craft_mcp.rs`; `crates/formats/src/material.rs` →
-  `crates/formats/src/material/{archive,manifest,map_entry,…}.rs`; `crates/core/src/function.rs`
-  → `crates/nodes/src/function/` (evaluation) with document types in
-  `crates/core/src/function_graph.rs` / `function_node.rs`. Those citations were fixed.
-- **3D view grew view controls**: `transparency`, `alphaView`, `normalYFlip` (DirectX normal
-  maps), `heightLevel`, `target` (`crates/engine/src/view_cmds.rs` `view.3d` param doc;
-  `crates/render/src/preview.rs`). The "no light setups" wording was wrong even at v0.1.0 —
-  `environment`/`exposure`/`envRotation` existed then — so the limitation now says CPU-only, no
-  GPU tessellation.
-- **Export gained a resolution option**: `file.export` takes `size?` (larger side in px, 16..8192,
-  power-of-two floor, proportions kept) and refuses colliding output filenames
-  (`crates/engine/src/file_cmds.rs`).
-- **`docs/gaps.md` is now marked historical** by its own header ("predates the 2026-11-05
-  primitive rewrite"); its gap #1/#2 counts are no longer usable as current evidence.
-  `docs/atomic-workflow.md` "Current limits" is the current not-implemented source.
+- **`.mcraft` is a native format again — and it is not the old package.** The v0.2.0 skill said
+  `.mcraft` support was removed. v0.4.1 reads and writes a *MaterialCraft Project* ZIP that holds
+  exactly one root SBS (`package.sbs`) plus `resources/`, with no manifest and no private graph
+  payload (`crates/formats/src/project.rs`, `crates/formats/src/project/project_files.rs`; asserted
+  in `crates/formats/tests/project_packages.rs`). `file.save` / `file.saveAs` / `file.saveCopyAs`
+  pick the container from the path (`crates/engine/src/file_cmds.rs` `is_mcraft`,
+  `write_package_at`), Save As offers "SBS XML Package (*.sbs)" and "MaterialCraft Project
+  (*.mcraft)" separately (`crates/ui-egui/src/windows.test.rs`), and autosaves are `.mcraft`
+  (`crates/ui-egui/src/material_craft_app.rs`). `docs/architecture.md` agrees with the code;
+  `docs/atomic-workflow.md` still says support was removed — stale doc, recorded as drift.
+- **Engine command registry: 86 → 119 ids over 37 modules (was 19).** New namespaces appear:
+  `package.*` (3), `folder.*` (5), `explorer.*` (3); `library.*` grew 1 → 6, `graph.*` 53 → 65,
+  `file.*` 10 → 13 (`crates/engine/src/commands.rs` `command_specs()`; ids by `cmd!` literals in
+  exactly those modules). The full list moved to `references/commands.md`.
+- **Node catalog: 30 → 29 entries** — 24 `Atomic nodes` + 5 `Graph items`
+  (`crates/nodes/src/atomic/catalog.rs::defs()`); `motion_blur` was deleted
+  (`git diff` shows `D crates/nodes/src/atomic/motion_blur.rs`). `ROADMAP.md` (26 + 4) and
+  `docs/architecture.md` (30) both disagree with the code; the measured split is used here.
+- **Map export: 8 → 7 formats.** TIFF is import-only now; `EXPORT_FORMATS` is png, jpg, tga, bmp,
+  webp, exr, hdr (`crates/formats/src/lib.rs`; `encode` in `crates/formats/src/image.rs` rejects
+  anything else). The CLI usage text still advertises `tif` (`apps/materialcraft-cli/src/main.rs`)
+  — doc drift; the engine refuses it.
+- **Image import widened to 17 extensions** (16 bitmap + `svg`): DDS, WebP, GIF, HDR, EXR,
+  JPEG/JIF/JPE, PGM, PNG, TIFF, TGA/TARGA, BMP (`BITMAP_EXTENSIONS`), SVG vectors
+  (`VECTOR_EXTENSIONS`), decoded in `crates/formats/src/image.rs` with DDS in
+  `crates/formats/src/dds_image.rs` (first frame of a GIF, largest mip of a DDS).
+- **Export gained output selection and colour spaces.** `file.export` takes `outputs` (identifiers)
+  and `colorSpaces` (`srgb|linear|raw` per output) and a `size` that is either the larger side or
+  `[width, height]` (`crates/engine/src/export_request.rs`, `crates/engine/src/color_space.rs`).
+  The UI Export window has four tabs — From graph, Batch, MaterialX, MCMAT — where MaterialX and
+  MCMAT report "not available yet" (`crates/ui-egui/src/export/`).
+- **The 3D view displaces real geometry.** The v0.2.0 wording ("CPU renderer with parallax") was
+  inaccurate: `Scene::displaced` subdivides the mesh up to a triangle budget and moves vertices along
+  their normals by `height − level` (`crates/render/src/preview.rs`). It is still a CPU renderer;
+  `crates/render` has no wgpu path.
+- **Several packages can be open, and graphs can be linked across them.** `package.activate`,
+  `package.close`, `package.closeAll`, `session.inspect.documents`, and `graph.instance.add` /
+  `graph.instance.reference` for a graph in another open package (requires a source output,
+  rejects dependency cycles) —
+  `crates/engine/src/{package_commands,graph_instance_commands,linked_packages}.rs`.
+- **Reusable SBS functions shipped.** `assets/sbs/functions.sbs` bundles **171 function graphs and
+  2 334 function nodes**, asserted in `crates/formats/tests/function_library.rs`; agents list them
+  with `library.functions` and insert them with `library.function.add` (default package
+  `sbs://functions.sbs`, `crates/engine/src/function_library.rs`). `library.tree` / `library.add`
+  expose the whole category tree, including entries that are `missing`.
+- **Explorer became a package browser.** Folders, resources, clipboard and context menus:
+  `folder.create/rename/remove/attributes/properties`, `explorer.copy/paste/move`, empty folders
+  persisted as SBS groups (`crates/engine/src/{folder_commands,explorer_clipboard_commands}.rs`;
+  `crates/formats/tests/explorer_folders.rs`).
+- **Undo is configurable.** `session.history {undoLimit?}` sets retained steps per package,
+  1–10 000, default 200 (`crates/engine/src/history_prefs.rs`,
+  `crates/engine/src/document_history_commands.rs`); `edit.undo` / `edit.redo` accept
+  `{document?}`.
+- **Self-update and a signed macOS build.** Help → Check for updates… (`ui.help.checkForUpdates`,
+  `crates/ui-egui/src/updates_ui.rs`, `craft-update`). The installed bundle is Developer ID-signed,
+  notarized and stapled, and `spctl` reports "accepted / Notarized Developer ID", so the old
+  "no signed/notarized release" limitation is deleted.
+- **Shared UI moved to craft-libs.** `craft-ui` (docking/widgets), `craft-keymap`, `craft-dialogs`,
+  `craft-update`, `craft-quit`, `craft-window`, `craft-menu`, all pinned to one rev in
+  `Cargo.toml`; the dock hosts eight panels including Console and History
+  (`crates/ui-egui/src/docking.rs`). Still egui/eframe: no Tauri, Electron or webview.
+- **MCP tools (20) and JSON-lines methods (12) are unchanged at v0.4.1** — now stated with the
+  version instead of as an undated sentence. The eight app-only control methods are likewise
+  unchanged at v0.4.1.
+- **CLI subcommands unchanged at 11**, but the export/render/mcp/serve flags grew and root aliases
+  were added (`apps/materialcraft-cli/src/main.rs` `SUBCOMMANDS`).
 
 ## Method
 
-Read-only: `git show`/`git diff` against the pinned checkout, plus the installed bundle's
-`--version` and `--help`. Counts by source parse, never from docs:
+Read-only: `git show`, `git diff`, `git rev-parse`, code parses, and the installed bundle's
+`--version` / `--help` only. No GUI launch, no build, no test run. Counts by source parse:
 
 | Count | How |
 |---|---|
-| 86 engine commands | regex `cmd!\(\s*"id"` over the 19 modules named in `commands.rs::command_specs()`, deduped |
-| 20 MCP tools | `#[tool(...)]` immediately followed by `async fn` in `crates/automation/src/server/material_craft_mcp.rs` (router/handler attributes excluded) |
-| 12 JSON-lines methods | literal entries of `rpc.rs` `METHODS` |
+| 119 engine commands | Perl `cmd!\(\s*"(id)"` over the 37 modules named in `commands.rs::command_specs()`, deduped (119 occurrences, 119 unique) |
+| 20 MCP tools | `#[tool(...)]` immediately followed by `async fn` in `crates/automation/src/server/material_craft_mcp.rs` |
+| 12 JSON-lines methods | literal entries of `METHODS` in `crates/automation/src/rpc.rs` |
 | 11 CLI subcommands | `SUBCOMMANDS` slice in `apps/materialcraft-cli/src/main.rs` |
-| 30 / 85 / 4 catalog, function, pattern entries | entries in `crates/nodes/src/atomic/catalog.rs::defs()`, `crates/nodes/src/function/catalog.rs::FUNCTIONS`, `crates/nodes/src/pattern/catalog.rs::definitions()` |
-| 3 templates, 7 scenes, 9 map usages, 2 locales | `samples.rs` `TEMPLATES`; `crates/render/src/preview.rs` built-in scene list; `crates/formats/src/material/map_entry.rs` usage doc; `crates/ui-egui/src/i18n.rs` language table |
-| 8 export formats / 11 image extensions | `crates/formats/src/lib.rs` `IMAGE_EXTENSIONS` + `file.export` format list |
+| 29 catalog entries | `atomic::defs()` list, categorised by the `ATOMIC` / `GRAPH_ITEMS` constant in each `node(...)` call |
+| 85 function operations | entries of `FUNCTIONS` in `crates/nodes/src/function/catalog.rs` (85 unique ids) |
+| 4 pattern kinds | `crates/nodes/src/pattern/catalog.rs` + `PatternNodeKind::ALL` |
+| 171 functions / 2 334 nodes | `<function>` and `<paramNode` counts in `assets/sbs/functions.sbs`, matching the assertions in `crates/formats/tests/function_library.rs` |
+| 3 templates, 7 scenes, 4 environments, 2 locales, 9 map usages | `crates/engine/src/samples.rs` `TEMPLATES`; `crates/engine/src/view_cmds.rs` `SCENES`; the `view.3d` environment ids; `crates/ui-egui/src/i18n.rs` language table; `crates/formats/src/material/map_entry.rs` usage doc |
+| 7 export formats / 17 image extensions | `EXPORT_FORMATS`, `IMAGE_EXTENSIONS`, `BITMAP_EXTENSIONS`, `VECTOR_EXTENSIONS` in `crates/formats/src/lib.rs` |
+| `.mcmat` version 2 | `crates/formats/src/material/archive.rs` `VERSION`, `SOURCE`, read-path version check |
+| signed bundle | `codesign -dv` / `spctl -a -vv` on the installed app (read-only) |
 
 ## Unchanged
 
-- 11 CLI subcommands — same 11 ids at v0.2.0 (`info`, `commands`, `nodes`, `run`, `batch`, `new`,
-  `cook`, `export`, `render`, `mcp`, `serve`); flags were added, no subcommand.
-- 8 map-export formats (PNG/JPEG/TGA/TIFF/BMP/WebP/EXR/HDR at 8/16/32 bit) and 9 `.mcmat` map
-  usages — unchanged at v0.2.0; only the container version moved.
-- 7 built-in 3D scenes (`rounded_cube`, `cube`, `sphere`, `cylinder`, `plane`, `torus`,
-  `material_ball`) — unchanged at v0.2.0.
-- The 8 app-only control methods (`ui.inspect`, `ui.menu.list`, `ui.menu.invoke`, `ui.set`,
-  `ui.input`, `view.screenshot`, `ui.screenshot`, `ui.resize`) — unchanged at v0.2.0.
-- Headless path confinement (`--read-root`/`--write-root`, now also spelled
-  `--automation-read-root`/`--automation-write-root`), `MATERIALCRAFT_NO_PREFS=1`, the token env
-  var name, and the `.mcmat` → TextureCraft contract.
-- Browser/WebAssembly build and the macOS/Windows/Linux/FreeBSD targets.
+- 11 CLI subcommands — same 11 ids at v0.4.1 (`info`, `commands`, `nodes`, `run`, `batch`, `new`,
+  `cook`, `export`, `render`, `mcp`, `serve`); only flags grew.
+- 20 MCP tools, 12 JSON-lines methods, 8 app-only control methods, and the token handshake
+  (one auth attempt in 10 s, 16 connections, 8 MiB requests, 256 batch steps).
+- 9 `.mcmat` map usages; manifest version 2 with `source.sbs`; version-1 archives still rejected.
+- 7 built-in 3D scenes and 4 environment ids (`studio`, `sunset`, `overcast`, `night`).
+- 3 graph templates (`empty`, `pbr`, `atomics`); 85 function operations; 4 pattern kinds.
+- 2 UI locales (English, Arabic RTL).
+- Headless path confinement (`--read-root` / `--write-root`, aliases `--automation-*`),
+  `MATERIALCRAFT_NO_PREFS=1`, the `.mcmat` ↔ TextureCraft contract, and the wasm build.
 
 ## Known gap in this round
 
-No GUI and no build: the Arabic RTL layout, the levels histogram, 4K preview, wire selection and
-the Android-normal 3D flip are verified by code paths only, never exercised. `docs/gaps.md` #7
-(`ui.screenshot` times out on the test machine) was not retested — it stays labeled as the repo's
-claim. SBS import fidelity and numerical parity with the reference application are the repo's own
-admissions, not measurements here. The installed bundle ships only the GUI binary — no separate
-`materialcraft-cli` — so the CLI counts come from source, and only `--version`/`--help` were run.
+No GUI and no build: the Explorer tree, docking layout, self-update prompt, Export window tabs,
+undo-limit preference, function editor and RTL layout are verified by code paths only. The
+`ui.screenshot` timeout (`docs/gaps.md` #7) was not retested and stays a repo claim. `.mcmat`
+read/write was not exercised, only parsed. The installed bundle ships only the GUI binary — there
+is no `materialcraft-cli` on this machine, so CLI counts come from source and only the GUI
+binary's `--version` / `--help` were run.

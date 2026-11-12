@@ -1,0 +1,3 @@
+interface:
+  display_name: "MailCraft"
+  short_description: "Rust mail/calendar/contacts/tasks for Microsoft 365, IMAP and JMAP, with CLI, MCP and control channel"

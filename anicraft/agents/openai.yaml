@@ -1,0 +1,3 @@
+interface:
+  display_name: "AniCraft"
+  short_description: "2D vector animation studio (early alpha) with 240 commands, a headless CLI and an MCP server"
