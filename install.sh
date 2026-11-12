@@ -34,7 +34,9 @@ for s in $skills; do
     skipped=$((skipped+1))
   else
     rm -rf "$dest/$s"
-    cp -R "$s" "$dest/$s"
+    mkdir -p "$dest/$s"
+    # copy the skill without local tool state (.mimosa hook data) or .DS_Store noise
+    (cd "$s" && tar -cf - --exclude='.mimosa' --exclude='.DS_Store' .) | tar -xf - -C "$dest/$s"
     echo "install  $s -> $dest/$s"
     installed=$((installed+1))
   fi

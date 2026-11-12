@@ -181,7 +181,7 @@ PY
 
 Do not put the token in arguments, logs, or a checked-in `.mcp.json`. Limits: 4 MiB per line, 16 concurrent connections, 120 s socket read/write timeout, 60 s wait for a UI reply; a non-request line gets one error and the connection closes. `ui.click` takes `count` 0–10 and `ui.drag` `steps` 0–1024. `ui.key` needs the chord's modifiers exactly. `ui.panel.show {panel}` accepts both "Color Grading" and the old "Lumetri Color" (likewise "Video Scopes" / "Lumetri Scopes").
 
-**CLI shape** (full reference: `references/cli-and-protocol.md`):
+**CLI shape** (full reference: `references/cli-and-protocol.md`; formats, codecs and interop: `references/formats.md`):
 
 ```sh
 filmcraft-cli commands razor                    # find command ids

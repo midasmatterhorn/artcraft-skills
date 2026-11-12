@@ -13,11 +13,11 @@ it for the agent **you** are running as.
 
 ## Install (pick your target)
 
-From the packaged release in this folder — the 20 skill folders sit at the zip root
-(pick the newest `artcraft-skills-v*.zip`):
+From the release zip — the 20 skill folders and this file sit at the zip root. Point `ZIP` at the
+archive you downloaded, or at the newest one in the full archive folder's `releases/` directory:
 
 ```sh
-ZIP="$(ls -t releases/artcraft-skills-v*.zip | head -1)"
+ZIP="$(ls -t "$HOME/Downloads"/artcraft-skills-v*.zip | head -1)"   # or: ZIP="$(ls -t releases/artcraft-skills-v*.zip | head -1)"
 
 # Default: OpenAI Codex, ChatGPT desktop, ZCode, Devin, CommandCode, Gemini CLI (~/.agents/skills)
 unzip -o "$ZIP" -d ~/.agents/skills/
@@ -38,7 +38,7 @@ unzip -o "$ZIP" -d ~/.gemini/config/skills/
 Windows PowerShell:
 
 ```powershell
-$zip = Get-ChildItem releases\artcraft-skills-v*.zip | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+$zip = Get-ChildItem "$HOME\Downloads\artcraft-skills-v*.zip" | Sort-Object LastWriteTime -Descending | Select-Object -First 1   # in the archive folder use releases\
 Expand-Archive $zip -DestinationPath $HOME\.agents\skills   # or .claude\skills / .config\opencode\skills / .gemini\skills / .gemini\config\skills
 ```
 

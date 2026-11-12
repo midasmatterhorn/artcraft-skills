@@ -123,3 +123,9 @@ log curves 10, shortcut presets 4, effect catalogue (93 video across 16 folders,
   path-checked and carried, not re-derived statement by statement.
 - craft-libs was consulted only for the `craft-web-api` page surface and the pin; the moved codec
   behaviour is not auditable in this repository.
+
+## v1.5.1 documentation patch (2026-11-13)
+
+- `references/formats.md` (formats, codecs and interop) had been present and rewritten this round
+  but was never linked from `SKILL.md`; the CLI-shape section now points at it alongside
+  `references/cli-and-protocol.md`. No claim or count changed in this patch.

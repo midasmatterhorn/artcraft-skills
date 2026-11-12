@@ -27,6 +27,10 @@ foreach ($s in $skills) {
     } else {
         Remove-Item -Recurse -Force -Path $target -ErrorAction SilentlyContinue
         Copy-Item -Recurse -Force -Path (Join-Path $PSScriptRoot $s) -Destination $target
+        # copy the skill without local tool state (.mimosa hook data) or .DS_Store noise
+        $mimosa = Join-Path $target '.mimosa'
+        if (Test-Path $mimosa) { Remove-Item -Recurse -Force -Path $mimosa -ErrorAction SilentlyContinue }
+        Get-ChildItem -Path $target -Recurse -Force -Filter '.DS_Store' -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
         Write-Host "install  $s -> $target"
         $installed++
     }
