@@ -172,3 +172,10 @@ python3 -c "import json,glob;print(sum(len(json.load(open(f))['presets']) for f 
   the tightened confinement.
 - Not re-derived from scratch: per-feature render fidelity, GUI behaviour, the audio extension
   list, `.aep` corpus results (see §4).
+
+## CLI availability (measured 2026-11-15)
+
+- **Release asset:** `effectcraft-cli-0.24.1-macos-universal.zip`, 77 299 801 bytes (77.3 MB), on tag `v0.24.1`; it is the only CLI asset on that release.
+- **`SHA256SUMS.txt` entry:** `2781eda194372ad47f4c0c7df8b1d38501a3e90bb499282f57e9598a85958673  effectcraft-cli-0.24.1-macos-universal.zip`, read from the release's own sums file; the asset name and byte size were re-read from the release API.
+- **Bundle `find`:** `find "/Applications/EffectCraft.app" -name 'effectcraft-cli'` prints nothing — `Contents/MacOS` holds only `EffectCraft` — so a launcher-only install has no CLI. `command -v effectcraft-cli` is empty here, which is why §4's "no live CLI" note still stands.
+- **Ran:** bundle `ls`/`find`, `Info.plist` version read (0.24.1), `curl` of the release `SHA256SUMS.txt`, and the release-API asset listing. The full download → checksum compare → unzip → `install -m 0755` → `--version` recipe was proven once on the smallest CLI in this batch (SoundCraft, 9.0 MB), not on this 77.3 MB zip.

@@ -1,5 +1,9 @@
 # CADCraft — round 2026-11-12 changes
 
+## 2026-11-15b — CLI availability and install
+
+Round **2026-11-15b** (skills release v2.1.0) closes the launcher/CLI gap: the ArtCraft Launcher installs `CADCraft.app` only, and the bundle holds no `cadcraft-cli`, so `## How to operate` now carries one canonical *Getting the CLI* block — `command -v cadcraft-cli` → bundle check (`find` finds nothing) → download `cadcraft-cli-0.20.1-macos-universal.zip` (63.0 MB) from `storytold/cadcraft` v0.20.1, compare it against `SHA256SUMS.txt`, `unzip`, `install -m 0755` into `~/.local/bin`, put that on `PATH`. It replaces the old one-line "install `cadcraft-cli` from the CLI zip" sentence in the launch paragraph. Measured 2026-11-15: the `SHA256SUMS.txt` entry `2754055a…8fb3b` matches the download, `find "/Applications/CADCraft.app" -name 'cadcraft-cli'` returns nothing, and the downloaded CLI prints `cadcraft-cli 0.20.1 (7526dc6…)` and lists 457 commands.
+
 Re-pinned: v0.18.0 (`32238e8`) -> v0.20.1 (`7526dc6`, installed `cadcraft 0.20.1 (7526dc62c14e71b3c8d46e73bbf1fa29ef506af1)`, bundle id `ai.storyteller.cadcraft`).
 
 ## Corrected / re-measured

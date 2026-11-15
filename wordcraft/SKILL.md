@@ -152,8 +152,46 @@ Other verified gaps:
 Launch (macOS):
 - App: `open -a WordCraft` or `open -a WordCraft --args <file.docx>`. Binary inside the bundle: `WordCraft.app/Contents/MacOS/WordCraft`. Bundle id `ai.storyteller.wordcraft`.
 - App flags: `wordcraft [--sample] [--control PORT] [FILE…]`; `--version`, `-h|--help` (verified against the installed 0.18.1 binary). A bad `--control` port exits with status 2.
-- **`wordcraft-cli` is not inside the app bundle.** Get it from the release artifact `wordcraft-cli-<ver>-macos-universal.zip` or build it: `cargo run --release -p wordcraft-cli -- <args>`.
 - Environment variables that matter to agents: `WORDCRAFT_CONTROL_PORT`, `WORDCRAFT_CONTROL_KEY` (for `mcp --connect`), `WORDCRAFT_PROFILE_DIR` (isolated profile incl. recovery/keys), `WORDCRAFT_NO_PREFS`, `WORDCRAFT_PASSWORD`, `WORDCRAFT_REGION=en-US`, `WORDCRAFT_LANGUAGE`, `RUST_LOG`.
+
+### Getting the CLI (the launcher installs the app, not the CLI)
+
+The ArtCraft Launcher installs `WordCraft.app`; it does not put `wordcraft-cli` on your `PATH`.
+It ships **no** CLI binary inside the bundle — the bundle holds only `WordCraft` — so a
+launcher-only install has no `wordcraft-cli` at all. The CLI is published on the app's GitHub
+release, `wordcraft-cli-0.18.1-macos-universal.zip` (103.0 MB), so `wordcraft-cli` answering
+*command not found* means "not installed yet", not "not supported".
+
+Find it, in this order:
+
+1. **On `PATH`** — `command -v wordcraft-cli`. If it answers, `wordcraft-cli --version` must report
+   the version this skill was written against (0.18.1). A different version means the CLI and the
+   app have drifted: re-read *Verify against your installed version* before trusting ids.
+2. **Bundle copy** — Skip it: `find "/Applications/WordCraft.app" -name 'wordcraft-cli'` finds
+   nothing (verified), so go to step 3.
+3. **Install it from the release** — user-local, no `sudo`:
+
+```sh
+APP_VER=0.18.1
+REL="https://github.com/storytold/wordcraft/releases/download/v$APP_VER"
+ASSET="wordcraft-cli-$APP_VER-macos-universal.zip"
+mkdir -p "$HOME/.local/bin" "$HOME/Downloads/wordcraft-cli" && cd "$HOME/Downloads/wordcraft-cli"
+curl -fLO "$REL/$ASSET" && curl -fLO "$REL/SHA256SUMS.txt"
+expected=$(grep -F "$ASSET" SHA256SUMS.txt | awk '{print $1}')
+actual=$(shasum -a 256 "$ASSET" | awk '{print $1}')
+[ "$expected" = "$actual" ] && echo "checksum OK" || { echo "checksum MISMATCH — stop"; exit 1; }
+unzip -oq "$ASSET"
+install -m 0755 "wordcraft-cli-$APP_VER-macos-universal/wordcraft-cli" "$HOME/.local/bin/wordcraft-cli"
+"$HOME/.local/bin/wordcraft-cli" --version
+```
+
+`~/.local/bin` must be on `PATH` for the shell that runs the skill:
+`export PATH="$HOME/.local/bin:$PATH"` (put it in your shell profile to keep it).
+
+Rules: never `sudo` into `/usr/local`, never unzip into `/Applications`, and never replace an
+existing `wordcraft-cli` of a different version without telling the user. Building from source
+(`cargo install --path apps/wordcraft-cli --locked`) is a developer path only — full Rust toolchain,
+minutes of compiling; prefer the release binary above.
 
 Document and window model: **several documents at once, each in one or more native windows** (`crates/ui-egui/src/windows.rs`). File ▸ New opens a document in a new window; `view.newWindow` adds a window on the same document (its own selection, zoom, view mode and panes); `view.switchWindows {id?|window?}` lists documents and switches either; `file.closeDocument {id, force?}` closes a document (all its windows); closing one of a document's windows leaves it open. Automation targets a document with `doc` (engine commands name it `id`), and a window with the key `ui.inspect` → `windows`. Recovery is per document.
 

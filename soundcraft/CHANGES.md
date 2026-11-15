@@ -1,5 +1,9 @@
 # SoundCraft — round 2026-11-12 changes
 
+## 2026-11-15b — CLI availability and install
+
+Round 2026-11-15b ("the launcher installs the app, not the CLI"). `/Applications/SoundCraft.app/Contents/MacOS` holds only `SoundCraft`, `find "/Applications/SoundCraft.app" -name 'soundcraft-cli'` finds nothing and `command -v soundcraft-cli` is empty, so a launcher-only install has no CLI. The *Launch on macOS* bullet that named a version-stamped release zip and ended with "or build it" was removed and replaced by the canonical **Getting the CLI (the launcher installs the app, not the CLI)** subsection inside `## How to operate` — `PATH` check (`soundcraft-cli --version` must report 0.20.1), bundle check, then a user-local download of `soundcraft-cli-0.20.1-macos-universal.zip` (9.0 MB) from the `v0.20.1` release with a `SHA256SUMS.txt` checksum compare, `unzip`, `install -m 0755` into `~/.local/bin` and a `--version` run, no `sudo`, nothing written into `/Applications`. This is the app the recipe was proved on end to end: the shipped code block ran verbatim against a throwaway home, printed `checksum OK` and `soundcraft-cli 0.20.1 (macos aarch64)`. The seven sections, pins, audit basis and counts are untouched.
+
 Re-pinned: v0.18.0 (`5ff012ab`) -> v0.20.1 (`a52bbdc`, installed `soundcraft 0.20.1 (macos aarch64)`). v0.19.0, v0.19.1 and v0.20.0 shipped between the two pins; the shallow checkout carries only the v0.18.0 and v0.20.1 tag objects, so the delta was measured against v0.18.0.
 
 ## Corrected / re-measured

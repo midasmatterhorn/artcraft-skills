@@ -1,4 +1,22 @@
-# MailCraft — round 2026-11-15 changes
+# MailCraft — skill change log
+
+## 2026-11-15b — CLI availability and install
+
+Round v2.1.0: every ArtCraft skill must teach an agent to find the headless CLI and install it when
+the launcher's app install did not include one. MailCraft is not installed on the authoring machine
+and the Launcher does not install its unsigned macOS builds, so there is no bundle to inspect: the
+skill now says the launcher's bundle holds only `MailCraft` and that this could not be verified
+here, instead of claiming a bundle path. The CLI is a separate release asset,
+`mailcraft-cli-0.13.0-macos-universal.zip` (20.1 MB, SHA-256 `8b78129c…`, from the release's
+22-line `SHA256SUMS.txt`), so `## How to operate` gained the canonical *Getting the CLI* block
+(PATH check → bundle check documented as unverifiable → download → checksum → unzip →
+`install -m 0755` into `~/.local/bin` → `--version`), and the `cargo run --release -p mailcraft-cli`
+route is now labelled a developer path instead of the first instruction. Nothing was downloaded or
+run for MailCraft; only the release's `SHA256SUMS.txt` was fetched. The
+`<settings>/control-key.local-<port>` agent model is unchanged. No pin, count, section heading or
+audit-basis line changed.
+
+## 2026-11-15 — re-pin to v0.13.0
 
 Re-pinned: **v0.12.0 → v0.13.0**. The checkout is tag **`v0.13.0`**, commit
 **`240d1d42fe394cf3274402b180663ba9b43ca180`** ("Merge pull request #1419 from

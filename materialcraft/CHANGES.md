@@ -1,4 +1,19 @@
-# MaterialCraft — round 2026-11-12 changes
+# MaterialCraft — skill change log
+
+## 2026-11-15b — CLI availability and install
+
+Round v2.1.0: every ArtCraft skill must teach an agent to find the headless CLI and install it when
+the launcher's app install did not include one. MaterialCraft's bundle holds only `MaterialCraft` —
+`find "/Applications/MaterialCraft.app" -name 'materialcraft-cli'` returns nothing (verified
+2026-11-15) — and the CLI is a separate release asset,
+`materialcraft-cli-0.4.1-macos-universal.zip` (11.9 MB, SHA-256 `bcf0e871…`), so a launcher-only
+install has no `materialcraft-cli` at all. `## How to operate` gained the canonical *Getting the
+CLI* block (PATH check → bundle check documented as empty → download → `SHA256SUMS.txt` checksum →
+unzip → `install -m 0755` into `~/.local/bin` → `--version`), with the release binary presented as
+the normal route. The recipe was run end to end on this release and its real output is pasted in
+`evidence.md`. No pin, count, section heading or audit-basis line changed.
+
+## 2026-11-12 — re-pin to v0.4.1
 
 Re-pinned **v0.2.0** (`a1bbd4a83f62365d90f085e5f1ad61410f9cf11c`) → **v0.4.1**
 (`65f7bfd3e5f40d695d03162285879f0f8079ff6c`); the installed bundle's own binary prints

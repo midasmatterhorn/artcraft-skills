@@ -1,3 +1,15 @@
+# 2026-11-15b — CLI availability and install
+
+Round **2026-11-15b** (skills release v2.1.0) adds the CLI find/download/install recipe. The Launcher
+installs `VectorCraft.app` only, the bundle holds **no** CLI (`ls
+/Applications/VectorCraft.app/Contents/MacOS` lists only `VectorCraft`; `find
+"/Applications/VectorCraft.app" -name 'vectorcraft-cli'` returns nothing, verified 2026-11-15), and the
+release asset is `vectorcraft-cli-0.24.1-macos-universal.zip` (134.0 MB, `SHA256SUMS.txt`
+`7f0c8261e5c831d9681e48272f9ba73bf8702dbf6ceb84f98177c7c007faddf2`). Corrected: the How-to-operate
+paragraph led with `cargo build --release -p vectorcraft-cli` and `cargo install --path
+apps/vectorcraft-cli --locked` as the way to get the CLI; both are now a developer path only, and
+`### Getting the CLI (the launcher installs the app, not the CLI)` is the primary route.
+
 # VectorCraft — round 2026-11-12 changes
 
 Re-pinned: v0.22.0 (`654749c16eb20b6d3182a96defb66e11d1a9649a`) -> v0.24.1 (`f4922aa7ac99a4f6d56fc68a83a44945207ec610`, installed `vectorcraft 0.24.1`).

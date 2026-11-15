@@ -162,7 +162,33 @@ Started with `--control`, the app opens without stealing focus. Cmd+Q routes thr
 
 **Data directory (macOS):** `~/Library/Application Support/FilmCraft` — preferences.json, Auto-Save/, Recovery/, Logs/filmcraft.log, Media Cache/, workspaces.json, `Effect Presets/` (scanned `.prfpset`/`.json` packs), presets.json, user export presets. A **screenshot requested without a path** is not written here: it goes to an owner-only `FilmCraft-<nonce>` folder under the system temp dir (`private_temp_dir`) and the reply names the file; the session log (`Logs/session-<pid>.log`) and voice-over recordings fall back to that private folder only when no data directory is configured.
 
-**The CLI is not inside the .app.** On macOS `filmcraft-cli` ships as a separate release asset, `filmcraft-cli-<version>-macos-<arch>.zip`, or build it: `cargo run --release -p filmcraft-cli -- commands`.
+### Getting the CLI (the launcher installs the app, not the CLI)
+
+The ArtCraft Launcher installs `FilmCraft.app`; it does not put `filmcraft-cli` on your `PATH`. It ships **no** CLI binary inside the bundle — the bundle holds only `FilmCraft` — so a launcher-only install has no `filmcraft-cli` at all. The CLI is published on the app's GitHub release, `filmcraft-cli-0.20.1-macos-universal.zip` (100.1 MB), so `filmcraft-cli` answering *command not found* means "not installed yet", not "not supported".
+
+Find it, in this order:
+
+1. **On `PATH`** — `command -v filmcraft-cli`. If it answers, `filmcraft-cli --version` must report the version this skill was written against (0.20.1). A different version means the CLI and the app have drifted: re-read *Verify against your installed version* before trusting ids.
+2. **Bundle copy** — Skip it: `find "/Applications/FilmCraft.app" -name 'filmcraft-cli'` finds nothing (verified), so go to step 3.
+3. **Install it from the release** — user-local, no `sudo`:
+
+```sh
+APP_VER=0.20.1
+REL="https://github.com/storytold/filmcraft/releases/download/v$APP_VER"
+ASSET="filmcraft-cli-$APP_VER-macos-universal.zip"
+mkdir -p "$HOME/.local/bin" "$HOME/Downloads/filmcraft-cli" && cd "$HOME/Downloads/filmcraft-cli"
+curl -fLO "$REL/$ASSET" && curl -fLO "$REL/SHA256SUMS.txt"
+expected=$(grep -F "$ASSET" SHA256SUMS.txt | awk '{print $1}')
+actual=$(shasum -a 256 "$ASSET" | awk '{print $1}')
+[ "$expected" = "$actual" ] && echo "checksum OK" || { echo "checksum MISMATCH — stop"; exit 1; }
+unzip -oq "$ASSET"
+install -m 0755 "filmcraft-cli-$APP_VER-macos-universal/filmcraft-cli" "$HOME/.local/bin/filmcraft-cli"
+"$HOME/.local/bin/filmcraft-cli" --version
+```
+
+`~/.local/bin` must be on `PATH` for the shell that runs the skill: `export PATH="$HOME/.local/bin:$PATH"` (put it in your shell profile to keep it).
+
+Rules: never `sudo` into `/usr/local`, never unzip into `/Applications`, and never replace an existing `filmcraft-cli` of a different version without telling the user. Building from source (`cargo install --path apps/filmcraft-cli --locked`) is a developer path only — full Rust toolchain, minutes of compiling; prefer the release binary above.
 
 **Control channel with authentication.** Both the desktop and any bridge/raw client must share one token in the environment; without it the desktop never listens:
 

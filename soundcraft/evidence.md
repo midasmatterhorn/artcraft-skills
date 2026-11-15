@@ -154,3 +154,19 @@ ls -d crates/*/ | wc -l                                          # 13 library cr
   and `crates/model/src/source.rs`, because that crate was removed.
 - Added rows 6–12, 17–19 and 21 for the surfaces the v0.18.0 → v0.20.1 diff actually changed; rows 3,
   13–16 and 20 were updated in place. The previous round's rows were re-checked rather than copied.
+
+## CLI availability (measured 2026-11-15)
+
+- **Release asset:** `soundcraft-cli-0.20.1-macos-universal.zip`, 9 011 758 bytes (9.0 MB), on tag `v0.20.1`; it is the only CLI asset there — the Linux packages are whole-app builds (AppImage, deb, rpm, Flatpak, tar.gz).
+- **`SHA256SUMS.txt` entry:** `866fcbfe32179e6652159385b4f676ba756e1cadb88fac3e9173e9643f763b51  soundcraft-cli-0.20.1-macos-universal.zip`.
+- **Bundle `find`:** `find "/Applications/SoundCraft.app" -name 'soundcraft-cli'` prints nothing — `Contents/MacOS` holds only `SoundCraft` — and `command -v soundcraft-cli` is empty, so a launcher-only install really has no CLI. This is the first round in which the CLI was fetched and executed.
+- **Proved end to end** with the code block now shipped in `SKILL.md`, run verbatim with `HOME` pointed at a throwaway home so nothing outside it was touched. It downloaded the zip and `SHA256SUMS.txt`, compared the two hashes, unzipped a top-level `soundcraft-cli-0.20.1-macos-universal/` holding `soundcraft-cli` plus `LICENSE-APACHE`, `LICENSE-MIT`, `NOTICE`, `ATTRIBUTION.md` and `README.md`, installed the binary `-rwxr-xr-x`, 22 969 968 bytes, and ran it. Output:
+
+```text
+expected=866fcbfe32179e6652159385b4f676ba756e1cadb88fac3e9173e9643f763b51
+actual  =866fcbfe32179e6652159385b4f676ba756e1cadb88fac3e9173e9643f763b51
+checksum OK
+soundcraft-cli 0.20.1 (macos aarch64)
+```
+
+The `--version` line is the real CLI output, so `soundcraft-cli` runs standalone from a user-local install; the app bundle was not needed and was not touched.

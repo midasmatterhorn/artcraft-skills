@@ -108,7 +108,6 @@ SolidCraft is an open-source parametric 3D CAD application in pure Rust by Tange
 ## How to operate
 
 - GUI: `open -a SolidCraft`; `solidcraft --sample` opens a sample part. App flags: `--control PORT`, `--theme-file FILE`, `--max-file-size SIZE`, `--safe-mode`, `--crash-log`, `--version`, `--help` (`apps/solidcraft/src/main.rs`).
-- The CLI ships **inside the app bundle** at `Contents/MacOS/solidcraft-cli`; package installs and the app's Help ▸ Install solidcraft-cli put it on `PATH`, but a given Mac may not have it there — use the bundle-relative path when `command -v solidcraft-cli` is empty.
 - First run of the control channel: Preferences ▸ Assistant ▸ Agents through MCP ▸ **Let AI agents connect** (default off). It takes effect immediately, closes/opens the port and rewrites the token file (`crates/ui-egui/src/control_switch.rs`). `--control PORT` and `SOLIDCRAFT_CONTROL_PORT` work regardless of the setting.
 - Headless loop (verified flags):
   ```sh
@@ -131,6 +130,47 @@ SolidCraft is an open-source parametric 3D CAD application in pure Rust by Tange
 - Bridged MCP (watch the agent model): turn the control channel on (or `solidcraft --control 7878`), then `solidcraft-cli mcp` finds the app from `control/current.port`; or `solidcraft-cli mcp --connect 127.0.0.1:7878`. A bridged server starts before the app and retries on the first call.
 - Token/discovery live in the platform data folder's `control/` directory, per the table in `docs/control-protocol.md` (macOS uses the Application Support family). `SOLIDCRAFT_CONTROL_DIR` moves it; `SOLIDCRAFT_CONTROL_TOKEN` supplies a known token.
 - Web: `solidcraft.io/app` runs the same engine in the browser; pages drive it through the API in `docs/browser-api.md`.
+
+### Getting the CLI (the launcher installs the app, not the CLI)
+
+The ArtCraft Launcher installs `SolidCraft.app`; it does not put `solidcraft-cli` on your `PATH`.
+It **does** ship a copy inside the bundle at
+`/Applications/SolidCraft.app/Contents/MacOS/solidcraft-cli`, the same build as the app, so a
+launcher install can use that binary directly. The CLI is published on the app's GitHub release,
+`solidcraft-cli-0.42.0-macos-universal.zip` (150.9 MB), so `solidcraft-cli` answering *command not
+found* means "not installed yet", not "not supported".
+
+Find it, in this order:
+
+1. **On `PATH`** — `command -v solidcraft-cli`. If it answers, `solidcraft-cli --version` must
+   report the version this skill was written against (0.42.0). A different version means the CLI and
+   the app have drifted: re-read *Verify against your installed version* before trusting ids.
+2. **Bundle copy** — `"/Applications/SolidCraft.app/Contents/MacOS/solidcraft-cli" --version`; to
+   make it callable as `solidcraft-cli`, link it: `mkdir -p ~/.local/bin && ln -sf
+   "/Applications/SolidCraft.app/Contents/MacOS/solidcraft-cli" ~/.local/bin/solidcraft-cli`.
+3. **Install it from the release** — user-local, no `sudo`:
+
+```sh
+APP_VER=0.42.0
+REL="https://github.com/tangency-labs/solidcraft/releases/download/v$APP_VER"
+ASSET="solidcraft-cli-$APP_VER-macos-universal.zip"
+mkdir -p "$HOME/.local/bin" "$HOME/Downloads/solidcraft-cli" && cd "$HOME/Downloads/solidcraft-cli"
+curl -fLO "$REL/$ASSET" && curl -fLO "$REL/SHA256SUMS.txt"
+expected=$(grep -F "$ASSET" SHA256SUMS.txt | awk '{print $1}')
+actual=$(shasum -a 256 "$ASSET" | awk '{print $1}')
+[ "$expected" = "$actual" ] && echo "checksum OK" || { echo "checksum MISMATCH — stop"; exit 1; }
+unzip -oq "$ASSET"
+install -m 0755 "solidcraft-cli-$APP_VER-macos-universal/solidcraft-cli" "$HOME/.local/bin/solidcraft-cli"
+"$HOME/.local/bin/solidcraft-cli" --version
+```
+
+`~/.local/bin` must be on `PATH` for the shell that runs the skill:
+`export PATH="$HOME/.local/bin:$PATH"` (put it in your shell profile to keep it).
+
+Rules: never `sudo` into `/usr/local`, never unzip into `/Applications`, and never replace an
+existing `solidcraft-cli` of a different version without telling the user. Prefer the bundle copy
+(step 2) — it is the same commit as the app; a downloaded CLI is only needed on a machine without
+the app.
 
 ## Working with an AI agent
 

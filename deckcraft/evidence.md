@@ -21,6 +21,28 @@ body/group 3-D XML and unconnected SmartArt text preserved, over-budget charts k
 photo-album edit refusal, MCP batch caps, a 16-decoder video cap, and undo/logging/spelling/font
 hardening.
 
+## CLI availability (measured 2026-11-15)
+
+The ArtCraft Launcher installs `DeckCraft.app` only; `deckcraft-cli` is a separate release asset, so a
+launcher-only install has no `deckcraft-cli` on `PATH`. Measured this round:
+
+| Fact | Measured value |
+|---|---|
+| Release asset | `deckcraft-cli-0.18.1-macos-universal.zip` |
+| Size | 94.3 MB — `content-length: 94288920` on the release asset |
+| `SHA256SUMS.txt` entry | `10992f73c88a4c0361dd0fec3a4d7490731ffb3ea9658ee2274b396e3341af00  deckcraft-cli-0.18.1-macos-universal.zip` |
+| Release URL | `https://github.com/storytold/deckcraft/releases/download/v0.18.1/deckcraft-cli-0.18.1-macos-universal.zip` |
+| Bundle `find` result | `ls /Applications/DeckCraft.app/Contents/MacOS` → `DeckCraft`; `find "/Applications/DeckCraft.app" -name 'deckcraft-cli'` → no output (the bundle ships no CLI) |
+| On `PATH` | `command -v deckcraft-cli` → nothing |
+
+What was run: the bundle `ls`/`find` above, `curl -fSIL` on the release asset (HTTP 200,
+`content-length: 94288920`) and `curl -fsSL` on `SHA256SUMS.txt` plus `grep -F` for the asset line
+(entry above). The recipe's end-to-end proof — download, checksum compare, unzip, `install -m 0755`,
+`--version` — was run this round on the smallest asset among this writer's four apps,
+`gridcraft-cli-0.19.1-macos-universal.zip` (16.0 MB), and is pasted in full in
+`../gridcraft/evidence.md` › CLI availability; here the commands are identical apart from name,
+version and size. `deckcraft-cli` itself was not downloaded or executed.
+
 ## 1. Capability claims → evidence → tier
 
 | # | Claim | Evidence (repo-relative) | Tier |
@@ -115,9 +137,10 @@ hardening.
 
 ## 4. Uncertain / not verified
 
-- No live command registry: `deckcraft-cli` is not installed on this machine and is not inside the
-  `.app`, so every count is parsed from code, not read back from `deckcraft-cli commands`. Only the
-  app binary's `--version`/`--help` were executed.
+- No live command registry: `deckcraft-cli` is not installed on this machine (the release asset and
+  its install recipe are recorded in *CLI availability* above; only the `gridcraft` CLI of the same
+  fleet was executed) and is not inside the `.app`, so every count is parsed from code, not read
+  back from `deckcraft-cli commands`. Only the app binary's `--version`/`--help` were executed.
 - GUI behaviour was not exercised (no window was opened). Presenter, slide-show, clipboard, updater
   and web-page behaviour is code and documentation evidence.
 - The web `window.deckcraft` API was not called in a browser; the 30 s timeout and 64 in-flight cap

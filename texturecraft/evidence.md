@@ -4,9 +4,23 @@ Audit basis: this checkout is tag **`v0.6.1`**, commit **`34a196190fe2daa2f43017
 (shallow checkout pinned to the release tag; `git rev-parse HEAD` confirms, `git describe --tags`
 says v0.6.1). Inspection date **2026-11-12**. The installed bundle prints
 `TextureCraft 0.6.1 (34a1961 2026-11-12)` (bundle `ai.storyteller.texturecraft`,
-`CFBundleShortVersionString` 0.6.1); `Contents/MacOS` holds only `TextureCraft`, so no installed CLI
-exists. The GUI was never launched — only `--version`/`--help`, which print and exit. The previous
-round's skill described v0.4.0 (`16e9d21516434a63ac457f49ffd09005f649c02f`).
+`CFBundleShortVersionString` 0.6.1); `Contents/MacOS` holds only `TextureCraft`, so the bundle ships
+no CLI (the release CLI was downloaded and run on 2026-11-15 — see *CLI availability* below). The GUI
+was never launched — only `--version`/`--help`, which print and exit. The previous round's skill
+described v0.4.0 (`16e9d21516434a63ac457f49ffd09005f649c02f`).
+
+## CLI availability (measured 2026-11-15)
+
+- Release asset: `texturecraft-cli-0.6.1-macos-universal.zip` — **16.9 MB** (16,929,077 bytes, HTTP
+  `content-length`).
+- `SHA256SUMS.txt` entry: `80a65494a740d100797d54a55c43ff32ee40ee19678eebae8200f52cbba33bdc  texturecraft-cli-0.6.1-macos-universal.zip`
+  — the downloaded file's `shasum -a 256` matched it.
+- Bundle: `find "/Applications/TextureCraft.app" -name 'texturecraft-cli'` returns nothing
+  (`Contents/MacOS` holds only `TextureCraft`), so a launcher install has no CLI.
+- Ran on 2026-11-15: downloaded the zip from `https://github.com/storytold/texturecraft/releases/download/v0.6.1/`,
+  compared the checksum, unzipped it (top-level `texturecraft-cli-0.6.1-macos-universal/texturecraft-cli`)
+  and ran `texturecraft-cli --version` → `TextureCraft 0.6.1 (34a1961 2026-11-12)` — the CLI prints
+  the app's version string, not `texturecraft-cli <ver>`.
 
 ## 1. Capability claims → evidence → tier
 

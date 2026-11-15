@@ -87,7 +87,7 @@ The one idea that governs everything: **every user-visible action is a command**
 - **Print** (`file.print`, `file.printers`, `dryRun`, `created`) through the shared `craft-print` spooler — `docs/gaps.md` §10.
 
 ### Automation surfaces — implemented
-- **CLI** `designcraft-cli` (`apps/designcraft-cli/src/main.rs`): `run`, `commands [FILTER]`, `describe COMMAND`, `script`, `app`, `mcp`, `perf`, `bench`, `validate-pdf`, `thumbnail`, `links`, `--version` — **11 subcommands, unchanged at v0.20.1**. On macOS the app bundle installs it at `Contents/MacOS/designcraft-cli` (`docs/mcp.md`); a separate `designcraft-cli-<version>-macos-universal.zip`, `cargo install --path apps/designcraft-cli --locked`, or `cargo build --release -p designcraft-cli` are the alternatives. `mcp` takes `--automation-read-root`/`--automation-write-root` more than once, in `--flag DIR` and `--flag=DIR` spellings; a non-UTF-8 MCP line answers a parse error instead of dying.
+- **CLI** `designcraft-cli` (`apps/designcraft-cli/src/main.rs`): `run`, `commands [FILTER]`, `describe COMMAND`, `script`, `app`, `mcp`, `perf`, `bench`, `validate-pdf`, `thumbnail`, `links`, `--version` — **11 subcommands, unchanged at v0.20.1**. On macOS the app bundle installs it at `Contents/MacOS/designcraft-cli` (`docs/mcp.md`); the same binary is also published as the release asset `designcraft-cli-0.20.1-macos-universal.zip`, and *Getting the CLI* under *How to operate* covers finding, verifying and installing either one. `mcp` takes `--automation-read-root`/`--automation-write-root` more than once, in `--flag DIR` and `--flag=DIR` spellings; a non-UTF-8 MCP line answers a parse error instead of dying.
 - **MCP server** `designcraft-cli mcp` — stdio JSON-RPC, protocol 2025-06-18 (older revisions accepted), **26 tools, unchanged at v0.20.1**: command discovery/execution (`list_commands`, `execute`, `batch`), document I/O and inspection (`inspect_document`, `get_story`, `set_story_text`, `new_document`, `open_document`, `save_document`, `place_image`), rendering (`render_page`, `export_png`, `screenshot`), input/UI tools (`select_tool`, `pointer`, `key`, `type_text`, `ime`, `click`, `drag`, `menu_list`, `ui_inspect`, `ui_set`, `dialog_set/confirm/cancel`). Read/write root flags confine every path a command touches. Every input schema is **closed** (`additionalProperties: false`) and keys are checked at every level, so a misspelt key in a `batch` step, a `pointer` event or `mods` is an invalid-params error naming its path; every tool carries all four MCP hints (`crates/mcp/src/tools.rs`, `server.rs`).
 - **Control channel**: `designcraft --control PORT` serves JSON lines on `127.0.0.1` only; 4 MiB line limit, 16 connections, no authentication (`docs/control-protocol.md`). `crates/ui-egui/src/control.rs` and `apps/designcraft/src/control_server.rs` are byte-identical to v0.18.0: **28 dispatch arms / 31 accepted method strings** (30 dotted names plus the `command` alias), unchanged at v0.20.1. The earlier "27 methods" figure was an undercount; use `engine.commands` / `ui.inspect` to discover live behaviour.
 - **Scripts**: one command per line with `$N.path` references to earlier results (`crates/engine/src/script.rs`; `script.run {text}`). A compact line's parameters must be a JSON object (`command.id {...}`, `command.id={...}`), not bare values. The Scripts panel runs a script as one undo step and restores the document on failure. Bounds at v0.20.1: nesting depth 8, 100 000 steps for a script and the scripts it runs, 16 MiB per `${…}` interpolation, 64 MiB per `$N.path` copy, 256 MiB per resolved step parameter tree (`MAX_SCRIPT_DEPTH`, `MAX_SCRIPT_STEPS`, `MAX_INTERPOLATED_BYTES`, `MAX_REFERENCED_BYTES`, `MAX_STEP_PARAM_BYTES`).
@@ -129,8 +129,49 @@ Ranked shortfall list: `docs/gaps.md` (kept current by the maintainers — read 
 ### Launch on macOS
 - GUI: `open -a DesignCraft` (bundle id `ai.storyteller.designcraft`); to open a file: `open -a DesignCraft brochure.designcraft`. The executable inside the bundle is `Contents/MacOS/DesignCraft`.
 - Real flags of the desktop binary (`apps/designcraft/src/main.rs`): `--sample`, `--control <port>` (also `DESIGNCRAFT_CONTROL_PORT`), `--version`, `--gpu-skip=<list>` (internal restart bookkeeping), plus any number of file paths.
-- **The CLI ships inside the macOS app bundle** at `Contents/MacOS/designcraft-cli`; the separate `designcraft-cli-<version>-macos-universal.zip` asset still exists, as do `cargo install --path apps/designcraft-cli --locked` and `cargo build --release -p designcraft-cli`. An independently installed CLI is not changed by app updates; the bundled one is.
+- **The CLI ships inside the macOS app bundle** at `Contents/MacOS/designcraft-cli`, the same build as the app. An independently installed CLI is not changed by app updates; the bundled one is. *Getting the CLI* below covers the bundle path, the release asset and the install recipe.
 - State lives in the app's settings folder (`~/Library/Application Support/DesignCraft/` on macOS): `ui.json`, `prefs.json`, `logs/designcraft.log` (rotates, 16 MiB cap), `gpu.json`, and `Recovery/`. `portable.txt` next to the app switches to a `DesignCraftData` folder; `DESIGNCRAFT_CONFIG_DIR` overrides both.
+
+### Getting the CLI (the launcher installs the app, not the CLI)
+
+The ArtCraft Launcher installs `DesignCraft.app`; it does not put `designcraft-cli` on your `PATH`.
+It **does** ship a copy inside the bundle at `/Applications/DesignCraft.app/Contents/MacOS/designcraft-cli`,
+the same build as the app, so a launcher install can use that binary directly. The CLI is published
+on the app's GitHub release, `designcraft-cli-0.20.1-macos-universal.zip` (110.6 MB), so
+`designcraft-cli` answering *command not found* means "not installed yet", not "not supported".
+
+Find it, in this order:
+
+1. **On `PATH`** — `command -v designcraft-cli`. If it answers, `designcraft-cli --version` must
+   report the version this skill was written against (0.20.1). A different version means the CLI and
+   the app have drifted: re-read *Verify against your installed version* before trusting ids.
+2. **Bundle copy** — `"/Applications/DesignCraft.app/Contents/MacOS/designcraft-cli" --version`; to
+   make it callable as `designcraft-cli`, link it: `mkdir -p ~/.local/bin && ln -sf
+   "/Applications/DesignCraft.app/Contents/MacOS/designcraft-cli" ~/.local/bin/designcraft-cli`.
+3. **Install it from the release** — user-local, no `sudo`:
+
+```sh
+APP_VER=0.20.1
+REL="https://github.com/storytold/designcraft/releases/download/v$APP_VER"
+ASSET="designcraft-cli-$APP_VER-macos-universal.zip"
+mkdir -p "$HOME/.local/bin" "$HOME/Downloads/designcraft-cli" && cd "$HOME/Downloads/designcraft-cli"
+curl -fLO "$REL/$ASSET" && curl -fLO "$REL/SHA256SUMS.txt"
+expected=$(grep -F "$ASSET" SHA256SUMS.txt | awk '{print $1}')
+actual=$(shasum -a 256 "$ASSET" | awk '{print $1}')
+[ "$expected" = "$actual" ] && echo "checksum OK" || { echo "checksum MISMATCH — stop"; exit 1; }
+unzip -oq "$ASSET"
+install -m 0755 "designcraft-cli-$APP_VER-macos-universal/designcraft-cli" "$HOME/.local/bin/designcraft-cli"
+"$HOME/.local/bin/designcraft-cli" --version
+```
+
+`~/.local/bin` must be on `PATH` for the shell that runs the skill:
+`export PATH="$HOME/.local/bin:$PATH"` (put it in your shell profile to keep it).
+
+Rules: never `sudo` into `/usr/local`, never unzip into `/Applications`, and never replace an
+existing `designcraft-cli` of a different version without telling the user. Prefer the bundle copy
+(step 2) — it is the same commit as the app; a downloaded CLI is only needed on a machine without
+the app. Building from source (`cargo install --path apps/designcraft-cli --locked`) is a developer
+path only — full Rust toolchain, minutes of compiling; prefer the release binary above.
 
 ### CLI reference (exact, from `apps/designcraft-cli/src/main.rs`)
 ```

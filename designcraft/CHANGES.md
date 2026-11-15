@@ -1,4 +1,20 @@
-# DesignCraft — round 2026-11-12 changes
+# DesignCraft — changes: 2026-11-12 round and 2026-11-15b CLI round
+
+## 2026-11-15b — CLI availability and install
+
+A launcher install gives you `DesignCraft.app`; it never puts `designcraft-cli` on `PATH`. This
+round adds the verified CLI recipe and records the release facts. The bundle **does** carry the CLI
+at `/Applications/DesignCraft.app/Contents/MacOS/designcraft-cli` (run: prints
+`designcraft-cli 0.20.1`), and the release also publishes
+`designcraft-cli-0.20.1-macos-universal.zip` (110,569,975 bytes / 110.6 MB) whose line in the
+release's `SHA256SUMS.txt` is `a178783b31e1af48f7af2b516568ec85537a484dfbcc5057b0f03cadee90c0ab`.
+*How to operate* now carries **Getting the CLI** — `command -v` check, bundle copy (link it into
+`~/.local/bin`), then the download/checksum/unzip/`install -m 0755` recipe — and the older
+"`cargo install --path …` / `cargo build --release …` are the alternatives" phrasing is gone from
+the launch section; the bundle copy is the preferred path, a downloaded CLI is only for a machine
+without the app, and cargo appears as the developer path only. The end-to-end proof (download,
+checksum against `SHA256SUMS.txt`, unzip, `install -m 0755`, `--version`) is recorded in
+*evidence.md*, which gains a **CLI availability (measured 2026-11-15)** block.
 
 Re-pinned: v0.18.0 (`58ac6d2`) -> v0.20.1 (`33a4678`, installed `designcraft 0.20.1`; the bundled
 `designcraft-cli` prints `designcraft-cli 0.20.1`). Clone HEAD verified at

@@ -67,7 +67,47 @@ AniCraft is an open-source, clean-room reimplementation of Adobe Animate's 2D ve
 
 ## How to operate
 
-**Desktop.** Launch with `open -a "AniCraft"` on macOS (native builds elsewhere). The window holds one document: a start screen offers New presets, Open, the sample and recent files; after that the stage, tools, timeline, Properties and Library are the main surfaces (`src/start.rs`, `src/app.rs`). The app bundle also contains `anicraft-cli` next to the GUI binary; the release ZIP installs the same CLI separately.
+**Desktop.** Launch with `open -a "AniCraft"` on macOS (native builds elsewhere). The window holds one document: a start screen offers New presets, Open, the sample and recent files; after that the stage, tools, timeline, Properties and Library are the main surfaces (`src/start.rs`, `src/app.rs`).
+
+### Getting the CLI (the launcher installs the app, not the CLI)
+
+The ArtCraft Launcher installs `AniCraft.app`; it does not put `anicraft-cli` on your `PATH`.
+It **does** ship a copy inside the bundle at `/Applications/AniCraft.app/Contents/MacOS/anicraft-cli`,
+the same build as the app, so a launcher install can use that binary directly. The CLI is published
+on the app's GitHub release, `anicraft-cli-0.2.1-macos-universal.zip` (9.5 MB), so `anicraft-cli`
+answering *command not found* means "not installed yet", not "not supported".
+
+Find it, in this order:
+
+1. **On `PATH`** — `command -v anicraft-cli`. If it answers, `anicraft-cli --version` must report
+   the version this skill was written against (0.2.1). A different version means the CLI and the
+   app have drifted: re-read *Verify against your installed version* before trusting ids.
+2. **Bundle copy** — `"/Applications/AniCraft.app/Contents/MacOS/anicraft-cli" --version`; to make
+   it callable as `anicraft-cli`, link it: `mkdir -p ~/.local/bin && ln -sf
+   "/Applications/AniCraft.app/Contents/MacOS/anicraft-cli" ~/.local/bin/anicraft-cli`.
+3. **Install it from the release** — user-local, no `sudo`:
+
+```sh
+APP_VER=0.2.1
+REL="https://github.com/storytold/anicraft/releases/download/v$APP_VER"
+ASSET="anicraft-cli-$APP_VER-macos-universal.zip"
+mkdir -p "$HOME/.local/bin" "$HOME/Downloads/anicraft-cli" && cd "$HOME/Downloads/anicraft-cli"
+curl -fLO "$REL/$ASSET" && curl -fLO "$REL/SHA256SUMS.txt"
+expected=$(grep -F "$ASSET" SHA256SUMS.txt | awk '{print $1}')
+actual=$(shasum -a 256 "$ASSET" | awk '{print $1}')
+[ "$expected" = "$actual" ] && echo "checksum OK" || { echo "checksum MISMATCH — stop"; exit 1; }
+unzip -oq "$ASSET"
+install -m 0755 "anicraft-cli-$APP_VER-macos-universal/anicraft-cli" "$HOME/.local/bin/anicraft-cli"
+"$HOME/.local/bin/anicraft-cli" --version
+```
+
+`~/.local/bin` must be on `PATH` for the shell that runs the skill:
+`export PATH="$HOME/.local/bin:$PATH"` (put it in your shell profile to keep it).
+
+Rules: never `sudo` into `/usr/local`, never unzip into `/Applications`, and never replace an
+existing `anicraft-cli` of a different version without telling the user. Prefer the bundle copy
+(step 2) — it is the same commit as the app; a downloaded CLI is only needed on a machine without
+the app.
 
 **Core workflow.** Draw on the active layer at the playhead → insert keyframes (`F6`) or blank keyframes (`F7`) → create a classic tween (`timeline.create_tween`) or shape tween (`timeline.create_shape_tween`) → scrub or play → save `.anicraft` → export or publish. Opening `.fla`/`.xfl` imports into an untitled document; Save then asks for a new `.anicraft` name and never overwrites the source (`crates/engine/src/cmds_file.rs`).
 

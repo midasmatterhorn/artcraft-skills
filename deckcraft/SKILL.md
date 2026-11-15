@@ -140,14 +140,44 @@ The MCP surface is 25 tools: `list_commands`, `run_command`, `batch`, `new_prese
 
 ## How to operate
 
-### Check what is installed
+### Getting the CLI (the launcher installs the app, not the CLI)
+
+The ArtCraft Launcher installs `DeckCraft.app`; it does not put `deckcraft-cli` on your `PATH`.
+It ships **no** CLI binary inside the bundle — the bundle holds only `DeckCraft` — so a
+launcher-only install has no `deckcraft-cli` at all. The CLI is published on the app's GitHub
+release, `deckcraft-cli-0.18.1-macos-universal.zip` (94.3 MB), so `deckcraft-cli` answering
+*command not found* means "not installed yet", not "not supported".
+
+Find it, in this order:
+
+1. **On `PATH`** — `command -v deckcraft-cli`. If it answers, `deckcraft-cli --version` must report
+   the version this skill was written against (0.18.1). A different version means the CLI and the
+   app have drifted: re-read *Verify against your installed version* before trusting ids.
+2. **Bundle copy** — Skip it: `find "/Applications/DeckCraft.app" -name 'deckcraft-cli'` finds
+   nothing (verified), so go to step 3.
+3. **Install it from the release** — user-local, no `sudo`:
+
 ```sh
-command -v deckcraft-cli                 # headless CLI: a separate download, not in the .app
-# the app bundle's own binary prints its version and exits before opening a window:
-#   <DeckCraft.app>/Contents/MacOS/DeckCraft --version   →   deckcraft 0.18.1
-#   <DeckCraft.app>/Contents/MacOS/DeckCraft --help      →   usage, then exit
+APP_VER=0.18.1
+REL="https://github.com/storytold/deckcraft/releases/download/v$APP_VER"
+ASSET="deckcraft-cli-$APP_VER-macos-universal.zip"
+mkdir -p "$HOME/.local/bin" "$HOME/Downloads/deckcraft-cli" && cd "$HOME/Downloads/deckcraft-cli"
+curl -fLO "$REL/$ASSET" && curl -fLO "$REL/SHA256SUMS.txt"
+expected=$(grep -F "$ASSET" SHA256SUMS.txt | awk '{print $1}')
+actual=$(shasum -a 256 "$ASSET" | awk '{print $1}')
+[ "$expected" = "$actual" ] && echo "checksum OK" || { echo "checksum MISMATCH — stop"; exit 1; }
+unzip -oq "$ASSET"
+install -m 0755 "deckcraft-cli-$APP_VER-macos-universal/deckcraft-cli" "$HOME/.local/bin/deckcraft-cli"
+"$HOME/.local/bin/deckcraft-cli" --version
 ```
-The `.app` bundle contains no `deckcraft-cli`. The CLI ships as the separate signed/notarized release asset `deckcraft-cli-<ver>-macos-<arch>.zip` (the packaging default is `<arch>` = `universal`); download/unzip it, build it with `cargo build --release -p deckcraft-cli`, or automate through the control channel instead.
+
+`~/.local/bin` must be on `PATH` for the shell that runs the skill:
+`export PATH="$HOME/.local/bin:$PATH"` (put it in your shell profile to keep it).
+
+Rules: never `sudo` into `/usr/local`, never unzip into `/Applications`, and never replace an
+existing `deckcraft-cli` of a different version without telling the user. Building from source
+(`cargo install --path apps/deckcraft-cli --locked`) is a developer path only — full Rust toolchain,
+minutes of compiling; prefer the release binary above.
 
 ### Launch
 ```sh
@@ -156,7 +186,7 @@ open -a DeckCraft --args --sample          # sample deck
 open -a DeckCraft talk.pptx                # open a file
 open -a DeckCraft --args --control 7990 --sample
 ```
-GUI flags: `--control PORT`, `--sample`, `--show`, `--help`/`-h`, `--version`/`-V`, and file paths; `-psn_*` is ignored. The port can also come from `DECKCRAFT_CONTROL_PORT`. The desktop parser is hand-rolled: an unknown argument is treated as a file path, so a mistyped flag shows up as a failed open, not a usage error.
+GUI flags: `--control PORT`, `--sample`, `--show`, `--help`/`-h`, `--version`/`-V`, and file paths; `-psn_*` is ignored. The port can also come from `DECKCRAFT_CONTROL_PORT`. The desktop parser is hand-rolled: an unknown argument is treated as a file path, so a mistyped flag shows up as a failed open, not a usage error. The app binary prints its version or usage and exits before opening a window: `/Applications/DeckCraft.app/Contents/MacOS/DeckCraft --version` → `deckcraft 0.18.1`; `--help` prints usage, then exits.
 
 ### CLI
 `deckcraft-cli` is the most reliable automation surface; it needs no window.
@@ -292,4 +322,4 @@ Alpha software with active auto-updates: verify every deliverable, keep a native
 - **Key files read:** `README.md`; `Cargo.toml`; `ROADMAP.md`; `docs/{architecture,gaps,file-format-parity,animation-parity,target-app-parity,control-protocol,mcp}.md`; `packaging/web/README.md`; `apps/deckcraft/src/{main,control_server,apple_events,logging}.rs`; `apps/deckcraft-cli/src/help.rs`; `apps/deckcraft-web/src/{api,host}.rs`; `crates/engine/src/cmd.rs` and `crates/engine/src/cmd/` (id parse over every module, plus `file.rs`, `format/paragraph.rs`, `insert/text_fields.rs`, `shape/{appearance,size}.rs`, `insert/album.rs`, `reuse.rs`, `review.rs`, `smartart.rs`, `three_d.rs`, `table.rs`); `crates/engine/src/{io,lib,connect,file_access,spell,tools}.rs`; `crates/model/src/{anim,chart,theme,text,lib,edit,trendline,resolve}.rs`; `crates/geom/src/{preset/catalog.rs,warp.rs}`; `crates/format/src/lib.rs`; `crates/pptx/src/{lib,read,write,dgm}.rs` and `crates/pptx/src/{read,write}/{chart,dml,shapes}.rs`; `crates/pdf/src/lib.rs`; `crates/mcp/src/{tools,server,backend,headless}.rs`; `crates/ui-egui/src/{lib,control,show,media,widgets}.rs`, `crates/ui-egui/src/panels/{fillui,notes}.rs`, `crates/ui-egui/src/app/files.rs`, `crates/ui-egui/src/ribbon/{animations,home}.rs`; `packaging/macos/Info.plist.in`.
 - **Shared libraries (not audited):** `craft-media`/`craft-audio` at `75895c0321d8cb6e175a42466cba050352b117c5`; `craft-pdf`/`craft-update`/`craft-ui` at `6e03f65bf45181db77ba6229716e6624db9eb25b`; the web app's `craft-web-api`/`craft-web-host` at `fd5e2feff6ea25bed371a99cc732b3968d621505` (the page-API contract is documented in the craft-libs `web-api` crate README).
 - **Docs that are stale at this tag (code wins):** `docs/control-protocol.md` (16 MiB vs the code's 256 MiB); `docs/animation-parity.md` (14 exits vs 23); `docs/architecture.md` (320 commands and 24 crates vs 329 and 20) and `docs/target-app-parity.md` (328); `ROADMAP.md` ("226 commands"); `docs/mcp.md` (no batch caps); `format.align`'s parameter doc (omits `thaiDist`).
-- **Not independently verified:** PowerPoint's acceptance of exported `.pptx`/`.ppsx` without repair on real decks, render fidelity against PowerPoint, runtime command execution, `deckcraft-cli` execution (not installed on this machine), the web `window.deckcraft` API in a browser, and any GUI behaviour. Claims here are code and document inspection plus bundle metadata and `--version` checks; no GUI was launched and no deck was rendered.
+- **Not independently verified:** PowerPoint's acceptance of exported `.pptx`/`.ppsx` without repair on real decks, render fidelity against PowerPoint, runtime command execution, `deckcraft-cli` execution (not installed on this machine; its release asset and install recipe are documented under *Getting the CLI* but were not run here), the web `window.deckcraft` API in a browser, and any GUI behaviour. Claims here are code and document inspection plus bundle metadata and `--version` checks; no GUI was launched and no deck was rendered.

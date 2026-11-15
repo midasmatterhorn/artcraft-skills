@@ -148,8 +148,35 @@ The repo's ranked shortfall list is `docs/gaps.md`; read it before promising any
 - Preferences: `--theme light|dark|system`, `--language auto|<code>`, `--author <name>`, `--date-format …`, `--ui-scale …`, and more; keys are taken verbatim.
 - One window, several documents as tabs; split view adds a second pane (`view.split`), and panels can be floated, tab-stacked or split. On Windows and Linux/BSD a launch that only names files hands them to the running instance; `--new-window` starts an independent window.
 
-### Headless CLI (not installed with the app)
-`pdfcraft-cli` is a separate signed/notarized asset: `pdfcraft-cli-<version>-macos-universal.zip`. Use the same release as the app where possible; the control protocol is internal and may change between versions.
+### Getting the CLI (the launcher installs the app, not the CLI)
+
+The ArtCraft Launcher installs `PdfCraft.app`; it does not put `pdfcraft-cli` on your `PATH`. It ships **no** CLI binary inside the bundle — the bundle holds only `PdfCraft` — so a launcher-only install has no `pdfcraft-cli` at all. The CLI is published on the app's GitHub release, `pdfcraft-cli-0.21.1-macos-universal.zip` (92.3 MB), so `pdfcraft-cli` answering *command not found* means "not installed yet", not "not supported".
+
+Find it, in this order:
+
+1. **On `PATH`** — `command -v pdfcraft-cli`. If it answers, `pdfcraft-cli --version` must report the version this skill was written against (0.21.1). A different version means the CLI and the app have drifted: re-read *Verify against your installed version* before trusting ids.
+2. **Bundle copy** — Skip it: `find "/Applications/PdfCraft.app" -name 'pdfcraft-cli'` finds nothing (verified), so go to step 3.
+3. **Install it from the release** — user-local, no `sudo`:
+
+```sh
+APP_VER=0.21.1
+REL="https://github.com/storytold/pdfcraft/releases/download/v$APP_VER"
+ASSET="pdfcraft-cli-$APP_VER-macos-universal.zip"
+mkdir -p "$HOME/.local/bin" "$HOME/Downloads/pdfcraft-cli" && cd "$HOME/Downloads/pdfcraft-cli"
+curl -fLO "$REL/$ASSET" && curl -fLO "$REL/SHA256SUMS.txt"
+expected=$(grep -F "$ASSET" SHA256SUMS.txt | awk '{print $1}')
+actual=$(shasum -a 256 "$ASSET" | awk '{print $1}')
+[ "$expected" = "$actual" ] && echo "checksum OK" || { echo "checksum MISMATCH — stop"; exit 1; }
+unzip -oq "$ASSET"
+install -m 0755 "pdfcraft-cli-$APP_VER-macos-universal/pdfcraft-cli" "$HOME/.local/bin/pdfcraft-cli"
+"$HOME/.local/bin/pdfcraft-cli" --version
+```
+
+`~/.local/bin` must be on `PATH` for the shell that runs the skill: `export PATH="$HOME/.local/bin:$PATH"` (put it in your shell profile to keep it).
+
+Rules: never `sudo` into `/usr/local`, never unzip into `/Applications`, and never replace an existing `pdfcraft-cli` of a different version without telling the user. Linux: `pdfcraft-cli-0.21.1-linux-x86_64.tar.gz` / `-linux-aarch64.tar.gz` are published alongside the macOS zip.
+
+### Headless CLI
 
 Documented subcommands: `info`, `render`, `text`, `edit`, `combine`, `extract`, `split`, `check`, `audit`, `batch`, `tools`, `run`, `ui`, `mcp`; the internal `check-one` worker is spawned by `check`.
 

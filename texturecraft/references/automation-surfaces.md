@@ -99,7 +99,11 @@ Hand-rolled parser; positional order matters (input first, `-o` last).
 | `mcp` | `--bridge`, `--token`, `--read-root`, `--write-root`, `--automation-read-root`, `--automation-write-root` | MCP on stdio |
 | `serve` | `--port`, `--read-root`, `--write-root`, `--automation-read-root`, `--automation-write-root` | JSON lines on stdio or TCP |
 
-The macOS app bundle ships only `TextureCraft`; `texturecraft-cli` is a separate download/build.
+The macOS app bundle ships only `TextureCraft`; `texturecraft-cli` is not on `PATH` after a launcher
+install — `Getting the CLI (the launcher installs the app, not the CLI)` in `SKILL.md` fetches the
+release asset `texturecraft-cli-0.6.1-macos-universal.zip`, verifies it against `SHA256SUMS.txt` and
+installs it into `~/.local/bin`. Building from source is a developer path only (full Rust toolchain and
+a source checkout).
 
 ## Engine command families (177 ids)
 

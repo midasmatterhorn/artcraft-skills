@@ -104,10 +104,51 @@ open -a PhotoCraft --args --control 7878 --control-token-file "$HOME/.photocraft
      --automation-read-root "$PWD" --automation-write-root "$PWD"
 ```
 
-- Binary: `Contents/MacOS/PhotoCraft` inside the app bundle. **The macOS bundle also ships `photocraft-cli` beside it** (`Contents/MacOS/photocraft-cli`); other platforms: the `photocraft-cli-<ver>-macos-universal.zip`, `cargo install --path apps/photocraft-cli --locked`, or the Linux `.deb`/`.rpm`.
+- Binary: `Contents/MacOS/PhotoCraft` inside the app bundle. **The macOS bundle also ships `photocraft-cli` beside it** (`Contents/MacOS/photocraft-cli`) — *Getting the CLI* below covers that copy, the release download and the `PATH` step; other platforms also get a Linux `.deb`/`.rpm`.
 - App flags, parsed by clap so a typo is a usage error (exit 2): files, `-h/--help`, `--version`, `--safe-gpu`, `--in-window-menus`, `--new-instance`, `--present-mode <fifo|vsync|autovsync|novsync|immediate|mailbox|autonovsync>`, `--frame-latency <1..3>`, `--stroke-trace <stderr|FILE.csv>`, `--control <port>`, `--control-token <64-hex>`, `--control-token-file <path>`, `--automation-read-root <dir>` (repeatable), `--automation-write-root <dir>`, `--` (`apps/photocraft/src/launch_args.rs`). Env equivalents: `PHOTOCRAFT_CONTROL_PORT`, `PHOTOCRAFT_CONTROL_TOKEN(_FILE)`, `PHOTOCRAFT_AUTOMATION_{READ,WRITE}_ROOT` (one fallback read root only when no read flag is given), `PHOTOCRAFT_CONFIG_DIR`, `PHOTOCRAFT_NEW_INSTANCE`. A token flag given without a value fails the launch.
 - Without any token flag, a fresh 256-bit token is generated and printed to stderr; a token file is created mode 0600. Treat it as a credential: it grants the whole non-filesystem control surface over unencrypted loopback (`crates/automation/src/security.rs`, `docs/control-protocol.md`).
 - Never launch the GUI just to inspect a file — use the CLI. On macOS occluded windows stop rendering, and `ui.screenshot` raises the window and may steal focus (`ui.screenshot {focus:false}` avoids it).
+
+### Getting the CLI (the launcher installs the app, not the CLI)
+
+The ArtCraft Launcher installs `PhotoCraft.app`; it does not put `photocraft-cli` on your `PATH`. It
+**does** ship a copy inside the bundle at `/Applications/PhotoCraft.app/Contents/MacOS/photocraft-cli`,
+the same build as the app, so a launcher install can use that binary directly. The CLI is
+published on the app's GitHub release, `photocraft-cli-0.23.1-macos-universal.zip` (120.5 MB), so
+`photocraft-cli` answering *command not found* means "not installed yet", not "not supported".
+
+Find it, in this order:
+
+1. **On `PATH`** — `command -v photocraft-cli`. If it answers, `photocraft-cli --version` must report
+   the version this skill was written against (0.23.1). A different version means the CLI and the app
+   have drifted: re-read *Verify against your installed version* before trusting ids.
+2. **Bundle copy** — `"/Applications/PhotoCraft.app/Contents/MacOS/photocraft-cli" --version`; to make
+   it callable as `photocraft-cli`, link it: `mkdir -p ~/.local/bin && ln -sf
+   "/Applications/PhotoCraft.app/Contents/MacOS/photocraft-cli" ~/.local/bin/photocraft-cli`.
+3. **Install it from the release** — user-local, no `sudo`:
+
+```sh
+APP_VER=0.23.1
+REL="https://github.com/storytold/photocraft/releases/download/v$APP_VER"
+ASSET="photocraft-cli-$APP_VER-macos-universal.zip"
+mkdir -p "$HOME/.local/bin" "$HOME/Downloads/photocraft-cli" && cd "$HOME/Downloads/photocraft-cli"
+curl -fLO "$REL/$ASSET" && curl -fLO "$REL/SHA256SUMS.txt"
+expected=$(grep -F "$ASSET" SHA256SUMS.txt | awk '{print $1}')
+actual=$(shasum -a 256 "$ASSET" | awk '{print $1}')
+[ "$expected" = "$actual" ] && echo "checksum OK" || { echo "checksum MISMATCH — stop"; exit 1; }
+unzip -oq "$ASSET"
+install -m 0755 "photocraft-cli-$APP_VER-macos-universal/photocraft-cli" "$HOME/.local/bin/photocraft-cli"
+"$HOME/.local/bin/photocraft-cli" --version
+```
+
+`~/.local/bin` must be on `PATH` for the shell that runs the skill:
+`export PATH="$HOME/.local/bin:$PATH"` (put it in your shell profile to keep it).
+
+Rules: never `sudo` into `/usr/local`, never unzip into `/Applications`, and never replace an existing
+`photocraft-cli` of a different version without telling the user. Prefer the bundle copy (step 2) — it
+is the same commit as the app; a downloaded CLI is only needed on a machine without the app. Building
+from source (`cargo install --path apps/photocraft-cli --locked`) is a developer path only — full Rust
+toolchain, minutes of compiling; prefer the release binary above.
 
 ### Headless CLI
 

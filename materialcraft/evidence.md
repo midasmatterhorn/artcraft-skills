@@ -100,8 +100,54 @@ carried forward and say so. Unexercised UI behaviour stays labelled, not upgrade
 
 - Runtime behaviour: cook times, render quality, the Explorer tree, docking, self-update prompt,
   Export tabs, undo-limit preference, function editor, RTL layout, `.mcmat` read/write — no GUI,
-  no build and no test run. Only the installed GUI binary's `--version` and `--help` were executed.
+  no build and no test run. Against the installed bundle only its `--version` and `--help` were
+  executed.
 - The installed bundle ships no separate `materialcraft-cli`, so CLI counts and help text come
-  from source.
+  from source. The release CLI was downloaded and installed for the CLI-availability proof below;
+  only `--version` and one `commands --filter material` smoke call were run against it.
 - The SBS library package was counted structurally (`<function>` 171, `<paramNode` 2 334), not
   evaluated in the reference application.
+
+## CLI availability (measured 2026-11-15)
+
+- Release asset: `materialcraft-cli-0.4.1-macos-universal.zip`, 11 860 348 bytes (11.9 MB), on
+  `https://github.com/storytold/materialcraft/releases/download/v0.4.1/`.
+- `SHA256SUMS.txt` entry — one matching line, so `grep -F "$ASSET"` selects exactly the CLI zip:
+  `bcf0e87191dfca39ba14c8110823b21ed5bc5078ad7ae8e4cff380d83fec6edc  materialcraft-cli-0.4.1-macos-universal.zip`
+- Bundle `find`: `find "/Applications/MaterialCraft.app" -name 'materialcraft-cli'` prints nothing —
+  the bundle's `Contents/MacOS` holds only `MaterialCraft`, so a launcher-only install has no CLI.
+- Ran: the whole recipe once, in a scratch directory (abbreviated `$SCRATCH` below) — download,
+  checksum compare, unzip, `install -m 0755`, `--version`, then one smoke command:
+
+```text
+$ curl -fsSLO "https://github.com/storytold/materialcraft/releases/download/v0.4.1/materialcraft-cli-0.4.1-macos-universal.zip"
+$ curl -fsSLO "https://github.com/storytold/materialcraft/releases/download/v0.4.1/SHA256SUMS.txt"
+$ grep -F materialcraft-cli-0.4.1-macos-universal.zip SHA256SUMS.txt
+bcf0e87191dfca39ba14c8110823b21ed5bc5078ad7ae8e4cff380d83fec6edc  materialcraft-cli-0.4.1-macos-universal.zip
+expected=bcf0e87191dfca39ba14c8110823b21ed5bc5078ad7ae8e4cff380d83fec6edc
+actual  =bcf0e87191dfca39ba14c8110823b21ed5bc5078ad7ae8e4cff380d83fec6edc
+checksum OK
+$ unzip -oq materialcraft-cli-0.4.1-macos-universal.zip
+$ install -m 0755 materialcraft-cli-0.4.1-macos-universal/materialcraft-cli "$SCRATCH/bin/materialcraft-cli"
+$ stat -f '%Sp %z %N' "$SCRATCH/bin/materialcraft-cli"
+-rwxr-xr-x 32494816 $SCRATCH/bin/materialcraft-cli
+$ "$SCRATCH/bin/materialcraft-cli" --version
+materialcraft-cli 0.4.1 (65f7bfd 2026-11-12)
+$ "$SCRATCH/bin/materialcraft-cli" commands --filter material | head -5
+[
+  {
+    "enabled": true,
+    "id": "file.exportMaterial",
+```
+
+The zip's top-level directory is `materialcraft-cli-0.4.1-macos-universal/`, holding the universal
+binary `materialcraft-cli` (32 494 816 bytes; `codesign -dvv` reports identifier
+`ai.storyteller.materialcraft-cli`, format "Mach-O universal (x86_64 arm64)", Developer ID
+Application: Learning Machines LLC, team `DJ6XS33FX8`) plus LICENSE, NOTICE, ATTRIBUTION, README and
+two OFL texts. `spctl -a` rejects the bare executable only because it is not an app bundle; the
+signature itself is valid.
+
+The shipped block itself was also run verbatim with `HOME` pointed at a scratch home (so nothing was
+written into the user's home); it printed `checksum OK` and
+`materialcraft-cli 0.4.1 (65f7bfd 2026-11-12)`. In the transcript above, `$HOME/Downloads` and
+`$HOME/.local/bin` are abbreviated `$SCRATCH`.

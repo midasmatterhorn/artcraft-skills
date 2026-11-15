@@ -1,5 +1,9 @@
 # PdfCraft — round 2026-11-12 changes
 
+## 2026-11-15b — CLI availability and install
+
+Round 2026-11-15b ("the launcher installs the app, not the CLI"). `/Applications/PdfCraft.app/Contents/MacOS` holds only `PdfCraft`, `find "/Applications/PdfCraft.app" -name 'pdfcraft-cli'` finds nothing and `command -v pdfcraft-cli` is empty, so a launcher-only install has no CLI at all. The old *Headless CLI (not installed with the app)* note named the asset but never said how to obtain it; it was replaced by the canonical **Getting the CLI (the launcher installs the app, not the CLI)** subsection inside `## How to operate` — `PATH` check (`pdfcraft-cli --version` must report 0.21.1), bundle check, then a user-local download of `pdfcraft-cli-0.21.1-macos-universal.zip` (92.3 MB) from the `v0.21.1` release with a `SHA256SUMS.txt` checksum compare, `unzip`, `install -m 0755` into `~/.local/bin` and a `--version` run, with no `sudo` and nothing written into `/Applications`. The pdfcraft-only Linux note is kept: `pdfcraft-cli-0.21.1-linux-x86_64.tar.gz` and `-linux-aarch64.tar.gz` are published alongside the macOS zip. The seven sections, pins, audit basis and counts are untouched, and the recipe was proved end to end on the smallest CLI in the batch (SoundCraft, 9.0 MB).
+
 Re-pinned: v0.19.0 (`8c57279`) -> v0.21.1 (`b503b2e62dfeec5598f344e4e287d9c9cbdb34fa`, installed `pdfcraft 0.21.1`).
 
 ## Corrected / re-measured

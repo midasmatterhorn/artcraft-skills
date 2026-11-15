@@ -1,4 +1,19 @@
-# GridCraft — round 2026-11-12 changes
+# GridCraft — changes: 2026-11-12 round and 2026-11-15b CLI round
+
+## 2026-11-15b — CLI availability and install
+
+`gridcraft-cli` used to be introduced with "The bundle ships no CLI. Install with `cargo install
+--path apps/gridcraft-cli` from a source checkout, or the release zip" — a cargo-first instruction
+for a machine with no Rust toolchain. The bundle finding is confirmed: the `.app` holds only
+`GridCraft` (`find "/Applications/GridCraft.app" -name 'gridcraft-cli'` returns nothing), nothing is
+on `PATH`, and the CLI is published as `gridcraft-cli-0.19.1-macos-universal.zip` (16,006,487 bytes
+/ 16.0 MB; `SHA256SUMS.txt` line
+`7c2895ebad0bbd92b65c622ba7e22ada56e0498065dfdbd433111ba1e225eb8a`). *How to operate* now carries
+the uniform **Getting the CLI** block (PATH check, bundle check, then the
+download/checksum/unzip/`install -m 0755`/`--version` recipe), and cargo appears only as the
+developer path. Proved end to end on this asset — checksum matched, the installed binary printed
+`gridcraft-cli 0.19.1`, and `commands --search chart` listed 16 commands; the full output is in
+*evidence.md*, which gains a **CLI availability (measured 2026-11-15)** block.
 
 Re-pinned: v0.17.0 (`a6a6a49`) -> v0.19.1 (`476448d`, installed `GridCraft 0.19.1`).
 

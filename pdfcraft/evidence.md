@@ -119,3 +119,10 @@ The exact-set diffs were done with a one-off script over the tool and command de
 - `references/automation-tools.md` was regenerated from `tools()` at this tag (208 rows) rather than carried forward.
 - Corrected the stale counts, the `ui.dock` method name, the Office-import/portfolio/split-view/print-production claims, and the limits around `content_copy`, document actions and `doc_create` text listed in §4.
 - Paths: every repo-relative path cited by `SKILL.md` was re-resolved with `git cat-file -e HEAD:<path>`; all exist (brace shorthands expanded). Nothing was deleted for being wrong.
+
+## CLI availability (measured 2026-11-15)
+
+- **Release asset:** `pdfcraft-cli-0.21.1-macos-universal.zip`, 92 333 447 bytes (92.3 MB), on tag `v0.21.1`. The same release also publishes `pdfcraft-cli-0.21.1-linux-x86_64.tar.gz` (45.9 MB) and `pdfcraft-cli-0.21.1-linux-aarch64.tar.gz` (44.1 MB) — the only app in this batch with Linux CLI assets.
+- **`SHA256SUMS.txt` entry:** `337a9f644744b57e10de41c57366e53c5ccf8840a4d5dc7322b17b9b83fdc2fa  pdfcraft-cli-0.21.1-macos-universal.zip`, read from the release's own sums file; the asset name and byte size were re-read from the release API.
+- **Bundle `find`:** `find "/Applications/PdfCraft.app" -name 'pdfcraft-cli'` prints nothing — `Contents/MacOS` holds only `PdfCraft` — so the bundle carries no CLI and a launcher-only install has none. `command -v pdfcraft-cli` is empty on this machine too.
+- **Ran:** bundle `ls`/`find`, `Info.plist` version read (0.21.1), `curl` of the release `SHA256SUMS.txt`, and the release-API asset listing. The full download → checksum compare → unzip → `install -m 0755` → `--version` recipe was proven once on the smallest CLI in this batch (SoundCraft, 9.0 MB), not on this 92.3 MB zip.

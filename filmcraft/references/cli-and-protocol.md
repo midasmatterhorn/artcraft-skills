@@ -158,7 +158,9 @@ Rules of thumb (`docs/control-protocol.md`):
 
 `filmcraft-cli mcp` (stdio). Headless: `--demo` or `--project cut.fcproj` (neither = empty project), plus
 `--data-dir`. Bridge: `--bridge 127.0.0.1:9876` to the running app (requires the token in the environment).
-`.mcp.json` registers both, pointing at `target/release/filmcraft-cli`.
+`.mcp.json` registers both, pointing at `filmcraft-cli` on `PATH` (install it per `Getting the CLI
+(the launcher installs the app, not the CLI)` in `SKILL.md` and put `~/.local/bin` on `PATH`), or at
+`target/release/filmcraft-cli` from a source build.
 
 Tools — **17, unchanged at v0.20.1** (`crates/automation/src/server.rs`, `#[tool_router]` impl; names are
 the handler names):
@@ -268,6 +270,8 @@ local CLI forces true). `format` also takes `mp3` (0.20.1); MP3 ignores `h264*`,
 ## 5. Building (developers)
 
 ```sh
+# developer path only (full Rust toolchain and a source checkout), never the agent's first route;
+# for the CLI use Getting the CLI (the launcher installs the app, not the CLI): filmcraft-cli-0.20.1-macos-universal.zip, SHA256SUMS-verified, into ~/.local/bin
 cargo build --release -p filmcraft -p filmcraft-cli   # app + CLI (packaging/macos/package.sh)
 cargo run --release -p filmcraft -- --control 9876
 cargo xtask ci        # fmt, lints, tests, layering, asset attribution, wasm check, i18n report

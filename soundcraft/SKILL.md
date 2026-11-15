@@ -165,7 +165,33 @@ Do not assign these; each is absent or partial at v0.20.1:
 - App flags (verified with the installed binary's `--help`): `--demo` / `--sample`, `--no-audio` (never open an output device in a smoke test), `--control <port>` (`0` = pick a free port and print it), `--version`/`-V`, `-h`/`--help`, and positional files: `.scraft` opens as a session, `.mid`/`.midi`/`.smf` imports MIDI, anything else imports as audio.
 - Environment: `SOUNDCRAFT_CONTROL_PORT` (port or loopback `host:port`; another host is ignored with a warning), `SOUNDCRAFT_CONFIG_DIR` (the whole settings folder; empty disables it), `SOUNDCRAFT_NO_PREFS` (recommended for agent test runs), `SOUNDCRAFT_NO_SYSTEM_FONTS`, `SOUNDCRAFT_WAYLAND` (Linux: `1` keeps native Wayland instead of XWayland), `RUST_LOG`. On/off variables take `1/on/true/yes` or `0/off/false/no`.
 - Settings on macOS: `~/Library/Application Support/SoundCraft/` — `ui.json`, `Autosave/`, `Presets/`, `logs/soundcraft.log`. A `portable.txt` beside the executable switches to `<exe dir>/SoundCraftData`.
-- `soundcraft-cli` is **not inside the app bundle**: install `soundcraft-cli-<ver>-macos-universal.zip` from the release, or build it. Check both versions before mixing them.
+### Getting the CLI (the launcher installs the app, not the CLI)
+
+The ArtCraft Launcher installs `SoundCraft.app`; it does not put `soundcraft-cli` on your `PATH`. It ships **no** CLI binary inside the bundle — the bundle holds only `SoundCraft` — so a launcher-only install has no `soundcraft-cli` at all. The CLI is published on the app's GitHub release, `soundcraft-cli-0.20.1-macos-universal.zip` (9.0 MB), so `soundcraft-cli` answering *command not found* means "not installed yet", not "not supported".
+
+Find it, in this order:
+
+1. **On `PATH`** — `command -v soundcraft-cli`. If it answers, `soundcraft-cli --version` must report the version this skill was written against (0.20.1). A different version means the CLI and the app have drifted: re-read *Verify against your installed version* before trusting ids.
+2. **Bundle copy** — Skip it: `find "/Applications/SoundCraft.app" -name 'soundcraft-cli'` finds nothing (verified), so go to step 3.
+3. **Install it from the release** — user-local, no `sudo`:
+
+```sh
+APP_VER=0.20.1
+REL="https://github.com/storytold/soundcraft/releases/download/v$APP_VER"
+ASSET="soundcraft-cli-$APP_VER-macos-universal.zip"
+mkdir -p "$HOME/.local/bin" "$HOME/Downloads/soundcraft-cli" && cd "$HOME/Downloads/soundcraft-cli"
+curl -fLO "$REL/$ASSET" && curl -fLO "$REL/SHA256SUMS.txt"
+expected=$(grep -F "$ASSET" SHA256SUMS.txt | awk '{print $1}')
+actual=$(shasum -a 256 "$ASSET" | awk '{print $1}')
+[ "$expected" = "$actual" ] && echo "checksum OK" || { echo "checksum MISMATCH — stop"; exit 1; }
+unzip -oq "$ASSET"
+install -m 0755 "soundcraft-cli-$APP_VER-macos-universal/soundcraft-cli" "$HOME/.local/bin/soundcraft-cli"
+"$HOME/.local/bin/soundcraft-cli" --version
+```
+
+`~/.local/bin` must be on `PATH` for the shell that runs the skill: `export PATH="$HOME/.local/bin:$PATH"` (put it in your shell profile to keep it).
+
+Rules: never `sudo` into `/usr/local`, never unzip into `/Applications`, and never replace an existing `soundcraft-cli` of a different version without telling the user. macOS is what this recipe verifies; on Linux/Windows the CLI ships inside the app package (not verified in this round).
 
 ### Document and window model
 

@@ -4,6 +4,61 @@ Audit basis: this checkout is tag **`v0.19.1`**, commit **`476448d7d9f3a5f8e93fc
 
 **v0.17.0 → v0.19.1 delta (from `git diff v0.17.0..HEAD`, not release notes):** 238 files changed, +18,427/−1,483 lines. **No register change**: 385 command ids at both tags, set-diff +0/−0; catalog 281/296; 22 MCP tools; 35 control names / 30 arms; 18 UI-only ids; 72 shortcut bindings; 413 key-tips; 19 languages; 26 chart kinds; 513/523 functions — all identical. New surfaces: **`gridcraft-cli sandbox-check`** (12th subcommand) over a new **`crates/sandbox`** crate (Landlock ABI 3 + seccomp on Linux, `sandbox-exec` on macOS, canary enforcement check, layer 0 in `xtask/src/layers.rs`); **`window.gridcraft`** page API in the web build (`apps/gridcraft-web/src/api.rs`, shared `craft-web-api`); **cell reading direction** (`ReadingOrder` in `crates/model/src/style.rs`, XLSX `readingOrder` in `crates/xlsx/src/styles.rs`, `crates/ui-egui/src/text_direction.rs`); **Arabic bidi/shaping** and Arabic font fallback; **`B1`/`B2` Hijri calendar** (`crates/numfmt/src/calendar.rs`) plus Excel-exact 15-digit rounding (`crates/numfmt/src/decimal.rs`); **legacy array-formula reading** (`crates/xlsx/src/array_formula.rs`); **chart point/trendline budgets** (`crates/chart/src/resolve.rs`); **MCP 16 MB message cap** (`crates/mcp/src/server.rs`); **64 MiB SVG budget for HTML export** (`crates/engine/src/chart_svg.rs`); catalog labels SmartArt → **Diagram**, WordArt → **Decorative Text** (`docs/feature-names.md`). Groundwork that is *not* wired: `crates/core/src/region.rs` regional formats and `Workbook::region` (`crates/model/src/workbook.rs:271-276`) have no setter, UI or reader.
 
+## CLI availability (measured 2026-11-15)
+
+The ArtCraft Launcher installs `GridCraft.app` only; `gridcraft-cli` is a separate release asset, so a
+launcher-only install has no `gridcraft-cli` on `PATH`. Measured this round:
+
+| Fact | Measured value |
+|---|---|
+| Release asset | `gridcraft-cli-0.19.1-macos-universal.zip` |
+| Size | 16.0 MB — `content-length: 16006487` on the release asset |
+| `SHA256SUMS.txt` entry | `7c2895ebad0bbd92b65c622ba7e22ada56e0498065dfdbd433111ba1e225eb8a  gridcraft-cli-0.19.1-macos-universal.zip` |
+| Release URL | `https://github.com/storytold/gridcraft/releases/download/v0.19.1/gridcraft-cli-0.19.1-macos-universal.zip` |
+| Bundle `find` result | `ls /Applications/GridCraft.app/Contents/MacOS` → `GridCraft`; `find "/Applications/GridCraft.app" -name 'gridcraft-cli'` → no output (the bundle ships no CLI) |
+| On `PATH` | `command -v gridcraft-cli` → nothing |
+
+What was run, end to end, with the recipe that now sits in `SKILL.md` › How to operate › Getting the
+CLI (`$SCRATCH` is a throwaway scratch directory holding the installed binary — the shipped recipe
+installs to `~/.local/bin`):
+
+```sh
+$ ASSET="gridcraft-cli-0.19.1-macos-universal.zip"
+$ REL="https://github.com/storytold/gridcraft/releases/download/v0.19.1"
+$ curl -fLO "$REL/$ASSET" && curl -fLO "$REL/SHA256SUMS.txt"
+$ grep -F "$ASSET" SHA256SUMS.txt
+7c2895ebad0bbd92b65c622ba7e22ada56e0498065dfdbd433111ba1e225eb8a  gridcraft-cli-0.19.1-macos-universal.zip
+$ expected=$(grep -F "$ASSET" SHA256SUMS.txt | awk '{print $1}')
+$ actual=$(shasum -a 256 "$ASSET" | awk '{print $1}')
+expected=7c2895ebad0bbd92b65c622ba7e22ada56e0498065dfdbd433111ba1e225eb8a
+actual  =7c2895ebad0bbd92b65c622ba7e22ada56e0498065dfdbd433111ba1e225eb8a
+checksum OK
+$ unzip -oq "$ASSET"
+$ file gridcraft-cli-0.19.1-macos-universal/gridcraft-cli
+gridcraft-cli-0.19.1-macos-universal/gridcraft-cli: Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit executable x86_64] [arm64]
+$ install -m 0755 gridcraft-cli-0.19.1-macos-universal/gridcraft-cli "$SCRATCH/gridcraft-cli"
+$ ls -l "$SCRATCH/gridcraft-cli"
+-rwxr-xr-x@ 1 user  staff  41698848 gridcraft-cli
+$ "$SCRATCH/gridcraft-cli" --version
+gridcraft-cli 0.19.1
+$ "$SCRATCH/gridcraft-cli" commands --search chart | head -3
+insert.chart                 Insert Chart (Insert > Charts)
+                               {range?, type?: column|bar|line|pie|doughnut|area|scatter|bubble|radar|combo|histogram|waterfall|funnel|treemap|sunburst|boxWhisker|stock, subtype?: clustered|stacked|stacked100|markers, title?, at?: "H2", width?, height?}
+insert.recommendedCharts     Recommended Charts (Insert > Charts)
+$ PATH="$SCRATCH:$PATH" command -v gridcraft-cli
+$SCRATCH/gridcraft-cli
+```
+
+`--version` and `commands --search chart` both exited 0; the `commands` query reported `16 commands`
+on stderr. `unzip` yields one top-level directory, `gridcraft-cli-0.19.1-macos-universal/`, with 19
+entries: `ATTRIBUTION.md`, `LICENSE-APACHE`, `LICENSE-MIT`, `NOTICE`, 13 `OFL-*.txt` font licences,
+`README.md` and the 41,698,848-byte universal executable `gridcraft-cli`. The binary runs standalone
+(no app launch, no GUI) and reports the version this skill is written against.
+
+The other three apps in this writer's batch were measured the same way short of the download:
+`curl -fSIL` on the asset (HTTP 200 + byte size), `SHA256SUMS.txt` fetched and the asset's line read,
+`ls`/`find` on the bundle and `command -v` on `PATH`.
+
 ## 1. Capability claims → evidence → tier
 
 | # | Claim | Evidence (repo-relative) | Tier |
@@ -66,7 +121,7 @@ Deliberately **not** counted as headline numbers: formats (enumerated from `File
 
 - **GUI behaviour is not exercised.** No window was launched; UI claims rest on command/spec/UI code and unit/integration tests, not on screenshots. Anything phrased "the dialog does X" is code-derived.
 - **`window.gridcraft` was not exercised in a browser.** The wiring is in `apps/gridcraft-web/src/api.rs` and the shared crate's documentation/tests; the 30 s timeout is `craft-web-api`'s default, read in craft-libs, not observed.
-- **The sandbox was not exercised on this machine.** `gridcraft-cli` is not installed (`which gridcraft-cli` found nothing), and no build was run; the claims come from `crates/sandbox` + `docs/sandbox.md`. Its behaviour on a machine without Landlock 6.2 or without `/usr/bin/sandbox-exec` is documented, not tested here.
+- **The sandbox was not exercised on this machine.** `gridcraft-cli` is not installed system-wide (`command -v gridcraft-cli` finds nothing and the bundle holds none); for this round's CLI proof the release binary was installed into a throwaway scratch directory and run only for `--version` and `commands --search`, so `sandbox-check` was never executed and no build was run. The claims come from `crates/sandbox` + `docs/sandbox.md`. Its behaviour on a machine without Landlock 6.2 or without `/usr/bin/sandbox-exec` is documented, not tested here.
 - **Arabic rendering was not observed.** Shaping/bidi claims rest on egui's renderer, `crates/ui-egui/tests/{arabic_bidi,arabic_editing}.rs` and `crates/ui-egui/tests/cjk_baseline.rs`; physical screen-reader behaviour in bidi text is explicitly unverified (`docs/localization-parity.md`).
 - **Excel-repair-free output remains unproven by the project** (`docs/gaps.md` §1): `check` validates GridCraft against itself and the file's cached values, not against Excel.
 - **Accessibility tree coverage** (grid cells and ribbon not exposed) and **PDF glyph coverage** for CJK/Arabic/Devanagari/Thai are carried from the previous audit; the PDF crate did not change in this delta (`crates/pdf` is absent from the diff).

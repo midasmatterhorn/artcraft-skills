@@ -181,3 +181,17 @@ diff -u OLD/crates/engine/src/cmd/mod.rs <checkout>/crates/engine/src/cmd/mod.rs
 `ui.minimize`, 343 engine commands, 89 `ui.*` commands regrouped by their declared location, the
 exact control-key path and challenge, the folder-kind arguments, and the unchanged 20 MCP tools). No
 reference file was dropped, and no new one was added: no whole new automation surface appeared.
+
+## CLI availability (measured 2026-11-15)
+
+- Release asset: `mailcraft-cli-0.13.0-macos-universal.zip`, 20.1 MB, on
+  `https://github.com/UCS-Care-Group/mailcraft/releases/download/v0.13.0/`.
+- `SHA256SUMS.txt` (22 lines, all plain two-field `<sha256>  <asset>` lines; `grep -F "$ASSET"`
+  matches exactly the CLI-zip line):
+  `8b78129c9ae9a6138767c23f3ba27900a3f9757d4379943a7fac9451d5b9b636  mailcraft-cli-0.13.0-macos-universal.zip`
+- Bundle `find`: there is no `/Applications/MailCraft.app` on the authoring machine — MailCraft is
+  not installed at all — so there is no bundle to inspect and no bundle path is claimed. The
+  launcher's bundle would hold only `MailCraft`; that could not be verified here.
+- Ran: nothing for MailCraft. Only the release's `SHA256SUMS.txt` was fetched; no CLI was
+  downloaded, installed or executed. The round's end-to-end recipe proof was run on MaterialCraft's
+  11.9 MB zip and its real output is pasted in that skill's evidence file.

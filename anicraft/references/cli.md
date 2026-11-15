@@ -7,11 +7,13 @@ cross-checked against the installed 0.2.1 CLI.
 
 ## Where the binary is
 
-`anicraft-cli` ships as a separate macOS ZIP and inside the app bundle next to the GUI binary
-(the installed app is a universal Mach-O signed with a Developer ID and a stapled notarization
-ticket, checked read-only with `codesign`). `anicraft` is the desktop app; `anicraft-cli` is the
-headless front end. The CLI has no daemon and opens no listening port: its transports are argv,
-stdin/stdout and files.
+`anicraft-cli` ships inside the app bundle next to the GUI binary, and as the release asset
+`anicraft-cli-0.2.1-macos-universal.zip`; `Getting the CLI (the launcher installs the app, not the CLI)`
+in `SKILL.md` covers both — the bundle copy, or the zip checksum-verified against `SHA256SUMS.txt` and
+installed into `~/.local/bin`. The installed app is a universal Mach-O signed with a Developer ID and a
+stapled notarization ticket, checked read-only with `codesign`. `anicraft` is the desktop app;
+`anicraft-cli` is the headless front end. The CLI has no daemon and opens no listening port: its
+transports are argv, stdin/stdout and files.
 
 ## Subcommands
 

@@ -150,7 +150,46 @@ open -a VectorCraft --args --safe-mode --new-instance FILE
 ```
 Desktop flags (`apps/vectorcraft/src/main.rs`; `apps/vectorcraft/src/automation_args.rs`): `--control <port>` (or `VECTORCRAFT_CONTROL_PORT`; a bad port stops the app with an error), repeatable `--automation-read-root <dir>` / `--automation-write-root <dir>` (confine everything an agent reads/writes; `--flag=DIR` also works, and the roots are ignored with a warning when `--control` is absent; `VECTORCRAFT_AUTOMATION_READ_ROOT`/`_WRITE_ROOT` also work), `--in-window-menus` (`VECTORCRAFT_IN_WINDOW_MENUS=1`), `--safe-mode` (no plug-ins load or run; files open in a new window), `--new-instance`, `--version`, `-h/--help`; extra arguments are files to open as tabs. Env: `VECTORCRAFT_CONFIG_DIR` (isolated profile — use this for agent runs), `VECTORCRAFT_NO_PREFS` (no preference reads/writes), `WGPU_POWER_PREF=high|low` / `WGPU_ADAPTER_NAME=<substr>` to pick the GPU (`README.md`).
 
-**The CLI is not inside the `.app` on macOS.** It ships as a separate release asset (`docs/mcp.md` › From an installed release); the bundle holds only the desktop binary, and `vectorcraft-cli` is not installed on a stock launcher install. Build with `cargo build --release -p vectorcraft-cli`, `cargo install --path apps/vectorcraft-cli --locked`, or unzip the asset. Update the app only **between** projects.
+### Getting the CLI (the launcher installs the app, not the CLI)
+
+The ArtCraft Launcher installs `VectorCraft.app`; it does not put `vectorcraft-cli` on your `PATH`. It
+ships **no** CLI binary inside the bundle — the bundle holds only `VectorCraft` — so a launcher-only
+install has no `vectorcraft-cli` at all. The CLI is published on the app's GitHub release,
+`vectorcraft-cli-0.24.1-macos-universal.zip` (134.0 MB), so `vectorcraft-cli` answering *command not
+found* means "not installed yet", not "not supported".
+
+Find it, in this order:
+
+1. **On `PATH`** — `command -v vectorcraft-cli`. If it answers, `vectorcraft-cli --version` must
+   report the version this skill was written against (0.24.1). A different version means the CLI and
+   the app have drifted: re-read *Verify against your installed version* before trusting ids.
+2. **Bundle copy** — Skip it: `find "/Applications/VectorCraft.app" -name 'vectorcraft-cli'` finds
+   nothing (verified), so go to step 3.
+3. **Install it from the release** — user-local, no `sudo`:
+
+```sh
+APP_VER=0.24.1
+REL="https://github.com/storytold/vectorcraft/releases/download/v$APP_VER"
+ASSET="vectorcraft-cli-$APP_VER-macos-universal.zip"
+mkdir -p "$HOME/.local/bin" "$HOME/Downloads/vectorcraft-cli" && cd "$HOME/Downloads/vectorcraft-cli"
+curl -fLO "$REL/$ASSET" && curl -fLO "$REL/SHA256SUMS.txt"
+expected=$(grep -F "$ASSET" SHA256SUMS.txt | awk '{print $1}')
+actual=$(shasum -a 256 "$ASSET" | awk '{print $1}')
+[ "$expected" = "$actual" ] && echo "checksum OK" || { echo "checksum MISMATCH — stop"; exit 1; }
+unzip -oq "$ASSET"
+install -m 0755 "vectorcraft-cli-$APP_VER-macos-universal/vectorcraft-cli" "$HOME/.local/bin/vectorcraft-cli"
+"$HOME/.local/bin/vectorcraft-cli" --version
+```
+
+`~/.local/bin` must be on `PATH` for the shell that runs the skill:
+`export PATH="$HOME/.local/bin:$PATH"` (put it in your shell profile to keep it).
+
+Rules: never `sudo` into `/usr/local`, never unzip into `/Applications`, and never replace an existing
+`vectorcraft-cli` of a different version without telling the user. Building from source (`cargo install
+--path apps/vectorcraft-cli --locked`) is a developer path only — full Rust toolchain, minutes of
+compiling; prefer the release binary above.
+
+Update the app only **between** projects (`docs/mcp.md` › From an installed release).
 
 **Core workflow concepts:** one document per tab or floating window (`ui.inspect` lists `documents`/`activeDocument`); each document has artboards, layers, objects addressed by stable ids (layer/sublayer objects addressable as `object/{lid}` over MCP); units are points, y down, origin at the first artboard's top-left; a new document is 612 × 792 (`docs/mcp.md`). Selection plus a key object drive most commands; most commands accept explicit `ids`. Artboards carry per-artboard options (background colour, lock, center mark, video safe areas) through `artboard.setProps`; ruler guides are now objects (`guide.add`, `view.guides.*`).
 

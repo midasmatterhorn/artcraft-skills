@@ -1,3 +1,17 @@
+# 2026-11-15b — CLI availability and install
+
+Round **2026-11-15b** (skills release v2.1.0) documents how an agent gets the headless CLI, because the
+ArtCraft Launcher installs the app and nothing else. Release asset:
+`photocraft-cli-0.23.1-macos-universal.zip` (120.5 MB, `SHA256SUMS.txt`
+`a6ecdc6d4add02881642bda0a0b191b4974118651f2ec5641dc71b2c3ff4b752`). Bundle finding: this app **does**
+ship the CLI — `ls /Applications/PhotoCraft.app/Contents/MacOS` lists `PhotoCraft` and `photocraft-cli`,
+`find` returns that path, and the copy prints `photocraft-cli 0.23.1 (45066c482, 2026-11-12)` — so the
+bundle copy and its `~/.local/bin` symlink are step 2 of the recipe. Corrected: the Launch section ended
+with a bare `cargo install --path apps/photocraft-cli --locked` among the platform options, which reads
+as the way to get the CLI; the new `### Getting the CLI (the launcher installs the app, not the CLI)`
+inside `## How to operate` now carries the find → download → checksum → install → `PATH` recipe, and the
+bullet only points at it.
+
 # PhotoCraft — round 2026-11-12 changes
 
 Re-pinned: v0.21.0 (`efb7ebd`) -> v0.23.1 (`45066c4`, tag `v0.23.1`; the installed bundle prints `photocraft 0.23.1 (45066c482, 2026-11-12)` and its bundled `photocraft-cli` prints the same triple).

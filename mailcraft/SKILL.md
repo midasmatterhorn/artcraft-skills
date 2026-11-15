@@ -233,7 +233,8 @@ Other verified gaps:
 
 ## How to operate
 
-**Run on macOS.** MailCraft is not installed here; build it or use a release artifact.
+**Run on macOS.** MailCraft is not installed here; use a release artifact, or build it from source
+(a developer path — full Rust toolchain). The launcher does not install its unsigned macOS builds.
 
 ```sh
 cargo run --release -p mailcraft -- --sample                     # invented mailbox, keeps nothing
@@ -260,8 +261,8 @@ open -a MailCraft                                                # only if you i
   neither is a runtime switch; the `MAILCRAFT_BENCH_*`, `MAILCRAFT_FRAME_BENCH_*` and
   `MAILCRAFT_SHOTS_DIR` variables belong to the bench and screenshot harnesses, not to normal use.
 
-**CLI** (`mailcraft-cli`, not inside any app bundle — build it with
-`cargo run --release -p mailcraft-cli -- …` or take the release artifact):
+**CLI** (`mailcraft-cli` is not inside any app bundle — get it from the release asset, as
+*Getting the CLI* below describes):
 
 ```sh
 mailcraft-cli info demo.mailcraft                    # accounts and counts (JSON)
@@ -345,6 +346,47 @@ to other people — sending, answering a meeting, proposing a time, forwarding a
 unless the params say `"send": true`. Up to 13 messages can be written at once, at most 12 windows of
 their own; a command acting on one takes `"compose": <id>` (`crates/engine/src/composing.rs`,
 `crates/ui-egui/src/windows.rs`; `docs/control-protocol.md`).
+
+### Getting the CLI (the launcher installs the app, not the CLI)
+
+The ArtCraft Launcher does not install MailCraft's unsigned macOS build, and it does not put
+`mailcraft-cli` on your `PATH` either. It ships **no** CLI binary inside the bundle — the launcher's
+bundle holds only `MailCraft`, and MailCraft is not installed on this authoring machine, so that
+could not be verified here — so a launcher-only install has no `mailcraft-cli` at all. The CLI is
+published on the app's GitHub release, `mailcraft-cli-0.13.0-macos-universal.zip` (20.1 MB), so
+`mailcraft-cli` answering *command not found* means "not installed yet", not "not supported".
+
+Find it, in this order:
+
+1. **On `PATH`** — `command -v mailcraft-cli`. If it answers, `mailcraft-cli --version` must report
+   the version this skill was written against (0.13.0). A different version means the CLI and the
+   app have drifted: re-read *Verify against your installed version* before trusting ids.
+2. **Bundle copy** — Skip it: the launcher's bundle holds only `MailCraft` and no MailCraft bundle
+   exists on the authoring machine to inspect, so there is no bundle path to test — go to step 3.
+3. **Install it from the release** — user-local, no `sudo`:
+
+```sh
+APP_VER=0.13.0
+REL="https://github.com/UCS-Care-Group/mailcraft/releases/download/v$APP_VER"
+ASSET="mailcraft-cli-$APP_VER-macos-universal.zip"
+mkdir -p "$HOME/.local/bin" "$HOME/Downloads/mailcraft-cli" && cd "$HOME/Downloads/mailcraft-cli"
+curl -fLO "$REL/$ASSET" && curl -fLO "$REL/SHA256SUMS.txt"
+expected=$(grep -F "$ASSET" SHA256SUMS.txt | awk '{print $1}')
+actual=$(shasum -a 256 "$ASSET" | awk '{print $1}')
+[ "$expected" = "$actual" ] && echo "checksum OK" || { echo "checksum MISMATCH — stop"; exit 1; }
+unzip -oq "$ASSET"
+install -m 0755 "mailcraft-cli-$APP_VER-macos-universal/mailcraft-cli" "$HOME/.local/bin/mailcraft-cli"
+"$HOME/.local/bin/mailcraft-cli" --version
+```
+
+`~/.local/bin` must be on `PATH` for the shell that runs the skill:
+`export PATH="$HOME/.local/bin:$PATH"` (put it in your shell profile to keep it).
+
+Rules: never `sudo` into `/usr/local`, never unzip into `/Applications`, and never replace an
+existing `mailcraft-cli` of a different version without telling the user. Building from source
+(`cargo run --release -p mailcraft-cli -- …`, or `cargo install --path apps/mailcraft-cli --locked`)
+is a developer path only — full Rust toolchain, minutes of compiling; prefer the release binary
+above.
 
 ## Working with an AI agent
 

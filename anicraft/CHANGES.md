@@ -1,5 +1,9 @@
 # AniCraft — round 2026-11-12 changes
 
+## 2026-11-15b — CLI availability and install
+
+Round **2026-11-15b** (skills release v2.1.0) closes the launcher/CLI gap: the ArtCraft Launcher installs `AniCraft.app`, and `anicraft-cli` ships both inside that bundle and as its own release asset, so `## How to operate` now carries one canonical *Getting the CLI* block — `command -v anicraft-cli` → the bundle copy at `/Applications/AniCraft.app/Contents/MacOS/anicraft-cli` (link it into `~/.local/bin`) → otherwise download `anicraft-cli-0.2.1-macos-universal.zip` (9.5 MB) from `storytold/anicraft` v0.2.1, compare it against `SHA256SUMS.txt`, `unzip`, `install -m 0755` into `~/.local/bin`, put that on `PATH`. It replaces the old one-liner "the release ZIP installs the same CLI separately". Measured 2026-11-15 end to end on this app (the round's proof case): checksum `3fb12429…ebb06` matched, the unzipped top level is `anicraft-cli-0.2.1-macos-universal/`, `install -m 0755` produced a mode-0755 universal binary, and `anicraft-cli --version` prints `anicraft-cli 0.2.1`; the bundled copy prints the same.
+
 **First audit.** No AniCraft skill existed before this round, so nothing was re-pinned from an
 older skill: this skill is authored at **AniCraft v0.2.1**, commit
 `d0beaf253274948b55ee9e1107749f9491bff880` (tag `v0.2.1`, released 2026-11-12), inspected

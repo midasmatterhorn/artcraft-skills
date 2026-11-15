@@ -1,5 +1,9 @@
 # TextureCraft — round 2026-11-12 changes
 
+## 2026-11-15b — CLI availability and install
+
+Round **2026-11-15b** (skills release v2.1.0) closes the launcher/CLI gap: the ArtCraft Launcher installs `TextureCraft.app`, and the bundle holds no `texturecraft-cli` at all, so `## How to operate` now carries one canonical *Getting the CLI* block — `command -v texturecraft-cli` → bundle check (`find` finds nothing) → download `texturecraft-cli-0.6.1-macos-universal.zip` (16.9 MB) from `storytold/texturecraft` v0.6.1, compare it against `SHA256SUMS.txt`, `unzip`, `install -m 0755` into `~/.local/bin`, put that on `PATH`. The limitations bullet that said "get the CLI from the release's separate macOS CLI zip … or build it" is now just the bundle fact plus a pointer to that block. Measured 2026-11-15: checksum `80a65494…33bdc` matched, `find "/Applications/TextureCraft.app" -name 'texturecraft-cli'` returns nothing, and the downloaded CLI prints `TextureCraft 0.6.1 (34a1961 2026-11-12)`.
+
 Re-pinned: v0.4.0 (`16e9d21516434a63ac457f49ffd09005f649c02f`) -> v0.6.1
 (`34a196190fe2daa2f43017a0f32b254cca4836f2`, installed `TextureCraft 0.6.1 (34a1961 2026-11-12)`).
 

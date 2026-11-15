@@ -332,6 +332,44 @@ Do not assign these at v0.4.1:
   `outputs_export` → `material_export` → `package_save`. Bridge to a running app with
   `--bridge <port>`.
 
+### Getting the CLI (the launcher installs the app, not the CLI)
+
+The ArtCraft Launcher installs `MaterialCraft.app`; it does not put `materialcraft-cli` on your
+`PATH`. It ships **no** CLI binary inside the bundle — the bundle holds only `MaterialCraft` — so a
+launcher-only install has no `materialcraft-cli` at all. The CLI is published on the app's GitHub
+release, `materialcraft-cli-0.4.1-macos-universal.zip` (11.9 MB), so `materialcraft-cli` answering
+*command not found* means "not installed yet", not "not supported".
+
+Find it, in this order:
+
+1. **On `PATH`** — `command -v materialcraft-cli`. If it answers, `materialcraft-cli --version` must
+   report the version this skill was written against (0.4.1). A different version means the CLI and
+   the app have drifted: re-read *Verify against your installed version* before trusting ids.
+2. **Bundle copy** — Skip it: `find "/Applications/MaterialCraft.app" -name 'materialcraft-cli'`
+   finds nothing (verified), so go to step 3.
+3. **Install it from the release** — user-local, no `sudo`:
+
+```sh
+APP_VER=0.4.1
+REL="https://github.com/storytold/materialcraft/releases/download/v$APP_VER"
+ASSET="materialcraft-cli-$APP_VER-macos-universal.zip"
+mkdir -p "$HOME/.local/bin" "$HOME/Downloads/materialcraft-cli" && cd "$HOME/Downloads/materialcraft-cli"
+curl -fLO "$REL/$ASSET" && curl -fLO "$REL/SHA256SUMS.txt"
+expected=$(grep -F "$ASSET" SHA256SUMS.txt | awk '{print $1}')
+actual=$(shasum -a 256 "$ASSET" | awk '{print $1}')
+[ "$expected" = "$actual" ] && echo "checksum OK" || { echo "checksum MISMATCH — stop"; exit 1; }
+unzip -oq "$ASSET"
+install -m 0755 "materialcraft-cli-$APP_VER-macos-universal/materialcraft-cli" "$HOME/.local/bin/materialcraft-cli"
+"$HOME/.local/bin/materialcraft-cli" --version
+```
+
+`~/.local/bin` must be on `PATH` for the shell that runs the skill:
+`export PATH="$HOME/.local/bin:$PATH"` (put it in your shell profile to keep it).
+
+Rules: never `sudo` into `/usr/local`, never unzip into `/Applications`, and never replace an
+existing `materialcraft-cli` of a different version without telling the user. macOS is what this
+recipe verifies; on Linux/Windows the CLI ships inside the app package (not verified in this round).
+
 ## Working with an AI agent
 
 - Treat `command_list`, `library_list`, `library.tree`/`library.functions` and `nodes` as the

@@ -15,6 +15,28 @@ New capability families: JavaScript scripting (`crates/js`, `crates/engine/src/s
 Filters, spell check, composite fonts and Dynamic Text, HEIC/HEIF and JPEG XL import, PSD/PSB
 layers, 3D mesh export and importer plug-ins.
 
+## CLI availability (measured 2026-11-15)
+
+The ArtCraft Launcher installs `VectorCraft.app` only; `vectorcraft-cli` is a separate release asset, so
+a launcher-only install has no `vectorcraft-cli` on `PATH`. Measured this round:
+
+| Fact | Measured value |
+|---|---|
+| Release asset | `vectorcraft-cli-0.24.1-macos-universal.zip` |
+| Size | 134.0 MB — `content-length: 133990423` on the release asset |
+| `SHA256SUMS.txt` entry | `7f0c8261e5c831d9681e48272f9ba73bf8702dbf6ceb84f98177c7c007faddf2  vectorcraft-cli-0.24.1-macos-universal.zip` |
+| Release URL | `https://github.com/storytold/vectorcraft/releases/download/v0.24.1/vectorcraft-cli-0.24.1-macos-universal.zip` |
+| Bundle `find` result | `ls /Applications/VectorCraft.app/Contents/MacOS` → `VectorCraft`; `find "/Applications/VectorCraft.app" -name 'vectorcraft-cli'` → no output (the bundle ships no CLI) |
+| On `PATH` | `command -v vectorcraft-cli` → nothing |
+
+What was run: the bundle `ls`/`find` above, `curl -fSIL` on the release asset (HTTP 200,
+`content-length: 133990423`) and `curl -fsSL` on `SHA256SUMS.txt` plus `grep -F` for the asset line
+(entry above). The recipe's end-to-end proof — download, checksum compare, unzip, `install -m 0755`,
+`--version` — was run this round on the batch's smallest asset and pasted in full in
+`../figcraft/evidence.md` › CLI availability; the commands are identical here apart from name, version
+and size. `SKILL.md` › How to operate › Getting the CLI is the shipped form, and it replaces the
+previous `cargo build`/`cargo install`-first instruction as the primary path.
+
 ## 1. Capability claims -> evidence -> tier
 
 | # | Claim | Evidence (repo-relative) | Tier |

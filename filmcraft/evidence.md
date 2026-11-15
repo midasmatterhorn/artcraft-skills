@@ -123,3 +123,10 @@ grep -n 'pub fn interchange_name' crates/project/src/effect.rs
 grep -n 'pub enum TimeDisplay' crates/time/src/lib.rs
 "<installed app binary>" --version                               # filmcraft 0.20.1 (version query only)
 ```
+
+## CLI availability (measured 2026-11-15)
+
+- **Release asset:** `filmcraft-cli-0.20.1-macos-universal.zip`, 100 056 028 bytes (100.1 MB), on tag `v0.20.1`; it is the only CLI asset on that release. The universal name replaces the arch-specific spelling the previous edition guessed.
+- **`SHA256SUMS.txt` entry:** `1651d9defb54f853cbd69016428bb9f72a7bf26d56e4755b8e2a79535fd0ac82  filmcraft-cli-0.20.1-macos-universal.zip`, read from the release's own sums file; the asset name and byte size were re-read from the release API.
+- **Bundle `find`:** `find "/Applications/FilmCraft.app" -name 'filmcraft-cli'` prints nothing — `Contents/MacOS` holds only `FilmCraft` — so a launcher-only install has no CLI. `command -v filmcraft-cli` is empty here, which is why §4's "no runtime enumeration" note still stands.
+- **Ran:** bundle `ls`/`find`, `Info.plist` version read (0.20.1), `curl` of the release `SHA256SUMS.txt`, and the release-API asset listing. The full download → checksum compare → unzip → `install -m 0755` → `--version` recipe was proven once on the smallest CLI in this batch (SoundCraft, 9.0 MB), not on this 100.1 MB zip.

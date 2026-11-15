@@ -1,4 +1,19 @@
-# WordCraft — round 2026-11-12 changes
+# WordCraft — changes: 2026-11-12 round and 2026-11-15b CLI round
+
+## 2026-11-15b — CLI availability and install
+
+The launcher installs `WordCraft.app` only: the bundle holds no `wordcraft-cli`
+(`find "/Applications/WordCraft.app" -name 'wordcraft-cli'` returns nothing) and nothing is on
+`PATH`, so `wordcraft-cli` fails with *command not found* on a stock install. The previous *How to
+operate* named the release asset but then offered `cargo run --release -p wordcraft-cli` as the way
+to get it — a full Rust toolchain and minutes of compiling. It now carries the uniform **Getting
+the CLI** section: `command -v`, the bundle check (verified empty), then a user-local install of
+`wordcraft-cli-0.18.1-macos-universal.zip` (103,018,289 bytes / 103.0 MB) whose `SHA256SUMS.txt`
+line is `34397cf6fcf73ee8ae8d53cab08fbdfc213262dbb6753c2965ebb7cde37b8616`, with checksum
+verification, `install -m 0755` into `~/.local/bin` and the `PATH` export. Cargo survives only as
+the developer-path sentence. The end-to-end proof (download, checksum against `SHA256SUMS.txt`,
+unzip, `install -m 0755`, `--version`) is in *evidence.md*, which gains a **CLI availability
+(measured 2026-11-15)** block.
 
 Re-pinned: v0.16.0 (`02a802c`) -> v0.18.1 (`079f478`, installed `wordcraft 0.18.1 (079f478b)`).
 

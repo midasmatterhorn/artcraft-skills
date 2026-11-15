@@ -1,3 +1,19 @@
+# 2026-11-15b — CLI availability and install
+
+Round **2026-11-15b** (skills release v2.1.0) adds the CLI find/download/install recipe. The Launcher
+installs `FigCraft.app` only and the bundle holds **no** CLI: `ls
+/Applications/FigCraft.app/Contents/MacOS` lists only `FigCraft`, and `find "/Applications/FigCraft.app"
+-name 'figcraft-cli'` returns nothing (verified 2026-11-15), so a launcher-only install has no
+`figcraft-cli` at all. Release asset: `figcraft-cli-0.18.1-macos-universal.zip` (90.7 MB,
+`SHA256SUMS.txt` `87efbca334e0925fce328ede159faef2df781b2a167d573888044127bfd4b0de`) — the batch's
+smallest, and the one the recipe was proved on end to end this round: download → `shasum -a 256` matches
+→ unzip (universal `figcraft-cli` plus LICENSE/NOTICE/README and the OFL font texts) → `install -m 0755`
+→ `figcraft-cli 0.18.1`. Corrected: the How-to-operate paragraph said "There is no CLI inside the macOS
+bundle. Build it with `cargo build --release -p figcraft-cli`", which named the build as the way to get
+it; that is now a developer path only and `### Getting the CLI (the launcher installs the app, not the
+CLI)` is the primary route (the Linux AppImage `cli` note was kept, the CLI-surface section is
+unchanged).
+
 # FigCraft — round 2026-11-12 changes
 
 Re-pinned: v0.16.0 (`f45b261`) -> **v0.18.1** (`4acc293c2ec9`, installed `FigCraft 0.18.1 (4acc293c2ec941ac1400837ee7e3ab51780399f8)`).
@@ -66,7 +82,7 @@ Re-pinned: v0.16.0 (`f45b261`) -> **v0.18.1** (`4acc293c2ec9`, installed `FigCra
 ## Known gap in this round
 
 - Pin-and-verify refresh, not a new deep audit: the GUI was not exercised, no build or CLI run was
-  permitted, and `.fig`/`.jam`/`.sketch`/REST/Penpot fidelity remains best-effort and unproven
+  made in that round, and `.fig`/`.jam`/`.sketch`/REST/Penpot fidelity remains best-effort and unproven
   against real files. The menu total and the four unmatched view/zoom ids need a `cargo xtask
   parity` run to settle. The public `figcraft-server` deployment path (`packaging/server/`) was
   noted but not exercised.

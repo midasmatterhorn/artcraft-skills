@@ -5,6 +5,22 @@ Audit basis: tag **v0.2.1**, commit `d0beaf253274948b55ee9e1107749f9491bff880`, 
 Live replies: `AniCraft --version` → `AniCraft 0.2.1 (early alpha)`; `anicraft-cli --version`
 → `anicraft-cli 0.2.1`. Previous skill: **none** (first audit).
 
+## CLI availability (measured 2026-11-15)
+
+- Release asset: `anicraft-cli-0.2.1-macos-universal.zip` — **9.5 MB** (9,476,078 bytes, HTTP
+  `content-length`).
+- `SHA256SUMS.txt` entry: `3fb12429aa306bdbb01ba1e1c5ddb69fb7c688f07d16c0e148bbe92c4c5ebb06  anicraft-cli-0.2.1-macos-universal.zip`
+  — the downloaded file's `shasum -a 256` matched it.
+- Bundle: `find "/Applications/AniCraft.app" -name 'anicraft-cli'` →
+  `/Applications/AniCraft.app/Contents/MacOS/anicraft-cli`; that copy prints `anicraft-cli 0.2.1`, the
+  same build as the app, so a launcher install can link it instead of downloading anything.
+- Ran end to end on 2026-11-15 (this round's proof case): `curl -fLO` the asset and `SHA256SUMS.txt`
+  from `https://github.com/storytold/anicraft/releases/download/v0.2.1/`; checksum compare →
+  `checksum OK`; `unzip -oq` → top-level `anicraft-cli-0.2.1-macos-universal/` holding `anicraft-cli`
+  plus LICENSE/NOTICE/ATTRIBUTION and OFL texts; `install -m 0755` into `~/.local/bin` under a
+  throwaway HOME; `anicraft-cli --version` → `anicraft-cli 0.2.1`. The installed file is a Mach-O
+  universal binary (x86_64 + arm64), mode `0755`, and it runs without the app.
+
 Status vocabulary: **implemented** = code path exists and is wired into the app/CLI/MCP;
 **partial** = exists but visibly incomplete (the missing part is named); **not implemented** =
 absent from code; **drift** = documentation contradicts the code.

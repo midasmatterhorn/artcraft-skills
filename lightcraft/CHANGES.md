@@ -1,3 +1,18 @@
+# 2026-11-15b — CLI availability and install
+
+Round **2026-11-15b** (skills release v2.1.0) adds the CLI find/download/install recipe, because the
+ArtCraft Launcher installs `LightCraft.app` only. Release asset:
+`lightcraft-cli-0.21.1-macos-universal.zip` (121.5 MB, `SHA256SUMS.txt`
+`58086b9d224d02b5ec9ed08e76da04ba1dc5d51d3c285cdea417358fa7ea06e2`). Bundle finding: the bundle holds
+**no** CLI — `ls /Applications/LightCraft.app/Contents/MacOS` lists only `LightCraft`, and `find
+"/Applications/LightCraft.app" -name 'lightcraft-cli'` returns nothing (verified 2026-11-15) — so a
+launcher-only install has no `lightcraft-cli` at all. Corrected: the old paragraph offered
+`cargo build --release -p lightcraft-cli` beside the release zip as if either were equivalent; the build
+is now explicitly a developer path, `### Getting the CLI (the launcher installs the app, not the CLI)`
+is the primary recipe (download, `shasum -a 256` against `SHA256SUMS.txt`, unzip, `install -m 0755`
+into `~/.local/bin`, `--version`), and the "use the CLI and the app from the same release" caution was
+kept.
+
 # LightCraft — round 2026-11-12 changes
 
 Re-pinned: v0.19.0 (`16636c45a63bff3065a6fd31aecc22a6fc15ca53`) -> v0.21.1 (`361e3bc0c838ffe5e5cea515b1fe5b71951989c6`, installed `lightcraft 0.21.1`).

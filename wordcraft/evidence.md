@@ -5,8 +5,9 @@ Audit basis: this checkout is tag **`v0.18.1`**, commit **`079f478bd85df7bcc567e
 The installed bundle (bundle id `ai.storyteller.wordcraft`, `CFBundleShortVersionString` 0.18.1)
 prints **`wordcraft 0.18.1 (079f478b)`** from `--version`;
 `--help` was run read-only too, and the GUI was never launched. `wordcraft-cli` is **not** inside
-the bundle and no CLI artifact was available on this machine, so every count below is derived from
-code; live evidence is limited to the app binary's `--version`/`--help`.
+the bundle and no `wordcraft-cli` artifact was installed on this machine, so every count below is
+derived from code; live evidence is limited to the app binary's `--version`/`--help` plus the
+release checksum recorded in *CLI availability* below.
 
 ## Round 2026-11-12 (refresh)
 
@@ -22,6 +23,29 @@ code; live evidence is limited to the app binary's `--version`/`--help`.
   **91 -> 92**.
 - Paths: every repo-relative path cited in the published `SKILL.md` was re-resolved against this
   checkout. All resolved; no citation had moved or been deleted this round.
+
+## CLI availability (measured 2026-11-15)
+
+The ArtCraft Launcher installs `WordCraft.app` only; `wordcraft-cli` is a separate release asset, so a
+launcher-only install has no `wordcraft-cli` on `PATH`. Measured this round:
+
+| Fact | Measured value |
+|---|---|
+| Release asset | `wordcraft-cli-0.18.1-macos-universal.zip` |
+| Size | 103.0 MB — `content-length: 103018289` on the release asset |
+| `SHA256SUMS.txt` entry | `34397cf6fcf73ee8ae8d53cab08fbdfc213262dbb6753c2965ebb7cde37b8616  wordcraft-cli-0.18.1-macos-universal.zip` |
+| Release URL | `https://github.com/storytold/wordcraft/releases/download/v0.18.1/wordcraft-cli-0.18.1-macos-universal.zip` |
+| Bundle `find` result | `ls /Applications/WordCraft.app/Contents/MacOS` → `WordCraft`; `find "/Applications/WordCraft.app" -name 'wordcraft-cli'` → no output (the bundle ships no CLI) |
+| On `PATH` | `command -v wordcraft-cli` → nothing |
+
+What was run: the bundle `ls`/`find` above, `curl -fSIL` on the release asset (HTTP 200,
+`content-length: 103018289`) and `curl -fsSL` on `SHA256SUMS.txt` plus `grep -F` for the asset line
+(entry above). The recipe's end-to-end proof — download, checksum compare, unzip, `install -m 0755`,
+`--version` — was run this round on the smallest asset among this writer's four apps,
+`gridcraft-cli-0.19.1-macos-universal.zip` (16.0 MB), and is pasted in full in
+`../gridcraft/evidence.md` › CLI availability; here the commands are identical apart from name,
+version and size. `wordcraft-cli` itself was not downloaded or executed, so every count below stays
+code-derived.
 
 ## 1. Capability claims → evidence → tier
 

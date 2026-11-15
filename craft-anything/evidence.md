@@ -7,6 +7,19 @@ other shallow root and was diffed for the delta. The installed bundle is 0.6.1
 (`CFBundleIdentifier` `ai.storyteller.craft-anything`); its bundled `craft-anything-cli --version`
 prints `craft-anything-cli 0.6.1`; the GUI was never launched.
 
+## CLI availability (measured 2026-11-15)
+
+- Release asset: `craft-anything-cli-0.6.1-macos-universal.zip` — **27.9 MB** (27,891,145 bytes, HTTP
+  `content-length`).
+- `SHA256SUMS.txt` entry: `ddbae05f52a5526e149f656b0b44cf73a60ad9ec0a33d718f330bf231b988c2f  craft-anything-cli-0.6.1-macos-universal.zip`
+  — the downloaded file's `shasum -a 256` matched it.
+- Bundle: `find "/Applications/Craft Anything.app" -name 'craft-anything-cli'` →
+  `/Applications/Craft Anything.app/Contents/MacOS/craft-anything-cli` (the app path contains a space,
+  so quote it); that copy prints `craft-anything-cli 0.6.1`, the same build as the app.
+- Ran on 2026-11-15: downloaded the zip from `https://github.com/storytold/craft-anything/releases/download/v0.6.1/`,
+  compared the checksum, unzipped it (top-level `craft-anything-cli-0.6.1-macos-universal/craft-anything-cli`)
+  and ran `craft-anything-cli --version` → `craft-anything-cli 0.6.1`.
+
 v0.5.0 → v0.6.1 delta (tree diff, 499 files, +51,694/−3,455): engine tools **301 → 303** in the
 same 17 toolsets (`core` 35 → 36 for `core_text_read`; `projects` 20 → 21 for
 `project_approvals_set`); `MIN_TOOLS` stays 271. A per-project **approval policy** landed for seven

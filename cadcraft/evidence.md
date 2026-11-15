@@ -5,11 +5,25 @@ Audit basis: this checkout is tag **`v0.20.1`**, commit **`7526dc62c14e71b3c8d46
 Inspection date **2026-11-12**. The installed 0.20.1 bundle (id `ai.storyteller.cadcraft`) prints
 `cadcraft 0.20.1 (7526dc62c14e71b3c8d46e73bbf1fa29ef506af1)` for `--version`, so it matches the tag.
 The GUI was never launched; `--version` and `--help` were the only app-binary runs. The bundle ships no
-`cadcraft-cli` (its `Contents/MacOS/` holds only `CADCraft`) and no `cadcraft-cli` is installed on the
-authoring machine, so no live command catalog could be read. The previous audit described
-**v0.18.0** = `32238e83c2c8bf643994132883e94bc96961f649` (“Release 0.18.0”, 2026-11-06); the v0.17.0
+`cadcraft-cli` (its `Contents/MacOS/` holds only `CADCraft`) and no `cadcraft-cli` was installed on
+the authoring machine, so no live command catalog was read at that audit (the 2026-11-15
+CLI-availability check below closes that gap). The previous audit described **v0.18.0** =
+`32238e83c2c8bf643994132883e94bc96961f649` (“Release 0.18.0”, 2026-11-06); the v0.17.0
 ref (`f389d6a72e3fc160ea125b4f264d68f64cbe2aba`) is carried from the previous ledger because only
 the two release tags are present in this shallow checkout.
+
+## CLI availability (measured 2026-11-15)
+
+- Release asset: `cadcraft-cli-0.20.1-macos-universal.zip` — **63.0 MB** (62,968,157 bytes, HTTP
+  `content-length`).
+- `SHA256SUMS.txt` entry: `2754055a4f318d028fb9cc7aac0a98987d21c2b5c20f079ca2feb1469f28fb3b  cadcraft-cli-0.20.1-macos-universal.zip`
+  — the downloaded file's `shasum -a 256` matched it.
+- Bundle: `find "/Applications/CADCraft.app" -name 'cadcraft-cli'` returns nothing
+  (`Contents/MacOS` holds only `CADCraft`), so a launcher install has no CLI.
+- Ran on 2026-11-15: downloaded the zip from `https://github.com/storytold/cadcraft/releases/download/v0.20.1/`,
+  compared the checksum, unzipped it (top-level `cadcraft-cli-0.20.1-macos-universal/cadcraft-cli`)
+  and ran `cadcraft-cli --version` → `cadcraft-cli 0.20.1 (7526dc62c14e71b3c8d46e73bbf1fa29ef506af1)`
+  and `cadcraft-cli commands` → **457** ids, so the source-derived registry count is corroborated live.
 
 v0.18.0 → v0.20.1 delta (measured with `git diff v0.18.0..HEAD`: **146 files, +8,144/−856**, 14
 added, 132 modified, 0 deleted): **no engine command id was added or removed** — the multiline-aware

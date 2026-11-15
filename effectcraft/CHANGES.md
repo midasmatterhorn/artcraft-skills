@@ -1,5 +1,9 @@
 # EffectCraft — round 2026-11-12 changes
 
+## 2026-11-15b — CLI availability and install
+
+Round 2026-11-15b ("the launcher installs the app, not the CLI"). `/Applications/EffectCraft.app/Contents/MacOS` holds only `EffectCraft`, `find "/Applications/EffectCraft.app" -name 'effectcraft-cli'` finds nothing and `command -v effectcraft-cli` is empty, so a launcher-only install has no CLI. The `### CLI` intro's "separate macOS release zip … or `cargo build --release -p effectcraft-cli`" sentence was replaced by the canonical **Getting the CLI (the launcher installs the app, not the CLI)** subsection inside `## How to operate` — `PATH` check (`effectcraft-cli --version` must report 0.24.1), bundle check, then a user-local download of `effectcraft-cli-0.24.1-macos-universal.zip` (77.3 MB) from the `v0.24.1` release with a `SHA256SUMS.txt` checksum compare, `unzip`, `install -m 0755` into `~/.local/bin` and a `--version` run, no `sudo`, nothing written into `/Applications`; building from source is now labelled a developer path only. The matching *No CLI inside the macOS `.app`* limitation bullet was reworded to point at that subsection instead of offering a build first. The seven sections, pins, audit basis and counts are untouched, and the recipe was proved end to end on the smallest CLI in the batch (SoundCraft, 9.0 MB).
+
 Re-pinned: v0.22.0 (`42e3c6a`) -> v0.24.1 (`582344d`, installed `effectcraft 0.24.1`).
 
 ## Corrected / re-measured

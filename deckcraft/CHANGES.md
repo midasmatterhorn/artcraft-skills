@@ -1,4 +1,19 @@
-# DeckCraft — round 2026-11-12 changes
+# DeckCraft — changes: 2026-11-12 round and 2026-11-15b CLI round
+
+## 2026-11-15b — CLI availability and install
+
+The launcher installs `DeckCraft.app`, which contains no `deckcraft-cli`
+(`find "/Applications/DeckCraft.app" -name 'deckcraft-cli'` returns nothing), and nothing is on
+`PATH`. The old *Check what is installed* subsection mixed the app binary's `--version` with
+"download/unzip it, build it with `cargo build --release -p deckcraft-cli`". That subsection is
+replaced by the uniform **Getting the CLI** block — `command -v` first, the bundle check (verified
+empty), then a user-local install of `deckcraft-cli-0.18.1-macos-universal.zip` (94,288,920 bytes /
+94.3 MB; `SHA256SUMS.txt` line
+`10992f73c88a4c0361dd0fec3a4d7490731ffb3ea9658ee2274b396e3341af00`) with checksum verification,
+`install -m 0755` into `~/.local/bin` and the `PATH` export. The app binary's `--version`/`--help`
+note moved into *Launch*; cargo is the developer path only. The end-to-end proof (download,
+checksum against `SHA256SUMS.txt`, unzip, `install -m 0755`, `--version`) is in *evidence.md*, which
+gains a **CLI availability (measured 2026-11-15)** block.
 
 Re-pinned: v0.16.0 (`a3e2254d3de32ed1718f156f070b54a34b949b54`) -> v0.18.1 (`7cc73ab1895ed2e30c8afbcada20c70b9ea0a440`, installed `deckcraft 0.18.1`).
 

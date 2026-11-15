@@ -6,8 +6,10 @@ Inspection date **2026-11-12**. The installed `FigCraft.app` matches the release
 `Info.plist` `CFBundleShortVersionString` 0.18.1, `CFBundleIdentifier`
 `ai.storyteller.figcraft` — and its binary prints `FigCraft 0.18.1
 (4acc293c2ec941ac1400837ee7e3ab51780399f8)` for `--version`, which returns before any window or
-GPU context is created. The GUI was never launched, and the macOS bundle ships no CLI, so no
-`figcraft-cli` command was executed on this machine (none is installed either).
+GPU context is created. The GUI was never launched, the macOS bundle ships no CLI, and no
+`figcraft-cli` is on `PATH`. The one CLI execution behind this file is the 2026-11-15 CLI-availability
+work below: the release asset was downloaded, checksum-verified, unzipped, installed with
+`install -m 0755` and run for `--version`.
 
 v0.16.0 → v0.18.1 delta: **448 files changed** (+22,803/−1,969), measured with `git diff
 v0.16.0..HEAD` (the shallow clone holds one squashed commit between the tags). Automation-surface
@@ -40,6 +42,52 @@ on quit (`apps/figcraft/src/main.rs`).
 Prior delta, kept for history: v0.15.0 → v0.16.0 changed 133 files with exactly one new command id
 (`text.wrapStyle`), glass optics, the Bend tool click and the web host bridge; older rounds are in
 `CHANGES.md`.
+
+## CLI availability (measured 2026-11-15)
+
+The ArtCraft Launcher installs `FigCraft.app` only; the headless CLI is a separate release asset, so a
+launcher-only install has no `figcraft-cli` on `PATH`. Measured this round:
+
+| Fact | Measured value |
+|---|---|
+| Release asset | `figcraft-cli-0.18.1-macos-universal.zip` |
+| Size | 90.7 MB — `content-length: 90711341` on the release asset |
+| `SHA256SUMS.txt` entry | `87efbca334e0925fce328ede159faef2df781b2a167d573888044127bfd4b0de  figcraft-cli-0.18.1-macos-universal.zip` |
+| Release URL | `https://github.com/storytold/figcraft/releases/download/v0.18.1/figcraft-cli-0.18.1-macos-universal.zip` |
+| Bundle `find` result | `ls /Applications/FigCraft.app/Contents/MacOS` → `FigCraft`; `find "/Applications/FigCraft.app" -name 'figcraft-cli'` → no output (the bundle ships no CLI) |
+| On `PATH` | `command -v figcraft-cli` → nothing |
+
+What was run, end to end, with the recipe that now sits in `SKILL.md` › How to operate › Getting the
+CLI (`$SCRATCH` is a throwaway scratch directory — the shipped recipe installs to `~/.local/bin`, and
+nothing was added to `PATH` for this proof):
+
+```sh
+$ ASSET="figcraft-cli-0.18.1-macos-universal.zip"
+$ REL="https://github.com/storytold/figcraft/releases/download/v0.18.1"
+$ curl -fLO "$REL/$ASSET" && curl -fLO "$REL/SHA256SUMS.txt"
+$ grep -F "$ASSET" SHA256SUMS.txt
+87efbca334e0925fce328ede159faef2df781b2a167d573888044127bfd4b0de  figcraft-cli-0.18.1-macos-universal.zip
+$ expected=$(grep -F "$ASSET" SHA256SUMS.txt | awk '{print $1}')
+$ actual=$(shasum -a 256 "$ASSET" | awk '{print $1}')
+expected=87efbca334e0925fce328ede159faef2df781b2a167d573888044127bfd4b0de
+actual  =87efbca334e0925fce328ede159faef2df781b2a167d573888044127bfd4b0de
+checksum OK
+$ unzip -oq "$ASSET"
+$ file figcraft-cli-0.18.1-macos-universal/figcraft-cli
+figcraft-cli-0.18.1-macos-universal/figcraft-cli: Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit executable x86_64] [arm64]
+$ install -m 0755 figcraft-cli-0.18.1-macos-universal/figcraft-cli "$SCRATCH/figcraft-cli"
+$ "$SCRATCH/figcraft-cli" --version
+figcraft-cli 0.18.1
+```
+
+`unzip` yields one top-level directory, `figcraft-cli-0.18.1-macos-universal/`, with 34 entries:
+`LICENSE-APACHE`, `LICENSE-MIT`, `NOTICE`, 29 `OFL-*.txt` font licences, `README.md` and the
+192,597,248-byte executable `figcraft-cli`.
+
+The binary runs standalone (no app launch, no GUI) and reports the version this skill is written
+against. The other three apps in this writer's batch were measured the same way short of the download:
+`curl -fSIL` on the asset (HTTP 200 + byte size), `SHA256SUMS.txt` fetched and the asset's line read,
+`ls`/`find` on the bundle.
 
 ## 1. Capability claims → evidence → tier
 
@@ -105,8 +153,8 @@ server subcommands. The `docs/` statements behind those claims were re-read wher
 them.
 
 Deliberately **not** claimed: any live GUI behaviour, any `.fig` fidelity against real Figma files,
-or any `figcraft-cli commands --json` output — no build or CLI binary was available, and the
-addendum forbids builds.
+or any `figcraft-cli commands --json` output — no build was made, and the downloaded release CLI was
+only asked for `--version` (see CLI availability above), so no command count comes from a binary.
 
 ## 4. Doc-vs-code drift found at this tag (code wins)
 
@@ -144,7 +192,8 @@ grep -n '212 / 212' docs/parity-checklist.md                # stale generated to
 ## 6. Uncertain / not verified
 
 - The exact live command count behind the 646 `spec!` sites (const-built ids): the registry is
-  `figcraft-cli commands --json`, which this round could not build or run.
+  `figcraft-cli commands --json`. No build was made this round, and the downloaded release CLI was only
+  asked for `--version` (see CLI availability above), so no command count comes from a binary.
 - Whether all 214 catalog items resolve to a command: a static scan leaves four ids
   (`object.rotate180`, `view.zoom50|100|200`) unmatched as literal `spec!` ids; they may be
   const-built. Re-run `cargo xtask parity`.

@@ -4,6 +4,29 @@ Audit basis: this checkout is tag **`v0.23.1`**, commit **`45066c48292e92229ada3
 
 Previous pin for the delta: **v0.21.0** = `efb7ebd0c0dab1fc108ee4642aa47c22694271a8`, still reachable in this shallow checkout, so every "was" number below was counted at both tags with one method (`git show v0.21.0:<path>`). No `references/` directory ships — SKILL.md carries the body, this file carries the per-claim evidence.
 
+## CLI availability (measured 2026-11-15)
+
+The ArtCraft Launcher installs `PhotoCraft.app`; `photocraft-cli` is not put on `PATH`. This app is one
+of the few whose **bundle does ship the CLI**, beside the app binary — the download is only needed on a
+machine without the app. Measured this round:
+
+| Fact | Measured value |
+|---|---|
+| Release asset | `photocraft-cli-0.23.1-macos-universal.zip` |
+| Size | 120.5 MB — `content-length: 120474491` on the release asset |
+| `SHA256SUMS.txt` entry | `a6ecdc6d4add02881642bda0a0b191b4974118651f2ec5641dc71b2c3ff4b752  photocraft-cli-0.23.1-macos-universal.zip` |
+| Release URL | `https://github.com/storytold/photocraft/releases/download/v0.23.1/photocraft-cli-0.23.1-macos-universal.zip` |
+| Bundle `find` result | `ls /Applications/PhotoCraft.app/Contents/MacOS` → `PhotoCraft photocraft-cli`; `find "/Applications/PhotoCraft.app" -name 'photocraft-cli'` → `/Applications/PhotoCraft.app/Contents/MacOS/photocraft-cli` |
+| Bundled CLI runs | `"/Applications/PhotoCraft.app/Contents/MacOS/photocraft-cli" --version` → `photocraft-cli 0.23.1 (45066c482, 2026-11-12)` |
+| On `PATH` | `command -v photocraft-cli` → nothing (the bundle copy has to be linked, as `SKILL.md` step 2 says) |
+
+What was run: the `ls`/`find`/`--version` lines above against the installed bundle, `curl -fSIL` on the
+release asset (HTTP 200, `content-length: 120474491`) and `curl -fsSL` on `SHA256SUMS.txt` plus
+`grep -F` for the asset line (entry above). The recipe's end-to-end proof — download, checksum
+compare, unzip, `install -m 0755`, `--version` — was run this round on the smallest asset of the batch,
+`figcraft-cli-0.18.1-macos-universal.zip`, and is pasted in full in `../figcraft/evidence.md` › CLI
+availability; here the commands are identical apart from name, version and size.
+
 ## 1. Capability claims → evidence → tier
 
 Tier legend: **implemented** = code path exists and is wired into UI/CLI/automation; **partial** = code exists with a named gap; **claimed-only** = said in docs/README but absent or contradicted by code.

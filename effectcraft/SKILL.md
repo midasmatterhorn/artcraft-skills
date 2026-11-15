@@ -153,7 +153,7 @@ Render Settings/Output Modules cover quality, resolution, time span (**Work Area
 - **Output/import gaps**: no 16-bpc uncompressed, MXF, DNxHR, DPX or Photoshop *sequence* output, and no AVI output (AVI import only); no ProRes RAW, USD/USDZ, Substance `.sbsar`, camera raw, HEIF/AVIF, BRAW/R3D/ARRIRAW.
 - **FBX/DPX/PDF caveats**: FBX is 7.x only, with no animation, skinning, cameras or lights; DPX/Cineon log values are shown as stored; PDF/AI/EPS import lacks JPX/JBIG2 and Illustrator procset EPS.
 - **Scripting gaps**: no `.jsxbin`; no separate Legacy ExtendScript engine mode (the `boa` engine implements the documented object model); `BridgeTalk` names the host but cannot message other applications; Startup scripts each get their own global scope, so definitions do not carry between them.
-- **No CLI inside the macOS `.app`** — get the universal `effectcraft-cli` from its separate release zip or build it (`cargo build --release -p effectcraft-cli`). **The control channel has no authentication**, binds `127.0.0.1`, serves at most 16 connections, times out at 60 s and rejects lines over 4 MiB (`apps/effectcraft/src/control_server.rs`).
+- **No CLI inside the macOS `.app`** — the universal `effectcraft-cli` comes from its separate release zip (see *Getting the CLI* under How to operate); building it (`cargo build --release -p effectcraft-cli`) is a developer path only — full Rust toolchain and a source checkout. **The control channel has no authentication**, binds `127.0.0.1`, serves at most 16 connections, times out at 60 s and rejects lines over 4 MiB (`apps/effectcraft/src/control_server.rs`).
 - **Extensions are an install surface, not a sandbox boundary for agents.** Native helpers run native code and start only when asked (`effect.helpers.scan`) or when `EFFECTCRAFT_HELPERS=1`; agents confined with `--automation-read-root`/`--automation-write-root` cannot run `effect.helpers.scan` or `effect.helpers.load`, cannot pass `$N`-referenced params through a confined batch, and a render refuses outward links. A WebAssembly module written for ABI 1 still loads, but a module that needs neighbouring frames must declare `ec_api_version` 2 and export `ec_render2`.
 - **Repro scripts are not private.** A repro holds command ids and parameters only — never project or media contents — but parameters can include file paths, layer names and text typed into text layers (`crates/engine/src/replay.rs`, `docs/agents.md`). Read one before sharing it.
 - **Docs drift — trust code/runtime.** Five docs still say **306 effects** (`docs/architecture.md`, `docs/roadmap.md`, `docs/gaps.md`, `docs/hardware-parity.md`, `docs/target-app-parity.md`); `docs/target-app-parity.md` says "411 registered engine commands"; `README.md` still claims proprietary project formats are unsupported; `docs/gaps.md` still rates "Opening existing After Effects work ≈ 0%" and says `.aep` cannot be read; and `app.capabilities`' `PARITY` string (`crates/engine/src/cmd/query.rs`) still says "307 registered" effects. The gap-4 "no PR CI gate" note is closed — `.github/workflows/ci.yml` runs `cargo xtask ci` on every pull request.
@@ -171,9 +171,37 @@ EffectCraft.app/Contents/MacOS/EffectCraft --control 9877 --demo   # the binary 
 
 Flags: `--control <1-65535>` (or `EFFECTCRAFT_CONTROL_PORT`), `--demo`, `--empty`, `--home`, `--version`; after `--` every argument is a file. An unknown option or a bad port exits before the window opens (`apps/effectcraft/src/main.rs`). The app starts **empty** by default, unlike most one-shot CLI commands, which start with the demo.
 
+### Getting the CLI (the launcher installs the app, not the CLI)
+
+The ArtCraft Launcher installs `EffectCraft.app`; it does not put `effectcraft-cli` on your `PATH`. It ships **no** CLI binary inside the bundle — the bundle holds only `EffectCraft` — so a launcher-only install has no `effectcraft-cli` at all. The CLI is published on the app's GitHub release, `effectcraft-cli-0.24.1-macos-universal.zip` (77.3 MB), so `effectcraft-cli` answering *command not found* means "not installed yet", not "not supported".
+
+Find it, in this order:
+
+1. **On `PATH`** — `command -v effectcraft-cli`. If it answers, `effectcraft-cli --version` must report the version this skill was written against (0.24.1). A different version means the CLI and the app have drifted: re-read *Verify against your installed version* before trusting ids.
+2. **Bundle copy** — Skip it: `find "/Applications/EffectCraft.app" -name 'effectcraft-cli'` finds nothing (verified), so go to step 3.
+3. **Install it from the release** — user-local, no `sudo`:
+
+```sh
+APP_VER=0.24.1
+REL="https://github.com/storytold/effectcraft/releases/download/v$APP_VER"
+ASSET="effectcraft-cli-$APP_VER-macos-universal.zip"
+mkdir -p "$HOME/.local/bin" "$HOME/Downloads/effectcraft-cli" && cd "$HOME/Downloads/effectcraft-cli"
+curl -fLO "$REL/$ASSET" && curl -fLO "$REL/SHA256SUMS.txt"
+expected=$(grep -F "$ASSET" SHA256SUMS.txt | awk '{print $1}')
+actual=$(shasum -a 256 "$ASSET" | awk '{print $1}')
+[ "$expected" = "$actual" ] && echo "checksum OK" || { echo "checksum MISMATCH — stop"; exit 1; }
+unzip -oq "$ASSET"
+install -m 0755 "effectcraft-cli-$APP_VER-macos-universal/effectcraft-cli" "$HOME/.local/bin/effectcraft-cli"
+"$HOME/.local/bin/effectcraft-cli" --version
+```
+
+`~/.local/bin` must be on `PATH` for the shell that runs the skill: `export PATH="$HOME/.local/bin:$PATH"` (put it in your shell profile to keep it).
+
+Rules: never `sudo` into `/usr/local`, never unzip into `/Applications`, and never replace an existing `effectcraft-cli` of a different version without telling the user. Building from source (`cargo install --path apps/effectcraft-cli --locked`) is a developer path only — full Rust toolchain, minutes of compiling; prefer the release binary above.
+
 ### CLI
 
-`effectcraft-cli` is a separate macOS release zip (signed/notarized) or `cargo build --release -p effectcraft-cli`; it is **not** inside the `.app`. `<comp>` is an id, name or `-` (active comp); `<layer>` is an id, `#n` or name; values are JSON or bare strings.
+`<comp>` is an id, name or `-` (active comp); `<layer>` is an id, `#n` or name; values are JSON or bare strings.
 
 | Subcommand | What it does |
 |---|---|

@@ -166,7 +166,46 @@ lightcraft [OPTIONS] [FILES/FOLDERS…]      # positional paths are imported at 
 
 Useful environment: `LIGHTCRAFT_LIBRARY`, `LIGHTCRAFT_CONTROL_PORT`, `LIGHTCRAFT_CONFIG_DIR` (isolated settings/logs/model profile), `LIGHTCRAFT_LANGUAGE=de|ja|zh-hans|…`, `LIGHTCRAFT_GPU_BACKEND=dx12|vulkan|metal|auto|off`, `LIGHTCRAFT_GPU=0`, `LIGHTCRAFT_LOG=info|debug` / `RUST_LOG`, `LIGHTCRAFT_MEMORY_MB`, `LIGHTCRAFT_NO_PREFS`, `LIGHTCRAFT_NO_NATIVE_MENU`, `LIGHTCRAFT_SAM3_DIR|_MIRRORS|_TOKEN|_REMOTE`, `LIGHTCRAFT_LENSFUN_DIR`, `LIGHTCRAFT_CAMERA_PROFILES`, `LIGHTCRAFT_DENOISE_MODELS|_URL|_TOKEN`, `LIGHTCRAFT_HDR_DISPLAY=0`, `LIGHTCRAFT_FPS=1`, `LIGHTCRAFT_PROFILE=1` (`apps/lightcraft/src/main.rs`; other env vars in `crates/engine` and `crates/segment`). Logs go to the settings folder's `logs/lightcraft.log`, rotated on each start.
 
-**The CLI is a separate download on macOS.** The `.app` contains only the desktop app; there is no `lightcraft-cli` inside it and none on a stock `PATH`. Get `lightcraft-cli-<ver>-macos-universal.zip` from the release assets or build it with `cargo build --release -p lightcraft-cli`. Use the CLI and the app from the same release (`docs/mcp.md` "From an installed release").
+### Getting the CLI (the launcher installs the app, not the CLI)
+
+The ArtCraft Launcher installs `LightCraft.app`; it does not put `lightcraft-cli` on your `PATH`. It
+ships **no** CLI binary inside the bundle — the bundle holds only `LightCraft` — so a launcher-only
+install has no `lightcraft-cli` at all. The CLI is published on the app's GitHub release,
+`lightcraft-cli-0.21.1-macos-universal.zip` (121.5 MB), so `lightcraft-cli` answering *command not
+found* means "not installed yet", not "not supported".
+
+Find it, in this order:
+
+1. **On `PATH`** — `command -v lightcraft-cli`. If it answers, `lightcraft-cli --version` must report
+   the version this skill was written against (0.21.1). A different version means the CLI and the app
+   have drifted: re-read *Verify against your installed version* before trusting ids.
+2. **Bundle copy** — Skip it: `find "/Applications/LightCraft.app" -name 'lightcraft-cli'` finds
+   nothing (verified), so go to step 3.
+3. **Install it from the release** — user-local, no `sudo`:
+
+```sh
+APP_VER=0.21.1
+REL="https://github.com/storytold/lightcraft/releases/download/v$APP_VER"
+ASSET="lightcraft-cli-$APP_VER-macos-universal.zip"
+mkdir -p "$HOME/.local/bin" "$HOME/Downloads/lightcraft-cli" && cd "$HOME/Downloads/lightcraft-cli"
+curl -fLO "$REL/$ASSET" && curl -fLO "$REL/SHA256SUMS.txt"
+expected=$(grep -F "$ASSET" SHA256SUMS.txt | awk '{print $1}')
+actual=$(shasum -a 256 "$ASSET" | awk '{print $1}')
+[ "$expected" = "$actual" ] && echo "checksum OK" || { echo "checksum MISMATCH — stop"; exit 1; }
+unzip -oq "$ASSET"
+install -m 0755 "lightcraft-cli-$APP_VER-macos-universal/lightcraft-cli" "$HOME/.local/bin/lightcraft-cli"
+"$HOME/.local/bin/lightcraft-cli" --version
+```
+
+`~/.local/bin` must be on `PATH` for the shell that runs the skill:
+`export PATH="$HOME/.local/bin:$PATH"` (put it in your shell profile to keep it).
+
+Rules: never `sudo` into `/usr/local`, never unzip into `/Applications`, and never replace an existing
+`lightcraft-cli` of a different version without telling the user. Building from source (`cargo install
+--path apps/lightcraft-cli --locked`) is a developer path only — full Rust toolchain, minutes of
+compiling; prefer the release binary above.
+
+Use the CLI and the app from the same release (`docs/mcp.md` "From an installed release").
 
 **Window/document model.** One process = one open library; a main window (grid or Detail) plus an optional second window (`⌘F11`). There are no per-photo documents and no tabs. Switching libraries is File ▸ Open Library… (`app.openLibrary`, `⌘O`) or File ▸ New Library… (`app.newLibrary`); if a library cannot be opened, the app starts an empty session and asks (`ui.inspect` → `libraryProblem`). Pointing Open Library at a Lightroom catalog folder (or a `Backups` folder) offers the importer instead (`docs/control-protocol.md`; `crates/ui-egui/src/panels/library_problem.rs`; `docs/lightroom-catalog-import.md`).
 

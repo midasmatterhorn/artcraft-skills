@@ -139,8 +139,46 @@ Counts at v0.19.1, with v0.17.0 in brackets where it differs: **385 engine comma
 - Environment: `GRIDCRAFT_CONTROL_PORT=<port>`, **`GRIDCRAFT_CONTROL_TOKEN=<token>`** (the control channel requires it), `GRIDCRAFT_NO_PREFS=1` (the mode for agent test runs: no preferences read or written, no log file), `GRIDCRAFT_NO_NATIVE_MENU`, `RUST_LOG` (env_logger-style directives; default `warn,gridcraft*=info`).
 - Settings and logs live under `Library/Application Support/GridCraft/` in the user's home: `ui.json`, `prefs.json`, and `logs/gridcraft.log`, rotated to `.1`/`.2` at each start, 16 MiB cap.
 
-### The CLI (installed separately)
-The bundle ships no CLI. Install with `cargo install --path apps/gridcraft-cli` from a source checkout, or the release zip `gridcraft-cli-<ver>-macos-universal.zip`.
+### Getting the CLI (the launcher installs the app, not the CLI)
+
+The ArtCraft Launcher installs `GridCraft.app`; it does not put `gridcraft-cli` on your `PATH`.
+It ships **no** CLI binary inside the bundle — the bundle holds only `GridCraft` — so a
+launcher-only install has no `gridcraft-cli` at all. The CLI is published on the app's GitHub
+release, `gridcraft-cli-0.19.1-macos-universal.zip` (16.0 MB), so `gridcraft-cli` answering
+*command not found* means "not installed yet", not "not supported".
+
+Find it, in this order:
+
+1. **On `PATH`** — `command -v gridcraft-cli`. If it answers, `gridcraft-cli --version` must report
+   the version this skill was written against (0.19.1). A different version means the CLI and the
+   app have drifted: re-read *Verify against your installed version* before trusting ids.
+2. **Bundle copy** — Skip it: `find "/Applications/GridCraft.app" -name 'gridcraft-cli'` finds
+   nothing (verified), so go to step 3.
+3. **Install it from the release** — user-local, no `sudo`:
+
+```sh
+APP_VER=0.19.1
+REL="https://github.com/storytold/gridcraft/releases/download/v$APP_VER"
+ASSET="gridcraft-cli-$APP_VER-macos-universal.zip"
+mkdir -p "$HOME/.local/bin" "$HOME/Downloads/gridcraft-cli" && cd "$HOME/Downloads/gridcraft-cli"
+curl -fLO "$REL/$ASSET" && curl -fLO "$REL/SHA256SUMS.txt"
+expected=$(grep -F "$ASSET" SHA256SUMS.txt | awk '{print $1}')
+actual=$(shasum -a 256 "$ASSET" | awk '{print $1}')
+[ "$expected" = "$actual" ] && echo "checksum OK" || { echo "checksum MISMATCH — stop"; exit 1; }
+unzip -oq "$ASSET"
+install -m 0755 "gridcraft-cli-$APP_VER-macos-universal/gridcraft-cli" "$HOME/.local/bin/gridcraft-cli"
+"$HOME/.local/bin/gridcraft-cli" --version
+```
+
+`~/.local/bin` must be on `PATH` for the shell that runs the skill:
+`export PATH="$HOME/.local/bin:$PATH"` (put it in your shell profile to keep it).
+
+Rules: never `sudo` into `/usr/local`, never unzip into `/Applications`, and never replace an
+existing `gridcraft-cli` of a different version without telling the user. Building from source
+(`cargo install --path apps/gridcraft-cli --locked`) is a developer path only — full Rust toolchain,
+minutes of compiling; prefer the release binary above.
+
+### CLI usage
 
 ```sh
 gridcraft-cli info book.xlsx [--json]

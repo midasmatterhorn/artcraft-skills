@@ -1,5 +1,9 @@
 # Craft Anything — round 2026-11-12 changes
 
+## 2026-11-15b — CLI availability and install
+
+Round **2026-11-15b** (skills release v2.1.0) closes the launcher/CLI gap: the ArtCraft Launcher installs `Craft Anything.app`, whose bundle does ship `craft-anything-cli` — but nothing puts it on `PATH`, so `## How to operate` now carries one canonical *Getting the CLI* block — `command -v craft-anything-cli` → the bundle copy at `/Applications/Craft Anything.app/Contents/MacOS/craft-anything-cli` (quote the path; link it into `~/.local/bin`) → otherwise download `craft-anything-cli-0.6.1-macos-universal.zip` (27.9 MB) from `storytold/craft-anything` v0.6.1, compare it against `SHA256SUMS.txt`, `unzip`, `install -m 0755` into `~/.local/bin`, put that on `PATH`. It replaces the old GUI bullet's "no separate install is needed … or `cargo install --path apps/craft-anything-cli --locked`" prose, which offered a source build before a verified release binary; the build path survives only as an explicitly developer-only note. Measured 2026-11-15: checksum `ddbae05f…88c2f` matched, the bundle's copy prints `craft-anything-cli 0.6.1`, and the downloaded CLI prints the same.
+
 Re-pinned: v0.5.0 (`622d023`) -> v0.6.1 (`48a9c5a`, installed `craft-anything-cli 0.6.1`).
 
 ## Corrected / re-measured

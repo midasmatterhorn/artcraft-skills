@@ -328,10 +328,46 @@ windows may read or write; any unknown option — including a mistyped root flag
 startup instead of running unconfined (`apps/figcraft/src/args.rs`). An invite link
 (`figcraft://join?…`) or a `file://` URL on the command line opens or joins it.
 
-**There is no CLI inside the macOS bundle.** Build it with `cargo build --release -p figcraft-cli` →
-`target/release/figcraft-cli`; macOS releases ship a separate
-`figcraft-cli-<version>-macos-<arch>.zip` (`packaging/macos/package.sh`). On Linux only,
-`FigCraft.AppImage cli <args>` runs it (`packaging/linux/AppRun`).
+### Getting the CLI (the launcher installs the app, not the CLI)
+
+The ArtCraft Launcher installs `FigCraft.app`; it does not put `figcraft-cli` on your `PATH`. It ships
+**no** CLI binary inside the bundle — the bundle holds only `FigCraft` — so a launcher-only install
+has no `figcraft-cli` at all. The CLI is published on the app's GitHub release,
+`figcraft-cli-0.18.1-macos-universal.zip` (90.7 MB), so `figcraft-cli` answering *command not found*
+means "not installed yet", not "not supported".
+
+Find it, in this order:
+
+1. **On `PATH`** — `command -v figcraft-cli`. If it answers, `figcraft-cli --version` must report the
+   version this skill was written against (0.18.1). A different version means the CLI and the app
+   have drifted: re-read *Verify against your installed version* before trusting ids.
+2. **Bundle copy** — Skip it: `find "/Applications/FigCraft.app" -name 'figcraft-cli'` finds nothing
+   (verified), so go to step 3.
+3. **Install it from the release** — user-local, no `sudo`:
+
+```sh
+APP_VER=0.18.1
+REL="https://github.com/storytold/figcraft/releases/download/v$APP_VER"
+ASSET="figcraft-cli-$APP_VER-macos-universal.zip"
+mkdir -p "$HOME/.local/bin" "$HOME/Downloads/figcraft-cli" && cd "$HOME/Downloads/figcraft-cli"
+curl -fLO "$REL/$ASSET" && curl -fLO "$REL/SHA256SUMS.txt"
+expected=$(grep -F "$ASSET" SHA256SUMS.txt | awk '{print $1}')
+actual=$(shasum -a 256 "$ASSET" | awk '{print $1}')
+[ "$expected" = "$actual" ] && echo "checksum OK" || { echo "checksum MISMATCH — stop"; exit 1; }
+unzip -oq "$ASSET"
+install -m 0755 "figcraft-cli-$APP_VER-macos-universal/figcraft-cli" "$HOME/.local/bin/figcraft-cli"
+"$HOME/.local/bin/figcraft-cli" --version
+```
+
+`~/.local/bin` must be on `PATH` for the shell that runs the skill:
+`export PATH="$HOME/.local/bin:$PATH"` (put it in your shell profile to keep it).
+
+Rules: never `sudo` into `/usr/local`, never unzip into `/Applications`, and never replace an existing
+`figcraft-cli` of a different version without telling the user. Building from source (`cargo install
+--path apps/figcraft-cli --locked`) is a developer path only — full Rust toolchain, minutes of
+compiling; prefer the release binary above.
+
+On Linux only, `FigCraft.AppImage cli <args>` runs the CLI (`packaging/linux/AppRun`).
 
 **CLI surface** (verified in `apps/figcraft-cli/src/args.rs`, `docs/cli.md`):
 

@@ -371,7 +371,10 @@ Read-back queries: `file.info`, `file.render {slide?, scale?, edit?, transparent
   line) and may repeat and mix with `--cmd` in order.
 - `app`, `mcp`, `bench [--runs N] [--json]`, `links`, `--version`.
 - The CLI is a **separate signed/notarized zip**, not inside the `.app`
-  (`packaging/macos/package.sh`); this machine has no `deckcraft-cli` on `PATH`.
+  (`packaging/macos/package.sh`); this machine has no `deckcraft-cli` on `PATH`. `Getting the CLI (the
+  launcher installs the app, not the CLI)` in `SKILL.md` fetches
+  `deckcraft-cli-0.18.1-macos-universal.zip`, verifies it against `SHA256SUMS.txt` and installs it into
+  `~/.local/bin`.
 
 ## Slide show setup
 

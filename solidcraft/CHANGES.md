@@ -1,4 +1,20 @@
-# SolidCraft — round 2026-11-15 changes
+# SolidCraft — skill change log
+
+## 2026-11-15b — CLI availability and install
+
+Round v2.1.0: every ArtCraft skill must teach an agent to find the headless CLI and install it when
+the launcher's app install did not include one. SolidCraft is one of the five apps whose bundle
+**does** carry the CLI — `/Applications/SolidCraft.app/Contents/MacOS/solidcraft-cli` exists and
+prints `solidcraft-cli 0.42.0` (verified 2026-11-15) — so the new *Getting the CLI* block in
+`## How to operate` prefers the bundle copy and only downloads
+`solidcraft-cli-0.42.0-macos-universal.zip` (150.9 MB, SHA-256 `c50be996…`, the CLI-zip line of the
+release's 48-line `SHA256SUMS.txt`) on a machine without the app. The old sentence that said
+package installs and the app's Help ▸ Install solidcraft-cli put it on `PATH` was wrong for a
+launcher install and was replaced. No download was run for SolidCraft; the round's end-to-end
+proof used MaterialCraft's smaller asset. No pin, count, section heading or audit-basis line
+changed.
+
+## 2026-11-15 — re-pin to v0.42.0
 
 Re-pinned: v0.41.0 (`3c8efdb51952ed9a5f3ebc722c2bad1454fe6d80`) -> **v0.42.0**
 (`1b1e940cc48e4d1d5d01971a4be20e2e55647066`, "Merge main into release for 0.42.0", 2026-11-14), inspected 2026-11-15.

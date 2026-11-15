@@ -4,6 +4,29 @@ Audit basis: this checkout is tag **`v0.21.1`**, commit **`361e3bc0c838ffe5e5cea
 
 v0.19.0 -> v0.21.1 delta: **235 files changed, +9,525/−3,929**. Engine registry **365 -> 368** `cmd!` specs, **+3, zero removed**: `lensBlur.brushReset`, `lensBlur.brushStroke`, `lensBlur.findSubject`. `UI_COMMANDS` **194 -> 195** (`+section.lensBlur`, ⌘6); language commands 18 unchanged. New **Lens Blur** develop section (3 controls, 3 commands, shape/brush refinement, per-mask block) is P2 partial. Process versions extend to **V7** (crystal-layer film grain) and **V8** (detail-free Highlights/Shadows base). Lightroom catalog backup `.zip` files import directly. Compressed Olympus/OM ORF sensor support was **withdrawn** pending provenance review: raw coverage becomes **557 / 665 / 187 / 37** of 1,446 (use-weighted ~94%). Survey tiles fit photo shapes and glide; `mask.exportEffects` refuses originals/sidecars; TIFF moved to `craft-tiff` in craft-libs.
 
+## CLI availability (measured 2026-11-15)
+
+The ArtCraft Launcher installs `LightCraft.app` only; `lightcraft-cli` is a separate release asset, so a
+launcher-only install has no `lightcraft-cli` on `PATH`. Measured this round:
+
+| Fact | Measured value |
+|---|---|
+| Release asset | `lightcraft-cli-0.21.1-macos-universal.zip` |
+| Size | 121.5 MB — `content-length: 121480540` on the release asset |
+| `SHA256SUMS.txt` entry | `58086b9d224d02b5ec9ed08e76da04ba1dc5d51d3c285cdea417358fa7ea06e2  lightcraft-cli-0.21.1-macos-universal.zip` |
+| Release URL | `https://github.com/storytold/lightcraft/releases/download/v0.21.1/lightcraft-cli-0.21.1-macos-universal.zip` |
+| Bundle `find` result | `ls /Applications/LightCraft.app/Contents/MacOS` → `LightCraft`; `find "/Applications/LightCraft.app" -name 'lightcraft-cli'` → no output (the bundle ships no CLI) |
+| On `PATH` | `command -v lightcraft-cli` → nothing |
+
+What was run: the bundle `ls`/`find` above, `curl -fSIL` on the release asset (HTTP 200,
+`content-length: 121480540`) and `curl -fsSL` on `SHA256SUMS.txt` plus `grep -F` for the asset line
+(entry above). This asset was also the round's ground-truth end-to-end measurement (orchestrator,
+2026-11-15): checksum matches `SHA256SUMS.txt`, unzip yields a top-level
+`lightcraft-cli-0.21.1-macos-universal/` holding the universal `lightcraft-cli` plus
+LICENSE/NOTICE/README and the OFL font texts, and the binary prints `lightcraft-cli 0.21.1`. The same
+recipe was run by this writer on the batch's smallest asset and pasted in full in
+`../figcraft/evidence.md` › CLI availability.
+
 ## 1. Capability claims -> evidence -> tier
 
 | # | Claim | Evidence (repo-relative) | Tier |

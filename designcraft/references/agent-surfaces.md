@@ -17,9 +17,13 @@ checks run on a worker thread with a document-side size+time fingerprint (see §
 
 Source: `apps/designcraft-cli/src/main.rs` (module doc; the `USAGE` const; subcommand dispatch in
 `main`). The macOS DMG installs it **inside the bundle** at
-`Contents/MacOS/designcraft-cli` (`docs/mcp.md` §Where the CLI is); the separate
-`designcraft-cli-<ver>-macos-universal.zip` asset, `cargo install --path apps/designcraft-cli
---locked`, or `cargo build --release -p designcraft-cli` are the alternatives.
+`Contents/MacOS/designcraft-cli` (`docs/mcp.md` §Where the CLI is), and the same binary is the release
+asset `designcraft-cli-0.20.1-macos-universal.zip` — checksum-verified against `SHA256SUMS.txt`,
+installed into `~/.local/bin`, exactly as `Getting the CLI (the launcher installs the app, not the CLI)`
+in `SKILL.md` lays out.
+`cargo install --path apps/designcraft-cli --locked` / `cargo build --release -p designcraft-cli` is a
+developer path only (full Rust toolchain and a source checkout), never the agent's first route — the
+release asset above is the portable copy.
 
 ```text
 designcraft-cli run [--in FILE | --sample] [--cmd ID[=JSON]]... [--page N] [--scale S]

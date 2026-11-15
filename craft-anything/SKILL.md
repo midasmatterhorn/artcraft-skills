@@ -89,7 +89,7 @@ Do not assign these at v0.6.1:
 
 ## How to operate
 
-- GUI: `open -a "Craft Anything"`; the app binary is `Contents/MacOS/craft-anything`. **The macOS bundle ships `craft-anything-cli` beside it** (`Contents/MacOS/craft-anything-cli`, 0.6.1) — no separate install is needed on a launcher install; on another machine get it from the release assets or `cargo install --path apps/craft-anything-cli --locked`, and keep versions matched. Do not launch the GUI just to run a CLI command.
+- GUI: `open -a "Craft Anything"`; the app binary is `Contents/MacOS/craft-anything`. Do not launch the GUI just to run a CLI command — see *Getting the CLI* below for where `craft-anything-cli` lives and how to install it.
 - Mode: switch Clean room/Deep in the title bar or Settings, `craft-anything-cli settings-set --key deep_mode --value true`, or `--deep`/`--clean-room` per CLI run.
 - Typical agent flow:
   ```sh
@@ -109,6 +109,49 @@ Do not assign these at v0.6.1:
 - Read a source text without a build: `craft-anything-cli core-text-read --path "<absolute path to notes.md>" --offset 0 --limit 200`.
 - Serve the tools: `craft-anything-cli mcp --all-tools` (all 323 in Deep) or `craft-anything-cli mcp --restricted --inbox "<folder>"` on a shared host. A Clean room server can list only the 108 Clean-room tools, whatever `--all-tools` says. The global `--allow-run` skips the consent prompt for tools that run code or change a device — use it only on a target you own.
 - Settings live in `config.toml` (`engine::settings::config_dir()`, version 3); `craft-anything-cli doctor` output is the live answer for paths and installed engines.
+
+### Getting the CLI (the launcher installs the app, not the CLI)
+
+The ArtCraft Launcher installs `Craft Anything.app`; it does not put `craft-anything-cli` on your
+`PATH`. It **does** ship a copy inside the bundle at
+`/Applications/Craft Anything.app/Contents/MacOS/craft-anything-cli`, the same build as the app, so
+a launcher install can use that binary directly. The CLI is published on the app's GitHub release,
+`craft-anything-cli-0.6.1-macos-universal.zip` (27.9 MB), so `craft-anything-cli` answering
+*command not found* means "not installed yet", not "not supported".
+
+Find it, in this order:
+
+1. **On `PATH`** — `command -v craft-anything-cli`. If it answers, `craft-anything-cli --version`
+   must report the version this skill was written against (0.6.1). A different version means the CLI
+   and the app have drifted: re-read *Verify against your installed version* before trusting ids.
+2. **Bundle copy** — `"/Applications/Craft Anything.app/Contents/MacOS/craft-anything-cli"
+   --version`; to make it callable as `craft-anything-cli`, link it: `mkdir -p ~/.local/bin && ln -sf
+   "/Applications/Craft Anything.app/Contents/MacOS/craft-anything-cli"
+   ~/.local/bin/craft-anything-cli`.
+3. **Install it from the release** — user-local, no `sudo`:
+
+```sh
+APP_VER=0.6.1
+REL="https://github.com/storytold/craft-anything/releases/download/v$APP_VER"
+ASSET="craft-anything-cli-$APP_VER-macos-universal.zip"
+mkdir -p "$HOME/.local/bin" "$HOME/Downloads/craft-anything-cli" && cd "$HOME/Downloads/craft-anything-cli"
+curl -fLO "$REL/$ASSET" && curl -fLO "$REL/SHA256SUMS.txt"
+expected=$(grep -F "$ASSET" SHA256SUMS.txt | awk '{print $1}')
+actual=$(shasum -a 256 "$ASSET" | awk '{print $1}')
+[ "$expected" = "$actual" ] && echo "checksum OK" || { echo "checksum MISMATCH — stop"; exit 1; }
+unzip -oq "$ASSET"
+install -m 0755 "craft-anything-cli-$APP_VER-macos-universal/craft-anything-cli" "$HOME/.local/bin/craft-anything-cli"
+"$HOME/.local/bin/craft-anything-cli" --version
+```
+
+`~/.local/bin` must be on `PATH` for the shell that runs the skill:
+`export PATH="$HOME/.local/bin:$PATH"` (put it in your shell profile to keep it).
+
+Rules: never `sudo` into `/usr/local`, never unzip into `/Applications`, and never replace an
+existing `craft-anything-cli` of a different version without telling the user. Building from source
+(`cargo install --path apps/craft-anything-cli --locked`) is a developer path only — full Rust
+toolchain, minutes of compiling; prefer the release binary above. Prefer the bundle copy (step 2) —
+it is the same commit as the app; a downloaded CLI is only needed on a machine without the app.
 
 ## Working with an AI agent
 

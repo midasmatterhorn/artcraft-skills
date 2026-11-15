@@ -38,7 +38,7 @@ unzip -o "$ZIP" -d ~/.gemini/config/skills/
 Windows PowerShell:
 
 ```powershell
-$zip = Get-ChildItem "$HOME\Downloads\artcraft-skills-v*.zip" | Sort-Object LastWriteTime -Descending | Select-Object -First 1   # in the archive folder use releases\
+$zip = Get-ChildItem "$HOME\Downloads\artcraft-skills-v*.zip" | Sort-Object LastWriteTime -Descending | Select-Object -First 1   # in the full archive folder use releases\
 Expand-Archive $zip -DestinationPath $HOME\.agents\skills   # or .claude\skills / .config\opencode\skills / .gemini\skills / .gemini\config\skills
 ```
 
@@ -59,6 +59,25 @@ All 19 skill directories must exist under the chosen target — `anicraft`,
 `texturecraft`, `vectorcraft`, `wordcraft` — each containing `SKILL.md` and
 `agents/openai.yaml`. Print the target directory you used, then tell the user to restart their agent
 session so the skills are discovered.
+
+## The CLI is a separate download
+
+The ArtCraft Launcher installs `<App>.app` only — never `<app>-cli` on your `PATH`. Every app publishes
+its headless CLI as a separate GitHub release asset, `<app>-cli-<ver>-macos-universal.zip`. Only
+`photocraft`, `designcraft`, `anicraft`, `craft-anything` and `solidcraft` also put a copy inside the
+bundle at `/Applications/<App>.app/Contents/MacOS/`; the other 14 do not, so *command not found* means
+"not installed yet". Download the zip, verify it against `SHA256SUMS.txt`, `install -m 0755` it into
+`~/.local/bin` and put that directory on `PATH` — never `sudo`, never unzip into `/Applications`:
+
+```sh
+REL="https://github.com/<owner/repo>/releases/download/v<ver>"; A="<app>-cli-<ver>-macos-universal.zip"; curl -fLO "$REL/$A" && curl -fLO "$REL/SHA256SUMS.txt"
+[ "$(grep -F "$A" SHA256SUMS.txt | awk '{print $1}')" = "$(shasum -a 256 "$A" | awk '{print $1}')" ] && echo "checksum OK" || { echo "checksum MISMATCH — stop"; exit 1; }
+unzip -oq "$A"
+mkdir -p "$HOME/.local/bin" && install -m 0755 "<app>-cli-<ver>-macos-universal/<app>-cli" "$HOME/.local/bin/<app>-cli"
+```
+
+PdfCraft also publishes Linux CLI tarballs (`pdfcraft-cli-<ver>-linux-{x86_64,aarch64}.tar.gz`). The exact
+asset name, size, version and bundle status for your app are in that app's skill section.
 
 ## Windows: driving the GUI apps live
 

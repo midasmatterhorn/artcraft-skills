@@ -179,3 +179,19 @@ solidcraft-cli run sign.json                     # refused: a script or agent ca
 Headless MCP counts: initialize `solidcraft-cli mcp --headless` (protocol 2025-06-18, server
 version 0.42.0), call `tools/list` (22) and `describe_command {"id": <each of 647>}`, counting
 replies with non-null `input` and `output` (612 both / 35 neither).
+
+## CLI availability (measured 2026-11-15)
+
+- Release asset: `solidcraft-cli-0.42.0-macos-universal.zip`, 150.9 MB, on
+  `https://github.com/tangency-labs/solidcraft/releases/download/v0.42.0/`.
+- `SHA256SUMS.txt` (48 lines; every line is the plain two-field `<sha256>  <asset>` form, so
+  `grep -F "$ASSET"` matches exactly the CLI-zip line and no alias):
+  `c50be9965a9bb4246bbf7cc23471c6eef74fc85a614d5dac546d0a57cd5716a8  solidcraft-cli-0.42.0-macos-universal.zip`
+- Bundle `find`: `/Applications/SolidCraft.app/Contents/MacOS/solidcraft-cli` exists — the bundle's
+  `Contents/MacOS` holds `SolidCraft` and `solidcraft-cli` — and running it prints
+  `solidcraft-cli 0.42.0`. A launcher install can therefore use the bundle copy directly.
+- Ran: the bundle copy only (`--version`). No download was run for SolidCraft; the round's
+  end-to-end proof (download → checksum compare → unzip → `install -m 0755` → `--version`) was run
+  once on the smallest CLI asset in this batch, MaterialCraft's 11.9 MB zip, and its real output is
+  pasted in that skill's evidence file. The manifest fetch above is the only network step for
+  SolidCraft.

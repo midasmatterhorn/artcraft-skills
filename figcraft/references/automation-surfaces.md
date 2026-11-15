@@ -42,9 +42,12 @@ MCP equivalents: `list_commands {filter}` and the resource `figcraft://command/<
 
 ## 2. `figcraft-cli`
 
-Build: `cargo build --release -p figcraft-cli` → `target/release/figcraft-cli`.
 Not inside the macOS `.app` (only the Linux AppImage bundles it as `FigCraft.AppImage cli …`); macOS
-releases ship a separate `figcraft-cli-<version>-macos-<arch>.zip` (`packaging/macos/package.sh`).
+releases ship the universal `figcraft-cli-0.18.1-macos-universal.zip` (`packaging/macos/package.sh`),
+which `Getting the CLI (the launcher installs the app, not the CLI)` in `SKILL.md` fetches,
+checksum-verifies against `SHA256SUMS.txt` and installs into `~/.local/bin`.
+`cargo build --release -p figcraft-cli` → `target/release/figcraft-cli` is a developer path only (full
+Rust toolchain and a source checkout), never the agent's first route.
 
 Ten subcommands plus `help` / `--help` / `-h` and `--version` / `-V` / `version`
 (`apps/figcraft-cli/src/main.rs`):
@@ -373,7 +376,10 @@ file until removed or 30 days unopened.
 
 ## 10. Server (preview)
 
-`figcraft-server` (`cargo build --release -p figcraft-server`; releases ship a Linux build) has
+`figcraft-server` (`cargo build --release -p figcraft-server` — a developer path only, full Rust
+toolchain and a source checkout, never the agent's first route; the app's own CLI comes from
+`Getting the CLI (the launcher installs the app, not the CLI)` in `SKILL.md`; releases ship a Linux
+build) has
 subcommands: `serve` (default), `key [--rotate]`, `check`, `files [list] [--sort …]`, `files remove`,
 `links list\|create\|revoke`, `plugins [list\|remove] [--version N]`, `reports`, `block-ip`,
 `unblock-ip`, `blocked` (`apps/figcraft-server/src/cli.rs`, `docs/server.md`). The repo also ships

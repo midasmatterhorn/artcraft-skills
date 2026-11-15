@@ -21,6 +21,30 @@ table selection; GREP refuses subroutine calls; whole-file reads refuse devices/
 draws a spread spine (screen only); the updater installs at exit and the Flatpak manifests grant
 its update permissions.
 
+## CLI availability (measured 2026-11-15)
+
+The ArtCraft Launcher installs `DesignCraft.app`; `designcraft-cli` is not put on `PATH`. This app is
+one of the few whose **bundle does ship the CLI**, beside the app binary — the download is only
+needed on a machine without the app. Measured this round:
+
+| Fact | Measured value |
+|---|---|
+| Release asset | `designcraft-cli-0.20.1-macos-universal.zip` |
+| Size | 110.6 MB — `content-length: 110569975` on the release asset |
+| `SHA256SUMS.txt` entry | `a178783b31e1af48f7af2b516568ec85537a484dfbcc5057b0f03cadee90c0ab  designcraft-cli-0.20.1-macos-universal.zip` |
+| Release URL | `https://github.com/storytold/designcraft/releases/download/v0.20.1/designcraft-cli-0.20.1-macos-universal.zip` |
+| Bundle `find` result | `ls /Applications/DesignCraft.app/Contents/MacOS` → `DesignCraft designcraft-cli`; `find "/Applications/DesignCraft.app" -name 'designcraft-cli'` → `/Applications/DesignCraft.app/Contents/MacOS/designcraft-cli` |
+| Bundled CLI runs | `"/Applications/DesignCraft.app/Contents/MacOS/designcraft-cli" --version` → `designcraft-cli 0.20.1` |
+| On `PATH` | `command -v designcraft-cli` → nothing (the bundle copy has to be linked, as `SKILL.md` step 2 says) |
+
+What was run: the `ls`/`find`/`--version` lines above against the installed bundle, `curl -fSIL` on
+the release asset (HTTP 200, `content-length: 110569975`) and `curl -fsSL` on `SHA256SUMS.txt` plus
+`grep -F` for the asset line (entry above). The recipe's end-to-end proof — download, checksum
+compare, unzip, `install -m 0755`, `--version` — was run this round on the smallest asset among this
+writer's four apps, `gridcraft-cli-0.19.1-macos-universal.zip` (16.0 MB), and is pasted in full in
+`../gridcraft/evidence.md` › CLI availability; here the commands are identical apart from name,
+version and size.
+
 ## 1. Capability claims → evidence → tier
 
 | # | Claim | Evidence (repo-relative) | Tier |
