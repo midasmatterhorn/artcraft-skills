@@ -1,19 +1,19 @@
 # AGENTS.md — ArtCraft Skills archive
 
-You are a coding agent. This repository holds **20 evidence-verified skills** for the ArtCraft
-desktop apps: the 18 apps from the [`storytold`](https://github.com/storytold) organization — the
+You are a coding agent. This repository holds **19 evidence-verified skills** for the ArtCraft
+desktop apps: the 17 apps from the [`storytold`](https://github.com/storytold) organization — the
 thirteen pure-Rust craft apps (PhotoCraft, LightCraft, VectorCraft, FigCraft, DesignCraft,
 WordCraft, DeckCraft, GridCraft, PdfCraft, EffectCraft, FilmCraft, SoundCraft, CADCraft) plus
-ArtCraft Studio's AI image and video workspace, AniCraft's 2D vector animation studio, Craft
-Anything's "see how software works, rebuild it" workbench, TextureCraft's 3D texture painting and
-MaterialCraft's node-based procedural materials — and two outside it: Tangency Labs' SolidCraft
-parametric CAD and UCS Care Group's MailCraft mail, calendar and contacts app (a *community* app in
-the ArtCraft Launcher catalog). If the user asks you to install, update, or verify these skills, do
-it for the agent **you** are running as.
+AniCraft's 2D vector animation studio, Craft Anything's "see how software works, rebuild it"
+workbench, TextureCraft's 3D texture painting and MaterialCraft's node-based procedural
+materials — and two outside it: Tangency Labs' SolidCraft parametric CAD and UCS Care Group's
+MailCraft mail, calendar and contacts app (a *community* app in the ArtCraft Launcher catalog).
+If the user asks you to install, update, or verify these skills, do it for the agent **you** are
+running as.
 
 ## Install (pick your target)
 
-From the release zip — the 20 skill folders and this file sit at the zip root. Point `ZIP` at the
+From the release zip — the 19 skill folders and this file sit at the zip root. Point `ZIP` at the
 archive you downloaded, or at the newest one in the full archive folder's `releases/` directory:
 
 ```sh
@@ -52,7 +52,7 @@ bash install.sh              # default → ~/.agents/skills/  (add --claude, --o
 
 ## Verify
 
-All 20 skill directories must exist under the chosen target — `anicraft`, `artcraft-studio`,
+All 19 skill directories must exist under the chosen target — `anicraft`,
 `cadcraft`, `craft-anything`, `deckcraft`, `designcraft`, `effectcraft`,
 `figcraft`, `filmcraft`, `gridcraft`, `lightcraft`, `mailcraft`,
 `materialcraft`, `pdfcraft`, `photocraft`, `solidcraft`, `soundcraft`,
@@ -140,18 +140,17 @@ the 12 November 2026 releases):
   file the app writes/prints for that port.
 - **SolidCraft**: `SOLIDCRAFT_CONTROL_TOKEN` or the app's token file for that port (the token
   is scoped to the port the app opened).
-- **MailCraft** (community app): a control *key* file, `control-key.<instance>`, in the app's
+- **MailCraft** (community app): a control *key* file, `<settings>/control-key.local-<port>` —
+  named after the control port in every packaging, Flatpak included (#1199) — in the app's
   settings folder (macOS `~/Library/Application Support/MailCraft`, Windows `%APPDATA%\MailCraft`,
-  otherwise `$XDG_CONFIG_HOME/mailcraft` or `~/.config/mailcraft`) — or
-  `MAILCRAFT_CONTROL_KEY`; the MCP bridge proves the key to the app before the app answers.
+  otherwise `$XDG_CONFIG_HOME/mailcraft` or `~/.config/mailcraft`), mode 0600 on Unix, a stale file
+  replaced per start and the file removed when the window closes — or `MAILCRAFT_CONTROL_KEY`; the
+  MCP bridge proves the key to the app before the app answers.
 - **AniCraft**: no loopback control channel — it is driven headlessly by `anicraft-cli`
   (`info`, `render`, `render-seq`, `gif`, `commands`, `run`, `exec`, `new`, `bench`, `serve`,
   `mcp`) with no token needed; the live GUI has its agent chat instead.
 - **Craft Anything**: no loopback control channel — `craft-anything-cli` (12 named subcommands
   plus every engine tool id as a pass-through) and its stdio MCP server.
-- **ArtCraft Studio**: no control channel, CLI or MCP server — it is a Tauri GUI app; the
-  programmatic surface is the API-key-gated Omni HTTP API documented in the
-  `artcraft-studio` skill.
 - **All other apps** (LightCraft, VectorCraft, FigCraft, DesignCraft, DeckCraft, EffectCraft,
   SoundCraft): loopback-only, unauthenticated — enable only while in use.
 

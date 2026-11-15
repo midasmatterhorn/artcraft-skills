@@ -1,12 +1,12 @@
 # ArtCraft Agent Skills
 
-**Twenty evidence-verified agent skills — plain `SKILL.md` files following the [agentskills.io](https://agentskills.io) standard — that teach AI coding agents to drive the [ArtCraft](https://getartcraft.com) creative suite. Built for Claude Code, OpenAI Codex & ChatGPT desktop, OpenCode, Devin, CommandCode, ZCode, Google Antigravity and Gemini CLI.**
+**Nineteen evidence-verified agent skills — plain `SKILL.md` files following the [agentskills.io](https://agentskills.io) standard — that teach AI coding agents to drive the [ArtCraft](https://getartcraft.com) creative suite. Built for Claude Code, OpenAI Codex & ChatGPT desktop, OpenCode, Devin, CommandCode, ZCode, Google Antigravity and Gemini CLI.**
 
 <p align="center">
-  <img src="assets/app-logos-marquee.svg" alt="The twenty apps scrolling past: ArtCraft Studio, PhotoCraft, LightCraft, VectorCraft, FigCraft, DesignCraft, WordCraft, DeckCraft, Craft Anything, AniCraft, GridCraft, PdfCraft, EffectCraft, FilmCraft, SoundCraft, CADCraft, MaterialCraft, SolidCraft, TextureCraft and MailCraft" width="100%">
+  <img src="assets/app-logos-marquee.svg" alt="The nineteen apps scrolling past: PhotoCraft, LightCraft, VectorCraft, FigCraft, DesignCraft, WordCraft, DeckCraft, Craft Anything, AniCraft, GridCraft, PdfCraft, EffectCraft, FilmCraft, SoundCraft, CADCraft, MaterialCraft, SolidCraft, TextureCraft and MailCraft" width="100%">
 </p>
 
-ArtCraft is the open-source, clean-room creative suite from the [`storytold`](https://github.com/storytold) organization — thirteen pure-Rust apps covering image editing, photo raw development, vector illustration, interface design, page layout, word processing, presentations, spreadsheets, PDF work, motion graphics, video editing, audio and 2D CAD, plus ArtCraft Studio, a Rust + TypeScript AI image and video generation workspace, AniCraft (2D vector animation studio) and Craft Anything (ArtCraft's own "see how software works, rebuild it with AI" workbench) — all installable via the [ArtCraft Launcher](https://github.com/storytold/craft-launcher). Four more ship in the same launcher: TextureCraft (3D texture painting) and MaterialCraft (node-based procedural materials and PBR map export) from storytold, SolidCraft (Tangency Labs' parametric 3D CAD), and the community MailCraft (UCS Care Group's mail, calendar and contacts app).
+ArtCraft is the open-source, clean-room creative suite from the [`storytold`](https://github.com/storytold) organization — thirteen pure-Rust apps covering image editing, photo raw development, vector illustration, interface design, page layout, word processing, presentations, spreadsheets, PDF work, motion graphics, video editing, audio and 2D CAD, AniCraft (2D vector animation studio) and Craft Anything (ArtCraft's own "see how software works, rebuild it with AI" workbench) — all installable via the [ArtCraft Launcher](https://github.com/storytold/craft-launcher). Four more ship in the same launcher: TextureCraft (3D texture painting) and MaterialCraft (node-based procedural materials and PBR map export) from storytold, SolidCraft (Tangency Labs' parametric 3D CAD), and the community MailCraft (UCS Care Group's mail, calendar and contacts app).
 
 Each skill teaches an AI coding agent **what one app can really do, what it cannot do yet, and how to drive it correctly** — through the app's first-class automation surface (headless CLI, [MCP](https://modelcontextprotocol.io) (Model Context Protocol) server, localhost JSON control channel, or ArtCraft's Omni HTTP API) rather than blind GUI automation. Mention an app or one of its file formats — `.psd`, `.pptx`, `.xlsx`, `.docx`, `.dxf` — and the matching skill triggers.
 
@@ -48,7 +48,7 @@ Clone https://github.com/midasmatterhorn/artcraft-skills.git into a temporary di
 - Gemini CLI (macOS/Linux): the default install works — Gemini CLI scans ~/.agents/skills/ too; use `bash install.sh --gemini` to scope it to ~/.gemini/skills/ instead.
 - Google Antigravity (macOS/Linux): run `bash install.sh --antigravity`, which installs into ~/.gemini/config/skills/, Antigravity's global skills directory.
 - Everyone else (OpenAI Codex, ChatGPT desktop, ZCode, Devin, CommandCode, or any other SKILL.md-standard agent): run `bash install.sh`; the default target is ~/.agents/skills/, which those agents scan natively.
-Verify the install: all 20 skill directories must be present under the target directory, each containing SKILL.md and agents/openai.yaml. Print the target directory you used.
+Verify the install: all 19 skill directories must be present under the target directory, each containing SKILL.md and agents/openai.yaml. Print the target directory you used.
 Then tell me to restart my agent session so the new skills are discovered.
 ```
 
@@ -67,7 +67,7 @@ Invoke a skill explicitly with `$photocraft` (or `$wordcraft`, …), or let impl
 ### Claude Code
 
 ```sh
-bash install.sh --claude   # copies all 20 skills into ~/.claude/skills/
+bash install.sh --claude   # copies all 19 skills into ~/.claude/skills/
 ```
 
 `--claude` targets Claude Code's user-scoped `~/.claude/skills/` directory (a project-scoped `.claude/skills/` works the same way). Prefer symlinks when you want `git pull` to keep skills current:
@@ -79,7 +79,7 @@ ln -s "$PWD/photocraft" ~/.claude/skills/photocraft   # repeat for each skill
 ### OpenCode
 
 ```sh
-bash install.sh --opencode   # copies all 20 skills into ~/.config/opencode/skills/
+bash install.sh --opencode   # copies all 19 skills into ~/.config/opencode/skills/
 ```
 
 `--opencode` targets OpenCode's global skills directory `~/.config/opencode/skills/`, where they are discovered for every project. To scope skills to a single project instead, symlink them into that project's `.opencode/skills/` directory:
@@ -93,7 +93,7 @@ As with Claude Code, symlinks mean `git pull` keeps the installed skills current
 ### Gemini CLI
 
 ```sh
-bash install.sh --gemini   # copies all 20 skills into ~/.gemini/skills/
+bash install.sh --gemini   # copies all 19 skills into ~/.gemini/skills/
 ```
 
 `--gemini` targets Gemini CLI's user-scoped `~/.gemini/skills/` directory. Gemini CLI also scans the shared `~/.agents/skills/` (preferring it within the same tier), so the default install already works — use `--gemini` only when you want the skills scoped to Gemini alone. For a single project, symlink into that project's `.gemini/skills/` (or its `.agents/skills/` alias):
@@ -105,7 +105,7 @@ ln -s "$PWD/photocraft" .gemini/skills/photocraft   # repeat for each skill
 ### Google Antigravity
 
 ```sh
-bash install.sh --antigravity   # copies all 20 skills into ~/.gemini/config/skills/
+bash install.sh --antigravity   # copies all 19 skills into ~/.gemini/config/skills/
 ```
 
 `--antigravity` targets Antigravity's global skills directory `~/.gemini/config/skills/`, discovered across the Antigravity app, IDE and CLI. For a single project, symlink into the repo's `.agents/skills/` directory, which Antigravity scans at workspace level:
@@ -150,7 +150,6 @@ One skill per app across the whole Craft App Suite — the same tools the [ArtCr
 
 | App | What it's for | Skill | Skill based on | GitHub |
 |---|---|---|---|---|
-| <img src="assets/icons/artcraft-studio.png" width="32" alt="ArtCraft Studio icon" align="absmiddle">&nbsp;**[ArtCraft Studio](https://github.com/storytold/artcraft)** | AI image and video generation workspace | [`artcraft-studio`](artcraft-studio) | 0.41.1&nbsp;@&nbsp;`07ebde1` | [GitHub](https://github.com/storytold/artcraft) |
 | <img src="assets/icons/photocraft.png" width="32" alt="PhotoCraft icon" align="absmiddle">&nbsp;**[PhotoCraft](https://getartcraft.com/apps/photocraft)** | Image editing: layers, masks, type and real PSD files | [`photocraft`](photocraft) | 0.23.1&nbsp;@&nbsp;`45066c4` | [GitHub](https://github.com/storytold/photocraft) |
 | <img src="assets/icons/lightcraft.png" width="32" alt="LightCraft icon" align="absmiddle">&nbsp;**[LightCraft](https://getartcraft.com/apps/lightcraft)** | Photo library and raw development | [`lightcraft`](lightcraft) | 0.21.1&nbsp;@&nbsp;`361e3bc` | [GitHub](https://github.com/storytold/lightcraft) |
 | <img src="assets/icons/vectorcraft.png" width="32" alt="VectorCraft icon" align="absmiddle">&nbsp;**[VectorCraft](https://getartcraft.com/apps/vectorcraft)** | Vector illustration | [`vectorcraft`](vectorcraft) | 0.24.1&nbsp;@&nbsp;`f4922aa` | [GitHub](https://github.com/storytold/vectorcraft) |
@@ -166,10 +165,10 @@ One skill per app across the whole Craft App Suite — the same tools the [ArtCr
 | <img src="assets/icons/soundcraft.png" width="32" alt="SoundCraft icon" align="absmiddle">&nbsp;**[SoundCraft](https://getartcraft.com/apps/soundcraft)** | Audio recording and editing | [`soundcraft`](soundcraft) | 0.20.1&nbsp;@&nbsp;`a52bbdc` | [GitHub](https://github.com/storytold/soundcraft) |
 | <img src="assets/icons/cadcraft.png" width="32" alt="CADCraft icon" align="absmiddle">&nbsp;**[CADCraft](https://getartcraft.com/apps/cadcraft)** | Computer-aided design | [`cadcraft`](cadcraft) | 0.20.1&nbsp;@&nbsp;`7526dc6` | [GitHub](https://github.com/storytold/cadcraft) |
 | <img src="assets/icons/craft-anything.png" width="32" alt="Craft Anything icon" align="absmiddle">&nbsp;**[Craft Anything](https://getartcraft.com/apps/craft-anything)** | Study how software works, rebuild it with AI | [`craft-anything`](craft-anything) | 0.6.1&nbsp;@&nbsp;`48a9c5a` | [GitHub](https://github.com/storytold/craft-anything) |
-| <img src="assets/icons/solidcraft.png" width="32" alt="SolidCraft icon" align="absmiddle">&nbsp;**[SolidCraft](https://getartcraft.com/apps/solidcraft)** | Parametric 3D CAD | [`solidcraft`](solidcraft) | 0.41.0&nbsp;@&nbsp;`3c8efdb` | [GitHub](https://github.com/tangency-labs/solidcraft) |
+| <img src="assets/icons/solidcraft.png" width="32" alt="SolidCraft icon" align="absmiddle">&nbsp;**[SolidCraft](https://getartcraft.com/apps/solidcraft)** | Parametric 3D CAD | [`solidcraft`](solidcraft) | 0.42.0&nbsp;@&nbsp;`1b1e940` | [GitHub](https://github.com/tangency-labs/solidcraft) |
 | <img src="assets/icons/texturecraft.png" width="32" alt="TextureCraft icon" align="absmiddle">&nbsp;**[TextureCraft](https://getartcraft.com/apps/texturecraft)** | 3D texture painting | [`texturecraft`](texturecraft) | 0.6.1&nbsp;@&nbsp;`34a1961` | [GitHub](https://github.com/storytold/texturecraft) |
 | <img src="assets/icons/materialcraft.png" width="32" alt="MaterialCraft icon" align="absmiddle">&nbsp;**[MaterialCraft](https://getartcraft.com/apps/materialcraft)** | Node-based procedural materials and PBR map export | [`materialcraft`](materialcraft) | 0.4.1&nbsp;@&nbsp;`65f7bfd` | [GitHub](https://github.com/storytold/materialcraft) |
-| <img src="assets/icons/mailcraft.png" width="32" alt="MailCraft icon" align="absmiddle">&nbsp;**[MailCraft](https://mailcraft.work)** | Mail, calendar, contacts and tasks | [`mailcraft`](mailcraft) | 0.12.0&nbsp;@&nbsp;`92eb10c` | [GitHub](https://github.com/UCS-Care-Group/mailcraft) |
+| <img src="assets/icons/mailcraft.png" width="32" alt="MailCraft icon" align="absmiddle">&nbsp;**[MailCraft](https://mailcraft.work)** | Mail, calendar, contacts and tasks | [`mailcraft`](mailcraft) | 0.13.0&nbsp;@&nbsp;`240d1d4` | [GitHub](https://github.com/UCS-Care-Group/mailcraft) |
 
 *Skill based on* names the app release and commit each skill was written and verified against; the apps are early-alpha and move fast, so every skill also carries a *verify against your installed version* note.
 
@@ -182,7 +181,7 @@ Each skill directory contains:
 
 ## Why these are trustworthy
 
-Every capability claim is traceable to the app's source code. Each skill is written against a pinned release commit and machine-audited: every cited file path is resolved against that tree, every `Sources & evidence` commit must equal the audited tree, and headline counts (engine commands, MCP tools, control methods, formats, effect and preset libraries) are re-derived from code with the method recorded in the skill's `evidence.md`. The 12 November 2026 refresh re-pinned 19 of the 20 skills to the 12 November app releases (ArtCraft Studio had no new release and stays at 0.41.1), re-measured the automation surfaces, corrected the counts that had drifted, and added two skills for the newly launched apps — AniCraft, the 2D vector animation studio, and MailCraft, the community mail/calendar/contacts app; each skill carries a `CHANGES.md` naming exactly what was re-measured and what was carried forward. The 14 November 2026 **v1.5.2** update re-pins **SolidCraft** alone to 0.41.0, adds its new sandboxed-WebAssembly plugin surface and its v0.41 repairs, and re-measures every count it quotes. No capability is documented without a file-level pointer; uncertainty is labeled `uncertain`, never guessed.
+Every capability claim is traceable to the app's source code. Each skill is written against a pinned release commit and machine-audited: every cited file path is resolved against that tree, every `Sources & evidence` commit must equal the audited tree, and headline counts (engine commands, MCP tools, control methods, formats, effect and preset libraries) are re-derived from code with the method recorded in the skill's `evidence.md`. The 12 November 2026 **v1.5.0** round re-pinned 19 of the then-20 skills to the 12 November app releases, re-measured the automation surfaces, corrected the counts that had drifted, and added two skills for the newly launched apps — AniCraft, the 2D vector animation studio, and MailCraft, the community mail/calendar/contacts app; each skill carries a `CHANGES.md` naming exactly what was re-measured and what was carried forward. The 14 November 2026 **v1.5.2** update re-pins **SolidCraft** alone to 0.41.0, adds its new sandboxed-WebAssembly plugin surface and its v0.41 repairs, and re-measures every count it quotes. The 15 November 2026 **v2.0.0** release removes ArtCraft Studio from the suite — the hosted launcher catalog no longer lists it — taking the set to 19 skills, and re-pins **SolidCraft** to 0.42.0 and **MailCraft** to 0.13.0. No capability is documented without a file-level pointer; uncertainty is labeled `uncertain`, never guessed.
 
 The full method, including the regeneration recipe, lives alongside the skill sources (not in this repo).
 
