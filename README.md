@@ -22,7 +22,7 @@ Each skill teaches an AI coding agent **what one app can really do, what it cann
 | OpenCode | `bash install.sh --opencode` | `~/.config/opencode/skills/` |
 | Gemini CLI | `bash install.sh --gemini` | `~/.gemini/skills/` (also `~/.agents/skills/`) |
 | Google Antigravity | `bash install.sh --antigravity` | `~/.gemini/config/skills/` |
-| claude.ai · Claude Desktop | zip upload (Settings → Capabilities → Skills) | per-chat upload |
+| claude.ai · Claude Desktop | download from [`claude-zips/`](claude-zips) & upload (Settings → Capabilities → Skills) | per-chat upload |
 | Windows (any of the above) | `.\install.ps1` (`-Claude`, `-OpenCode`, `-Gemini`, `-Antigravity`) | `%USERPROFILE%\` equivalents |
 
 The SKILL.md files are plain Markdown + shell, so any agent that can read files can use them. Full per-agent options are under [Install](#install) below.
@@ -116,11 +116,11 @@ ln -s "$PWD/photocraft" .agents/skills/photocraft   # repeat for each skill
 
 ### claude.ai / Claude Desktop
 
-Zip a skill folder and upload it via **Settings → Capabilities → Skills**:
+Prebuilt `.zip` files for all 19 skills live in [`claude-zips/`](claude-zips) — download the ones you want directly (no terminal commands needed), enable **Code execution and file creation** in **Settings → Capabilities**, and upload via **Settings → Capabilities → Skills**:
 
-```sh
-cd artcraft-skills && zip -r photocraft.skill.zip photocraft
-```
+- [`photocraft.zip`](claude-zips/photocraft.zip?raw=1) · [`lightcraft.zip`](claude-zips/lightcraft.zip?raw=1) · [`vectorcraft.zip`](claude-zips/vectorcraft.zip?raw=1) · [`figcraft.zip`](claude-zips/figcraft.zip?raw=1) · [`designcraft.zip`](claude-zips/designcraft.zip?raw=1) · [`wordcraft.zip`](claude-zips/wordcraft.zip?raw=1) · [`deckcraft.zip`](claude-zips/deckcraft.zip?raw=1) · [`gridcraft.zip`](claude-zips/gridcraft.zip?raw=1) · [`pdfcraft.zip`](claude-zips/pdfcraft.zip?raw=1) · [`effectcraft.zip`](claude-zips/effectcraft.zip?raw=1) · [`filmcraft.zip`](claude-zips/filmcraft.zip?raw=1) · [`anicraft.zip`](claude-zips/anicraft.zip?raw=1) · [`soundcraft.zip`](claude-zips/soundcraft.zip?raw=1) · [`cadcraft.zip`](claude-zips/cadcraft.zip?raw=1) · [`craft-anything.zip`](claude-zips/craft-anything.zip?raw=1) · [`solidcraft.zip`](claude-zips/solidcraft.zip?raw=1) · [`texturecraft.zip`](claude-zips/texturecraft.zip?raw=1) · [`materialcraft.zip`](claude-zips/materialcraft.zip?raw=1) · [`mailcraft.zip`](claude-zips/mailcraft.zip?raw=1)
+
+Each archive wraps `<skill>/SKILL.md` in its matching folder, keeps frontmatter `description` within Claude's 1,024-character limit (with the full trigger text preserved at the top of the body where trimmed), and strips local metadata. Maintainers can regenerate and verify all 19 zips from the skill folders with `python3 scripts/package-claude-zips.py` (or `--verify`).
 
 ### Windows (PowerShell / WSL)
 
